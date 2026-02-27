@@ -21,13 +21,16 @@ const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 process.env.CRON_TIMEZONE = systemTZ;
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      const origins = Array.isArray(allowedOrigins) ? allowedOrigins : allowedOrigins.split(",");
+
+      if (origins.includes(origin) || origins.some(o => origin.startsWith(o))) {
         return callback(null, true);
       }
 

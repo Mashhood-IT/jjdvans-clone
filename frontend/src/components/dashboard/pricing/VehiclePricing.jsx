@@ -159,6 +159,7 @@ const VehiclePricing = () => {
   const tableHeaders = [
     { label: <div className="flex items-center gap-1.5"> Priority</div>, key: "priority" },
     { label: <div className="flex items-center gap-1.5"> Vehicle</div>, key: "vehicleInfo" },
+    { label: <div className="flex items-center gap-1.5"> Pass. Seats</div>, key: "passengerSeats" },
     { label: <div className="flex items-center gap-1.5"> Description</div>, key: "description" },
     { label: <div className="flex items-center gap-1.5"> Markup (%)</div>, key: "percentageIncrease" },
     { label: "Action", key: "actions" },
@@ -173,6 +174,9 @@ const VehiclePricing = () => {
         </div>
         <span className="font-bold text-gray-900">{item.vehicleName}</span>
       </div>
+    ),
+    passengerSeats: (
+      <span className="font-medium text-gray-700">{item.passengerSeats || 0} Seats</span>
     ),
     description: (
       <p className="max-w-[200px] truncate text-gray-500" title={item.description}>
@@ -241,6 +245,7 @@ const VehiclePricing = () => {
           {[
             { label: "Priority", key: "priority" },
             { label: "Vehicle Name", key: "vehicleName" },
+            { label: "Passenger Seats", key: "passengerSeats" },
             { label: "Description", key: "description" },
             { label: "Percentage Increase (%)", key: "percentageIncrease" },
           ].map((field) => (

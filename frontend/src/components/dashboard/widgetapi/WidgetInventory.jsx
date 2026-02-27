@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Minus, Clock, User, ArrowLeft } from "lucide-react";
 
 const WidgetInventory = ({ companyId, onContinue, onBack }) => {
+    const selectedVehicle = JSON.parse(localStorage.getItem("selectedVehicle") || "{}");
+    const totalSeats = selectedVehicle.passengerSeats || 0;
+
     const [pickupFloor, setPickupFloor] = useState(0);
     const [dropoffFloor, setDropoffFloor] = useState(2);
     const [pickupAccess, setPickupAccess] = useState("LIFT");
@@ -10,6 +13,12 @@ const WidgetInventory = ({ companyId, onContinue, onBack }) => {
     const [estimatedMinutes, setEstimatedMinutes] = useState(30);
     const [ridingAlong, setRidingAlong] = useState(true);
     const [passengerCount, setPassengerCount] = useState(1);
+
+    useEffect(() => {
+        if (passengerCount > totalSeats) {
+            setPassengerCount(totalSeats);
+        }
+    }, [totalSeats]);
     const [items, setItems] = useState([]);
     const [showItemInput, setShowItemInput] = useState(false);
     const [currentItem, setCurrentItem] = useState("");
@@ -352,16 +361,22 @@ const WidgetInventory = ({ companyId, onContinue, onBack }) => {
 
                     {ridingAlong && (
                         <div className="mt-6 pt-6 border-t border-gray-200">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-3">
                                     <User className="w-5 h-5 text-gray-600" />
-                                    <span className="font-medium text-gray-900">Passenger Count</span>
+                                    <div>
+                                        <span className="font-medium text-gray-900">Passenger Count</span>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">
+                                            Max {totalSeats} seats available
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div className="flex items-center gap-4">
                                     <button
+                                        disabled={passengerCount <= 0}
                                         onClick={() => setPassengerCount(Math.max(0, passengerCount - 1))}
-                                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
                                     >
                                         <Minus className="w-4 h-4 text-gray-600" />
                                     </button>
@@ -369,13 +384,19 @@ const WidgetInventory = ({ companyId, onContinue, onBack }) => {
                                         {passengerCount}
                                     </span>
                                     <button
-                                        onClick={() => setPassengerCount(Math.min(12, passengerCount + 1))}
-                                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        disabled={passengerCount >= totalSeats}
+                                        onClick={() => setPassengerCount(Math.min(totalSeats, passengerCount + 1))}
+                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
                                     >
                                         <Plus className="w-4 h-4 text-gray-600" />
                                     </button>
                                 </div>
                             </div>
+                            {totalSeats === 0 && (
+                                <p className="text-[10px] text-rose-500 font-bold italic mt-2">
+                                    * This vehicle does not support passenger ride-along.
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

@@ -7,6 +7,10 @@ const vehicleSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        passengerSeats: {
+            type: Number,
+            default: 0,
+        },
         description: {
             type: String,
             trim: true,

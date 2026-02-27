@@ -4,6 +4,7 @@ export const createVehicle = async (req, res) => {
     try {
         const {
             vehicleName,
+            passengerSeats,
             description,
             priority,
             priceType,
@@ -19,6 +20,7 @@ export const createVehicle = async (req, res) => {
 
         const vehicle = new Vehicle({
             vehicleName,
+            passengerSeats: Number(passengerSeats || 0),
             description,
             priority: Number(priority || 0),
             priceType: priceType || "Percentage",
@@ -53,6 +55,7 @@ export const updateVehicle = async (req, res) => {
     try {
         const {
             vehicleName,
+            passengerSeats,
             description,
             priority,
             priceType,
@@ -65,6 +68,7 @@ export const updateVehicle = async (req, res) => {
 
         const updatedData = {
             vehicleName,
+            passengerSeats: passengerSeats !== undefined ? Number(passengerSeats) : undefined,
             description,
             priority: priority !== undefined ? Number(priority) : undefined,
             priceType,

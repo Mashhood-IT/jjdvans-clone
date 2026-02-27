@@ -664,8 +664,7 @@ const WidgetBookingInformation = ({
 
     const vehiclePayload = {
       vehicleName: selectedCar.vehicleName,
-      passenger: selectedCar.passengers || 0,
-      childSeat: selectedCar.childSeat || 0,
+      passengerSeats: selectedCar.passengerSeats || 0,
       handLuggage: selectedCar.handLuggage || 0,
       checkinLuggage: selectedCar.checkinLuggage || 0,
       primaryJourneyFare,
@@ -831,7 +830,7 @@ const WidgetBookingInformation = ({
                       journeyType: "oneWay",
                       vehicleName: selectedCar.vehicleName,
                       image: selectedCar.image || IMAGES.dummyFile,
-                      passenger: 0,
+                      passengerSeats: selectedCar.passengerSeats || 0,
                       childSeat: 0,
                       handLuggage: 0,
                       checkinLuggage: 0,
