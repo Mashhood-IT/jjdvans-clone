@@ -1,50 +1,23 @@
 import React, { useEffect } from "react";
 import Icons from "../../../assets/icons";
 import { useSelector } from "react-redux";
-import { useGetCompanyByIdQuery } from "../../../redux/api/companyApi";
-import OutletHeading from "../../../constants/constantscomponents/OutletHeading";
-import { useLoading } from "../../common/LoadingProvider";
-import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
+import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 
 const ViewCompany = () => {
   const user = useSelector((state) => state.auth.user);
-  const companyId = user?.companyId;
-  const { showLoading, hideLoading } = useLoading();
-
-  const {
-    data: company,
-    isLoading,
-    error,
-  } = useGetCompanyByIdQuery(companyId, {
-    skip: !companyId,
-  });
-
-  useEffect(() => {
-    if (isLoading) {
-      showLoading();
-    } else {
-      hideLoading();
-    }
-  }, [isLoading, hideLoading, showLoading]);
-
-  if (error)
-    return <p className="p-4 text-(--alert-red)">Failed to load company info</p>;
-
-  if (!company)
-    return <p className="p-4 text-(--medium-grey)">No company data found.</p>;
-
+  console.log(user)
   const fields = [
-    { label: "Full Name (Admin)", value: company.fullName },
-    { label: "Trading Name", value: company.tradingName },
+    { label: "Full Name (Admin)", value: user.fullName },
+    { label: "Trading Name", value: user.tradingName },
     {
       label: "Phone",
-      value: company.contact ? `${formatPhoneNumber(company.contact)}` : null,
+      value: user.contact ? `${user.contact}` : null,
     },
-    { label: "Licensed By", value: company.licensedBy },
-    { label: "License Number", value: company.licenseNumber },
-    { label: "Website", value: company.website },
-    { label: "Address", value: company.address },
-    { label: "Cookie Consent", value: company.cookieConsent },
+    { label: "Licensed By", value: user.licensedBy || "" },
+    { label: "License Number", value: user.licenseNumber || "" },
+    { label: "Website", value: user.website || "" },
+    { label: "Address", value: user.address || "" },
+    { label: "Cookie Consent", value: user.cookieConsent || "" },
   ];
 
   return (
@@ -54,16 +27,16 @@ const ViewCompany = () => {
         <div className="flex flex-col sm:flex-row items-center sm:justify-between mb-4 sm:mb-6 text-center sm:text-left gap-2 sm:gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-semibold uppercase text-(--dark-grey) mb-1">
-              {company.companyName}
+              {user.companyName}
             </h2>
-            {company.email && (
-              <p className="text-xs sm:text-sm text-(--dark-grey)">{company.email}</p>
+            {user.email && (
+              <p className="text-xs sm:text-sm text-(--dark-grey)">{user.email}</p>
             )}
           </div>
-          {company?.profileImage ? (
+          {user?.profileImage ? (
             <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center rounded-md border border-(--light-gray) shadow-md bg-(--lightest-gray)">
               <img
-                src={company.profileImage}
+                src={user.profileImage}
                 alt="Company Logo"
                 className="w-full h-full object-contain rounded-md"
                 onError={(e) => {
