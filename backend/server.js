@@ -16,7 +16,8 @@ dotenv.config();
 
 await connectDB();
 
-const allowedOrigins = process.env.BASE_URL_FRONTEND
+const allowedOriginsRaw = process.env.BASE_URL_FRONTEND || "";
+const origins = allowedOriginsRaw.split(",").map(o => o.trim().replace(/\/$/, ""));
 const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 process.env.CRON_TIMEZONE = systemTZ;
 
@@ -28,13 +29,18 @@ app.use(
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
 
-      const origins = Array.isArray(allowedOrigins) ? allowedOrigins : allowedOrigins.split(",");
+      const normalizedOrigin = origin.replace(/\/$/, "");
 
-      if (origins.includes(origin) || origins.some(o => origin.startsWith(o))) {
+      const isAllowed = origins.some(o => {
+        const normalizedO = o.replace(/\/$/, "");
+        return normalizedOrigin === normalizedO || normalizedOrigin.startsWith(normalizedO);
+      });
+
+      if (isAllowed) {
         return callback(null, true);
       }
 
-      console.warn(`CORS blocked for origin: ${origin}`);
+      console.error(`[CORS-Blocked] Allowed: "${allowedOriginsRaw}", Received: "${origin}"`);
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
