@@ -12,7 +12,7 @@ const WidgetAPI = () => {
 
   const iframeCode = `<iframe
   id="mtlWidget"
-  src="${BASE_URL}/widget-form?company=${companyId}"
+  src="${BASE_URL}widget-form?company=${companyId}"
   style="width:100%;min-height:700px;border:none;overflow:hidden;"
   title="MTL Dispatch Booking Widget"
   loading="lazy"
