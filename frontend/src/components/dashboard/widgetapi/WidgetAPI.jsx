@@ -36,7 +36,7 @@ const WidgetAPI = () => {
     });
   };
 
-  const previewUrl = `${BASE_URL}/widget-form?company=${companyId}`;
+  const previewUrl = `${BASE_URL}widget-form?company=${companyId}`;
 
   return (
     <div>
