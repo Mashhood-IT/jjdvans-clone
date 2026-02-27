@@ -1,0 +1,862 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import CarCardSection from './widgetcomponents/CarCardSection';
+import JourneySummaryCard from './widgetcomponents/JourneySummaryCard';
+
+import { toast } from 'react-toastify';
+import IMAGES from '../../../assets/images';
+import { useLazyGeocodeQuery, useLazyGetDistanceQuery } from '../../../redux/api/googleApi';
+
+import { useGetAllVehiclesQuery } from '../../../redux/api/vehicleApi';
+
+const WidgetBookingInformation = ({
+  onNext,
+  dropOffPrice,
+}) => {
+  const { data: vehicleResponse, isLoading: isVehiclesLoading } = useGetAllVehiclesQuery();
+  const carList = vehicleResponse?.data || vehicleResponse || [];
+
+  const [actualMiles, setActualMiles] = useState(null);
+  const [selectedCarId, setSelectedCarId] = useState(null);
+  const [formData, setFormData] = useState(null);
+  const [distanceText, setDistanceText] = useState(null);
+  const [durationText, setDurationText] = useState(null);
+  const [matchedHourlyRate, setMatchedHourlyRate] = useState('');
+  const [matchedZonePrice, setMatchedZonePrice] = useState(null);
+  const [matchedZoneToZonePrice, setMatchedZoneToZonePrice] = useState(null);
+  const [hourlyError, setHourlyError] = useState('');
+  const [fixedZonePrice, setFixedZonePrice] = useState(null);
+  const [journeyDateTime, setJourneyDateTime] = useState(null);
+  const [matchedSurcharge, setMatchedSurcharge] = useState(0);
+  const [matchedDiscount, setMatchedDiscount] = useState(0);
+  const [calculatedTotalPrice, setCalculatedTotalPrice] = useState(0);
+  const [extraHelpPrice, setExtraHelpPrice] = useState(0);
+  const [segmentBreakdown, setSegmentBreakdown] = useState([]);
+
+  const [triggerGeocode] = useLazyGeocodeQuery();
+  const [triggerDistance] = useLazyGetDistanceQuery();
+
+  const hourlyRates = [];
+  const postcodePrices = [];
+  const zones = [];
+  const generalPricing = {
+    pickupAirportPrice: 10,
+    dropoffAirportPrice: 10,
+    minAdditionalDropOff: 5
+  };
+  const fixedPrices = [];
+  const discounts = [];
+  const bookingSettingData = {
+    setting: {
+      currency: [{ symbol: "$", value: "USD" }]
+    }
+  };
+
+  const currencySetting = bookingSettingData?.setting?.currency?.[0] || null;
+  const currencySymbol = currencySetting?.symbol || '£';
+  const currencyCode = currencySetting?.value || 'GBP';
+
+  const isPickupAirport = formData?.pickup?.toLowerCase()?.includes('airport');
+  const isDropoffAirport = formData?.dropoff?.toLowerCase()?.includes('airport');
+
+  const pickupAirportPrice = isPickupAirport ? generalPricing?.pickupAirportPrice : 0;
+  const dropoffAirportPrice = isDropoffAirport ? generalPricing?.dropoffAirportPrice : 0;
+
+
+  const getVehiclePriceForDistance = useCallback((vehicle, miles) => {
+    if (!vehicle?.slabs || !Array.isArray(vehicle.slabs) || vehicle.slabs.length === 0) return 0;
+    if (miles <= 0) return 0;
+
+    let total = 0;
+    const slabs = [...vehicle.slabs].sort((a, b) => a.from - b.from);
+    const lastSlab = slabs[slabs.length - 1];
+
+    for (const slab of slabs) {
+      if (miles <= slab.from) break;
+
+      const slabStart = slab.from;
+      const slabEnd = slab.to;
+      const slabPrice = parseFloat(slab.price || 0);
+
+      if (miles >= slabEnd) {
+        total += slabPrice;
+      } else {
+        const slabDistance = slabEnd - slabStart;
+        if (slabDistance > 0) {
+          const pricePerMile = slabPrice / slabDistance;
+          const coveredInSlab = miles - slabStart;
+          total += coveredInSlab * pricePerMile;
+        }
+        break;
+      }
+    }
+
+    if (miles > lastSlab.to) {
+      const excessDistance = miles - lastSlab.to;
+      const slabDistance = lastSlab.to - lastSlab.from;
+      if (slabDistance > 0) {
+        const lastSlabRate = parseFloat(lastSlab.price || 0) / slabDistance;
+        total += excessDistance * lastSlabRate;
+      }
+    }
+
+    return parseFloat(total.toFixed(2));
+  }, []);
+
+  const calculatePrimaryAirportFees = () => {
+    if (!formData) return 0;
+
+    const normalize = (t) =>
+      t?.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim() || "";
+
+    let total = 0;
+
+    const addresses = [
+      formData.pickup,
+      formData.dropoff,
+      formData.additionalDropoff1,
+      formData.additionalDropoff2,
+      formData.additionalDropoff3,
+      formData.additionalDropoff4,
+    ].filter(Boolean);
+
+    addresses.forEach((addr) => {
+      const clean = normalize(addr);
+
+      if (clean.includes("airport")) {
+        if (addr === formData.pickup) {
+          total += generalPricing?.pickupAirportPrice || 0;
+        }
+        else {
+          total += generalPricing?.dropoffAirportPrice || 0;
+        }
+      }
+    });
+
+    return total;
+  };
+
+
+
+
+
+  const extractPostcode = (address) => {
+    const match = address?.match(/\b[A-Z]{1,2}\d{1,2}[A-Z]?\b/i);
+    return match ? match[0].toUpperCase() : null;
+  };
+
+  const [pickupPostcode, setPickupPostcode] = useState(null);
+  const [dropoffPostcode, setDropoffPostcode] = useState(null);
+  const [matchedPostcodePrice, setMatchedPostcodePrice] = useState(null);
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("bookingForm");
+    const parsed = JSON.parse(savedData);
+    setFormData((prev) => ({
+      ...prev, ...parsed
+    }));
+  }, []);
+
+  useEffect(() => {
+    try {
+      const savedVehicle = localStorage.getItem("selectedVehicle");
+      if (savedVehicle) {
+        const parsed = JSON.parse(savedVehicle);
+        setSelectedCarId(parsed.id);
+      }
+
+    } catch (err) {
+      console.error("Error parsing selectedVehicle from localStorage:", err);
+    }
+  }, []);
+
+  const matchFixedPrice = () => {
+    try {
+      if (!Array.isArray(fixedPrices) || fixedPrices.length === 0) return null;
+      if (!formData?.pickup || !formData?.dropoff) return null;
+
+      const pickupName = formData.pickup.toLowerCase();
+      const dropoffName = formData.dropoff.toLowerCase();
+
+
+      const normalize = (text) =>
+        text
+          ?.toLowerCase()
+          .replace(/[^a-z0-9\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      const normalizedPickup = normalize(pickupName);
+      const normalizedDropoff = normalize(dropoffName);
+
+      const matchedZone = fixedPrices.find((zone) => {
+        const from = normalize(zone.pickup);
+        const to = normalize(zone.dropoff);
+
+        return (
+          (normalizedPickup.includes(from) && normalizedDropoff.includes(to)) ||
+          (normalizedPickup.includes(to) && normalizedDropoff.includes(from))
+        );
+      });
+
+      if (matchedZone) {
+        return parseFloat(matchedZone.price || 0);
+      }
+
+      return null;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    if (!journeyDateTime || discounts.length === 0) return;
+
+    const match = discounts.find(d =>
+      d.status === 'Active' &&
+      d.category === 'Surcharge' &&
+      new Date(d.fromDate) <= journeyDateTime &&
+      new Date(d.toDate) >= journeyDateTime
+    );
+
+    setMatchedSurcharge(match?.surchargePrice || 0);
+  }, [journeyDateTime, discounts]);
+
+  useEffect(() => {
+    if (!journeyDateTime || discounts.length === 0) return;
+
+    const surchargeMatch = discounts.find(d =>
+      d.status === 'Active' &&
+      d.category === 'Surcharge' &&
+      new Date(d.fromDate) <= journeyDateTime &&
+      new Date(d.toDate) >= journeyDateTime
+    );
+
+    setMatchedSurcharge(surchargeMatch?.surchargePrice || 0);
+
+    const discountMatch = discounts.find(d =>
+      d.status === 'Active' &&
+      d.category === 'Discount' &&
+      new Date(d.fromDate) <= journeyDateTime &&
+      new Date(d.toDate) >= journeyDateTime
+    );
+
+    setMatchedDiscount(discountMatch?.discountPrice || 0);
+  }, [journeyDateTime, discounts]);
+
+  useEffect(() => {
+    if (formData?.date && formData?.hour !== undefined && formData?.minute !== undefined) {
+      const dt = new Date(formData.date);
+      dt.setHours(Number(formData.hour));
+      dt.setMinutes(Number(formData.minute));
+      setJourneyDateTime(dt);
+    }
+  }, [formData]);
+
+  useEffect(() => {
+    const price = matchFixedPrice();
+    setFixedZonePrice(price);
+  }, [formData?.pickup, formData?.dropoff, fixedPrices]);
+
+  useEffect(() => {
+    if (zones.length > 0 && formData?.pickup && formData?.dropoff) {
+      const normalize = (str) => str?.toLowerCase().replace(/[^a-z0-9]/g, ' ').split(' ').filter(Boolean);
+
+      const pickupWords = normalize(formData.pickup);
+      const dropoffWords = normalize(formData.dropoff);
+
+      const pickupMatch = zones.find(z => pickupWords.includes(z.zone.toLowerCase()));
+      const dropoffMatch = zones.find(z => dropoffWords.includes(z.zone.toLowerCase()));
+
+      const matched = pickupMatch || dropoffMatch;
+
+      if (matched) {
+        setMatchedZonePrice(matched.price);
+      } else {
+        setMatchedZonePrice(null);
+      }
+    }
+  }, [zones, formData]);
+
+  useEffect(() => {
+    if (
+      formData?.mode === "Hourly" &&
+      hourlyRates.length > 0 &&
+      actualMiles !== null
+    ) {
+      const original = formData?.originalHourlyOption?.value;
+
+      if (original) {
+        const selectedSlab = hourlyRates.find(pkg =>
+          Number(pkg.distance) === Number(original.distance) &&
+          Number(pkg.hours) === Number(original.hours)
+        );
+
+        if (selectedSlab) {
+          setMatchedHourlyRate(selectedSlab.vehicleRates || {});
+
+          if (actualMiles > Number(original.distance)) {
+            const warningMsg = `You've selected ${original.distance} miles for ${original.hours} hours, but your trip is ${actualMiles} miles. Prices are shown for your selected package. Extra charges may apply.`;
+            setHourlyError(warningMsg);
+          } else {
+            setHourlyError('');
+          }
+
+        } else {
+          setMatchedHourlyRate(null);
+          setHourlyError("Selected hourly package not found.");
+        }
+      } else {
+        const fallback = hourlyRates.find(pkg => Number(pkg.distance) >= actualMiles) ||
+          [...hourlyRates].sort((a, b) => b.distance - a.distance)[0];
+
+        if (fallback) {
+          setMatchedHourlyRate(fallback.vehicleRates || {});
+          setHourlyError("No selected package found. Showing closest match.");
+        } else {
+          setMatchedHourlyRate(null);
+          setHourlyError("No suitable hourly package found.");
+        }
+      }
+    }
+  }, [formData, hourlyRates, actualMiles]);
+
+  useEffect(() => {
+    if (hourlyError) {
+      toast.warning(hourlyError);
+    }
+  }, [hourlyError]);
+
+  useEffect(() => {
+    const sendHeight = () => {
+      const height = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: "setHeight", height }, "*");
+    };
+    sendHeight();
+    const resizeObserver = new ResizeObserver(sendHeight);
+    resizeObserver.observe(document.body);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const getLatLng = async (address) => {
+    const res = await triggerGeocode(address).unwrap();
+    return res?.location || null;
+  };
+
+  useEffect(() => {
+    const storedForm = localStorage.getItem("bookingForm");
+
+    if (!storedForm) {
+      toast.error("No booking form found.");
+      return;
+    }
+
+    const data = JSON.parse(storedForm);
+    setFormData(data);
+
+    if (data.segments && Array.isArray(data.segments) && data.segments.length > 0) {
+      setSegmentBreakdown(data.segments);
+
+      const totalMiles = data.segments.reduce((sum, seg) => sum + seg.miles, 0);
+      setActualMiles(totalMiles);
+      setDistanceText(`${totalMiles.toFixed(2)} mi`);
+      setDurationText(data.segments.map(s => s.durationText).join(' + '));
+    }
+
+
+    const calculateMultiSegmentDistance = async () => {
+      const allDropoffs = [
+        data.dropoff,
+        data.additionalDropoff1,
+        data.additionalDropoff2,
+        data.additionalDropoff3,
+        data.additionalDropoff4,
+      ].filter(d => {
+        if (!d || !d.trim()) return false;
+        return d.includes(' - ') || d.includes(',') || d.split(' ').length >= 3;
+      });
+
+      const hasMultipleDropoffs = allDropoffs.length > 1;
+
+      const origin = data.pickup?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
+
+      if (!origin) {
+        toast.error("Invalid pickup location");
+        return;
+      }
+
+      try {
+        let totalMiles = 0;
+        let segments = [];
+
+        if (hasMultipleDropoffs) {
+
+          let currentOrigin = origin;
+          let currentOriginAddress = data.pickup;
+
+          for (let i = 0; i < allDropoffs.length; i++) {
+
+            const destinationAddress = allDropoffs[i];
+            const destination = destinationAddress.replace("Custom Input - ", "").split(" - ").pop()?.trim();
+
+            const res = await triggerDistance({ origin: currentOrigin, destination }).unwrap();
+
+            if (!res?.distanceText) {
+              console.error(`Failed to get distance for segment ${i + 1}`);
+              continue;
+            }
+
+            let segmentMiles = 0;
+            if (res.distanceText.includes("km")) {
+              const km = parseFloat(res.distanceText.replace("km", "").trim());
+              segmentMiles = parseFloat((km * 0.621371).toFixed(2));
+            } else if (res.distanceText.includes("mi")) {
+              segmentMiles = parseFloat(res.distanceText.replace("mi", "").trim());
+            }
+
+            segments.push({
+              segmentNumber: i + 1,
+              from: currentOriginAddress,
+              to: destinationAddress,
+              miles: segmentMiles,
+              distanceText: res.distanceText,
+              durationText: res.durationText,
+            });
+
+            totalMiles += segmentMiles;
+
+            currentOrigin = destination;
+            currentOriginAddress = destinationAddress;
+          }
+
+          setSegmentBreakdown(segments);
+          setActualMiles(totalMiles);
+          setDistanceText(`${totalMiles.toFixed(2)} mi`);
+          setDurationText(segments.map(s => s.durationText).join(' + '));
+
+          const updatedData = { ...data, segments };
+          localStorage.setItem("bookingForm", JSON.stringify(updatedData));
+
+        } else {
+          const destination = allDropoffs[0]?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
+
+          if (!destination) {
+            toast.error("Invalid dropoff location");
+            return;
+          }
+
+          const res = await triggerDistance({ origin, destination }).unwrap();
+
+          if (res?.distanceText?.includes("km")) {
+            const km = parseFloat(res.distanceText.replace("km", "").trim());
+            totalMiles = parseFloat((km * 0.621371).toFixed(2));
+            setDistanceText(`${totalMiles} miles`);
+            setActualMiles(totalMiles);
+          } else if (res?.distanceText?.includes("mi")) {
+            totalMiles = parseFloat(res.distanceText.replace("mi", "").trim());
+            setDistanceText(`${totalMiles} miles`);
+            setActualMiles(totalMiles);
+          }
+
+          setDurationText(res?.durationText || null);
+        }
+
+        const [pickupCoord, dropoffCoord] = await Promise.all([
+          getLatLng(origin),
+          getLatLng(allDropoffs[allDropoffs.length - 1]?.replace("Custom Input - ", "").split(" - ").pop()?.trim())
+        ]);
+
+        setFormData({
+          ...data,
+          direction: data.direction || "One Way",
+          pickupCoordinates: pickupCoord ? [pickupCoord] : [],
+          dropoffCoordinates: dropoffCoord ? [dropoffCoord] : [],
+        });
+
+      } catch (err) {
+        console.error('Distance calculation error:', err);
+        toast.warn("Distance calculation failed.");
+      }
+    };
+
+    calculateMultiSegmentDistance();
+
+    const pickupCode = extractPostcode(data.pickup);
+    const dropoffCode = extractPostcode(data.dropoff);
+    setPickupPostcode(pickupCode);
+    setDropoffPostcode(dropoffCode);
+  }, []);
+
+  useEffect(() => {
+    const allDropoffs = [
+      formData?.dropoff,
+      formData?.additionalDropoff1,
+      formData?.additionalDropoff2,
+      formData?.additionalDropoff3,
+      formData?.additionalDropoff4,
+    ].filter(d => d && d.trim());
+
+    if (allDropoffs.length > 1) {
+      setMatchedPostcodePrice(null);
+      setFixedZonePrice(null);
+      setMatchedZonePrice(null);
+      setMatchedZoneToZonePrice(null);
+      return;
+    }
+
+    if (pickupPostcode && dropoffPostcode && postcodePrices.length > 0) {
+      const match = postcodePrices.find(item =>
+        (item.pickup.toUpperCase() === pickupPostcode && item.dropoff.toUpperCase() === dropoffPostcode) ||
+        (item.pickup.toUpperCase() === dropoffPostcode && item.dropoff.toUpperCase() === pickupPostcode)
+      );
+      setMatchedPostcodePrice(match || null);
+    } else {
+      setMatchedPostcodePrice(null);
+    }
+  }, [pickupPostcode, dropoffPostcode, postcodePrices, formData]);
+
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem("bookingForm");
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setFormData((prev) => ({
+          ...prev,
+          ...parsed,
+        }));
+      }
+    } catch (err) {
+      console.error("Error parsing bookingForm from localStorage:", err);
+    }
+  }, []);
+
+  const isHourlyMode = formData?.mode === "Hourly";
+
+  const calculateSegmentWiseFare = useCallback((vehicle) => {
+    if (!segmentBreakdown || segmentBreakdown.length === 0) {
+      return getVehiclePriceForDistance(vehicle, actualMiles || 0);
+    }
+
+    if (segmentBreakdown.length === 1) {
+      return getVehiclePriceForDistance(vehicle, segmentBreakdown[0].miles);
+    }
+
+    let totalFare = 0;
+
+    segmentBreakdown.forEach((segment) => {
+      const segmentFare = getVehiclePriceForDistance(vehicle, segment.miles);
+      totalFare += segmentFare;
+    });
+
+
+    return totalFare;
+  }, [segmentBreakdown, getVehiclePriceForDistance, currencySymbol, actualMiles]);
+
+  const getActivePricingMode = () => {
+    const allDropoffs = [
+      formData?.dropoff,
+      formData?.additionalDropoff1,
+      formData?.additionalDropoff2,
+      formData?.additionalDropoff3,
+      formData?.additionalDropoff4,
+    ].filter(d => d && d.trim());
+
+    if (allDropoffs.length > 1) {
+      return 'mileage';
+    }
+
+    if (formData?.mode === 'Hourly') return 'hourly';
+    if (allDropoffs.length > 1) return "mileage";
+    if (matchedPostcodePrice) return "postcode";
+    if (fixedZonePrice !== null) return "zone";
+    return 'mileage';
+  };
+
+  const activePricingMode = getActivePricingMode();
+
+
+
+  useEffect(() => {
+    const selectedCar = carList.find(c => c._id === selectedCarId);
+    if (!selectedCar) {
+      setCalculatedTotalPrice(0);
+      return;
+    }
+
+    const raw = selectedCar.percentageIncrease ?? 0;
+    const cleanPercentage = typeof raw === "string" ? Number(raw.replace("%", "")) : Number(raw);
+    const percentage = isNaN(cleanPercentage) ? 0 : cleanPercentage;
+
+    let coreFare = 0;
+    switch (activePricingMode) {
+      case 'hourly':
+        coreFare = matchedHourlyRate?.[selectedCar.vehicleName] || 0;
+        break;
+      case 'postcode':
+        coreFare = matchedPostcodePrice?.price || 0;
+        break;
+      case 'zone':
+        coreFare = fixedZonePrice !== null ? fixedZonePrice : matchedZoneToZonePrice || 0;
+        break;
+      default:
+        coreFare = calculateSegmentWiseFare(selectedCar);
+        break;
+    }
+
+    const baseWithMarkup =
+      (activePricingMode === 'postcode' || activePricingMode === 'zone')
+        ? coreFare + (coreFare * (percentage / 100))
+        : coreFare;
+
+    const surchargeAmount = baseWithMarkup * (matchedSurcharge / 100);
+
+    const discountAmount = baseWithMarkup * (matchedDiscount / 100);
+
+    const primaryJourneyFare =
+      baseWithMarkup +
+      surchargeAmount -
+      discountAmount +
+      (matchedZonePrice || 0) +
+      (dropOffPrice || 0)
+
+    const primaryAirportFee = calculatePrimaryAirportFees();
+
+    const grandTotal = parseFloat(
+      (Number(primaryJourneyFare) +
+        primaryAirportFee
+      ).toFixed(2)
+    );
+
+
+    setCalculatedTotalPrice(grandTotal + (extraHelpPrice || 0));
+  }, [
+    selectedCarId,
+    carList,
+    activePricingMode,
+    matchedHourlyRate,
+    matchedPostcodePrice,
+    fixedZonePrice,
+    matchedZoneToZonePrice,
+    matchedZonePrice,
+    matchedSurcharge,
+    dropOffPrice,
+    matchedDiscount,
+    calculateSegmentWiseFare,
+    extraHelpPrice
+  ]);
+
+
+  const [selectedHelpOption, setSelectedHelpOption] = useState(null);
+
+  const handleSubmitBooking = () => {
+    if (!selectedCarId || !formData) {
+      toast.error("Please select a vehicle to continue.");
+      return;
+    }
+
+    const selectedCar = carList.find(car => car._id === selectedCarId);
+    if (!selectedCar || !selectedCar.vehicleName) {
+      toast.error("Please select a valid vehicle.");
+      return;
+    }
+
+    const primaryJourneyFare = calculatedTotalPrice;
+
+    const vehiclePayload = {
+      vehicleName: selectedCar.vehicleName,
+      passenger: selectedCar.passengers || 0,
+      childSeat: selectedCar.childSeat || 0,
+      handLuggage: selectedCar.handLuggage || 0,
+      checkinLuggage: selectedCar.checkinLuggage || 0,
+      primaryJourneyFare,
+      totalFare: calculatedTotalPrice,
+      extraHelp: selectedHelpOption ? {
+        label: selectedHelpOption.label,
+        price: selectedHelpOption.price
+      } : null
+    };
+
+    onNext({
+      totalPrice: calculatedTotalPrice,
+      primaryJourneyFare,
+      selectedCar: vehiclePayload,
+      segmentBreakdown,
+    });
+  };
+
+  const selectedCar = React.useMemo(
+    () => carList.find(c => c._id === selectedCarId),
+    [carList, selectedCarId]
+  );
+
+  const computedPrimaryFare = React.useMemo(() => {
+    if (!selectedCar) return 0;
+
+    const raw = selectedCar.percentageIncrease ?? 0;
+    const cleanPercentage = typeof raw === "string" ? Number(raw.replace("%", "")) : Number(raw);
+    const percentage = isNaN(cleanPercentage) ? 0 : cleanPercentage;
+
+    let coreFare = 0;
+    switch (activePricingMode) {
+      case 'hourly':
+        coreFare = matchedHourlyRate?.[selectedCar.vehicleName] || 0;
+        break;
+      case 'postcode':
+        coreFare = matchedPostcodePrice?.price || 0;
+        break;
+      case 'zone':
+        coreFare = fixedZonePrice !== null ? fixedZonePrice : matchedZoneToZonePrice || 0;
+        break;
+      default:
+        coreFare = calculateSegmentWiseFare(selectedCar);
+        break;
+    }
+
+    const baseWithMarkup =
+      (activePricingMode === 'postcode' || activePricingMode === 'zone')
+        ? coreFare + (coreFare * (percentage / 100))
+        : coreFare;
+
+
+    return baseWithMarkup;
+  }, [
+    selectedCar,
+    activePricingMode,
+    matchedHourlyRate,
+    matchedPostcodePrice,
+    fixedZonePrice,
+    matchedZoneToZonePrice,
+    calculateSegmentWiseFare,
+    matchedSurcharge,
+    matchedZonePrice,
+    dropOffPrice
+  ]);
+
+
+  useEffect(() => {
+    if (!selectedCarId) return;
+    const pricing = {
+      totalPrice: Number(calculatedTotalPrice || 0),
+      dropOffPrice: Number(formData?.dropOffPrice || 0),
+      baseFare: Number(computedPrimaryFare || 0),
+      journeyType: "oneWay",
+      currencyCode,
+      currencySymbol,
+      segmentBreakdown,
+      extraHelp: selectedHelpOption ? {
+        label: selectedHelpOption.label,
+        price: selectedHelpOption.price
+      } : null
+    };
+    localStorage.setItem("widgetPricing", JSON.stringify(pricing));
+
+    // Also update selectedVehicle to include help
+    const sv = JSON.parse(localStorage.getItem("selectedVehicle") || "{}");
+    if (sv && sv.id === selectedCarId) {
+      localStorage.setItem("selectedVehicle", JSON.stringify({
+        ...sv,
+        extraHelp: pricing.extraHelp
+      }));
+    }
+  }, [
+    calculatedTotalPrice,
+    selectedCarId,
+    computedPrimaryFare,
+
+    formData?.dropOffPrice,
+    currencyCode,
+    currencySymbol,
+    segmentBreakdown,
+  ]);
+  return (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="2xl:col-span-8 col-span-12 col-start-1 2xl:col-start-3 w-full">
+          <JourneySummaryCard
+            formData={formData}
+            matchedSurcharge={matchedSurcharge}
+            durationText={durationText}
+            distanceText={distanceText}
+            currencySymbol={currencySymbol}
+            currencyCode={currencyCode}
+            segmentBreakdown={segmentBreakdown}
+          />
+
+          <div className='mt-6'>
+            {hourlyError && (
+              <div className="mt-4 mb-6 p-3 bg-(--light-yellow) text-(--dark-yellow) text-sm rounded-md border border-(--medium-yellow)">
+                {hourlyError}
+              </div>
+            )}
+
+            {isVehiclesLoading ? (
+              <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--main-color) mb-4"></div>
+                Loading available vehicles...
+              </div>
+            ) : carList.length > 0 ? (
+              <CarCardSection
+                carList={carList.map((car) => {
+                  let base = 0;
+                  const raw = car.percentageIncrease ?? 0;
+                  const percentage = isNaN(parseFloat(raw)) ? 0 : parseFloat(raw);
+
+                  if (formData?.mode === 'Hourly') {
+                    base = matchedHourlyRate?.[car.vehicleName] || 0;
+                  } else if (fixedZonePrice !== null) {
+                    base = fixedZonePrice + (fixedZonePrice * (percentage / 100));
+                  } else if (matchedZoneToZonePrice !== null) {
+                    base = matchedZoneToZonePrice + (matchedZoneToZonePrice * (percentage / 100));
+                  } else if (matchedPostcodePrice) {
+                    base = matchedPostcodePrice.price + (matchedPostcodePrice.price * (percentage / 100));
+                  } else {
+                    base = calculateSegmentWiseFare(car);
+                  }
+
+                  return {
+                    ...car,
+                    price: base,
+                  };
+                })}
+                currencySymbol={currencySymbol}
+                currencyCode={currencyCode}
+                selectedCarId={selectedCarId}
+                formData={formData}
+                onSelect={(id) => {
+                  setSelectedCarId(id);
+                  const selectedCar = carList.find(car => car._id === id);
+                  if (selectedCar) {
+                    localStorage.setItem("selectedVehicle", JSON.stringify({
+                      id,
+                      journeyType: "oneWay",
+                      vehicleName: selectedCar.vehicleName,
+                      image: selectedCar.image || IMAGES.dummyFile,
+                      passenger: 0,
+                      childSeat: 0,
+                      handLuggage: 0,
+                      checkinLuggage: 0,
+                    }));
+                  }
+                }}
+                onBook={handleSubmitBooking}
+                onHelpSelect={(option) => {
+                  setExtraHelpPrice(option.price);
+                  setSelectedHelpOption(option);
+                }}
+                calculatedTotalPrice={calculatedTotalPrice}
+                primaryJourneyFare={computedPrimaryFare}
+                isHourlyMode={isHourlyMode}
+              />
+            ) : (
+              <div className="p-12 bg-white rounded-2xl border-2 border-dashed border-gray-100 text-center italic text-gray-400">
+                No vehicles found. Please add vehicles from the dashboard.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default WidgetBookingInformation;
