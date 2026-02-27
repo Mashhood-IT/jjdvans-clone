@@ -68,11 +68,14 @@ async function handleSuccessfulLogin(
   const accessToken = generateAccessToken(user._id, user.role, user.companyId);
   const refreshToken = generateRefreshToken(user._id);
 
+  console.log(`Setting cookies. NODE_ENV: ${process.env.NODE_ENV}, Secure: ${process.env.NODE_ENV === "production"}`);
+
   res.cookie("access_token", accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 1 * 24 * 60 * 60 * 1000,
+    path: "/",
   });
 
   res.cookie("refresh_token", refreshToken, {
@@ -80,6 +83,7 @@ async function handleSuccessfulLogin(
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
   });
 
   const responseData = {

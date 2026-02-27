@@ -46,6 +46,8 @@ app.use(express.json({ limit: "50mb" }));
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
+  console.log(`Cookies Received: ${JSON.stringify(req.cookies)}`);
+  console.log(`Auth Header: ${req.headers.authorization ? "Present" : "Missing"}`);
   next();
 });
 
