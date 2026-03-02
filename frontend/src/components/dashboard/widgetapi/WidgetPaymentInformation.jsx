@@ -1,18 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
-import { MapPin, Navigation, ArrowRight, Shield } from 'lucide-react';
 import "react-phone-input-2/lib/style.css";
-// import PayPalCheckout from "../../../paymentmethod/PayPalCheckout";
-// import StripeCheckout from "../../../paymentmethod/StripeCheckout";
-import SelectOption from "../../constants/constantcomponents/SelectOption";
-import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import Icons from "../../../assets/icons";
-
-// import { useCreateBookingMutation } from "../../../redux/api/bookingApi";
-// import { useLazyGetVoucherByCodeQuery } from "../../../redux/api/vouchersApi";
-// import { useGetBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
-// import { useGetGeneralPricingPublicQuery } from "../../../redux/api/generalPricingApi";
-// import { useGetPublicPaymentOptionsQuery } from "../../../redux/api/paymentOptionsApi";
 
 const WidgetPaymentInformation = ({
   fare,
@@ -32,8 +21,6 @@ const WidgetPaymentInformation = ({
     babySeat: "",
     carSeat: "",
     boosterSeat: "",
-    handLuggage: "",
-    checkinLuggage: "",
     paymentMethod: "",
   });
 
@@ -131,26 +118,14 @@ const WidgetPaymentInformation = ({
             babySeat: parsed.babySeat || vehicle.babySeat || 0,
             carSeat: parsed.carSeat || vehicle.carSeat || 0,
             boosterSeat: parsed.boosterSeat || vehicle.boosterSeat || 0,
-            handLuggage: parsed.handLuggage || vehicle.handLuggage || 0,
             checkinLuggage:
               parsed.checkinLuggage || vehicle.checkinLuggage || 0,
             maxPassenger: parsed.maxPassenger || vehicle.passengers || 0,
-            maxChildSeat: parsed.maxChildSeat || vehicle.childSeat || 0,
-            maxHandLuggage: parsed.maxHandLuggage || vehicle.handLuggage || 0,
-            maxCheckinLuggage:
-              parsed.maxCheckinLuggage || vehicle.checkinLuggage || 0,
           }));
 
           setFormData((prev) => ({
             ...prev,
             passenger: String(parsed.passenger || vehicle.passenger || "0"),
-            childSeat: String(parsed.childSeat || vehicle.childSeat || "0"),
-            handLuggage: String(
-              parsed.handLuggage || vehicle.handLuggage || "0",
-            ),
-            checkinLuggage: String(
-              parsed.checkinLuggage || vehicle.checkinLuggage || "0",
-            ),
           }));
         } catch (err) {
           console.error("Error parsing selectedVehicle:", err);
@@ -179,27 +154,11 @@ const WidgetPaymentInformation = ({
     }
   }, [enabledOptions, formData.paymentMethod]);
 
-  const selectOptions = useMemo(() => {
-    if (enabledOptions?.length > 0) {
-      return enabledOptions;
-    }
-    return [{ label: "Payment Link", value: "Payment Link" }];
-  }, [enabledOptions]);
 
   const currencySetting = bookingSettingData?.setting?.currency?.[0] || {};
   const currencySymbol = currencySetting?.symbol || "£";
-  const currencyCode = currencySetting?.value || "GBP";
 
-  const [voucher, setVoucher] = useState("");
-  const [companyDiscountPercent, setCompanyDiscountPercent] = useState(0);
-  const [voucherDiscountPercent, setVoucherDiscountPercent] = useState(0);
   const [journeyDateTime, setJourneyDateTime] = useState(null);
-
-  const generateOptions = (max = 10) =>
-    Array.from({ length: max + 1 }, (_, i) => ({
-      label: `${i}`,
-      value: `${i}`,
-    }));
 
   const parseIntSafe = (val) => {
     const parsed = parseInt(val);
@@ -256,12 +215,10 @@ const WidgetPaymentInformation = ({
     const dataToSave = {
       passengerDetails,
       formData,
-      voucher,
-      voucherDiscountPercent,
       selectedCountry,
     };
     localStorage.setItem("widgetPaymentData", JSON.stringify(dataToSave));
-  }, [passengerDetails, formData, voucher, voucherDiscountPercent]);
+  }, [passengerDetails, formData]);
 
   const calculateFinalFare = () => {
     const baseFare = parseFloat(fare || 0);
@@ -269,14 +226,9 @@ const WidgetPaymentInformation = ({
     const childSeatTotal = childSeatCount * childSeatUnitPrice;
     const totalBeforeDiscount = baseFare + childSeatTotal;
 
-    const totalDiscount = companyDiscountPercent + voucherDiscountPercent;
     let finalFare = totalBeforeDiscount;
 
-    if (totalDiscount > 0) {
-      const discountAmount = totalBeforeDiscount * (totalDiscount / 100);
-      finalFare = totalBeforeDiscount - discountAmount;
-    }
-
+ 
     let paymentMethodSurcharge = 0;
     if (formData.paymentMethod && generalPricing?.paymentMethodSurcharges) {
       const methodSurcharge = generalPricing.paymentMethodSurcharges.find(
@@ -328,24 +280,13 @@ const WidgetPaymentInformation = ({
       passenger: passengerDetails,
       fare: finalFare,
       childSeats: Number(formData.childSeat) || 0,
-      voucher: voucher,
-      voucherApplied: !!voucherDiscountPercent,
       paymentMethod: formData.paymentMethod,
       selectedVehicle: {
         vehicleName: vehicle.vehicleName || localVehicle.vehicleName,
         passenger: Number(formData.passenger) || 0,
-        childSeat: Number(formData.childSeat) || 0,
-        babySeat: Number(formData.babySeat) || 0,
-        carSeat: Number(formData.carSeat) || 0,
-        boosterSeat: Number(formData.boosterSeat) || 0,
-        handLuggage: Number(formData.handLuggage) || 0,
-        checkinLuggage: Number(formData.checkinLuggage) || 0,
       },
       fareBreakdown: {
         baseFare: fare,
-        childSeatCount: Number(formData.childSeat) || 0,
-        childSeatUnitPrice: childSeatUnitPrice,
-        discount: voucherDiscountPercent + companyDiscountPercent,
         total: finalFare,
       },
     };

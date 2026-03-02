@@ -18,7 +18,8 @@ import WidgetAPI from "./components/dashboard/widgetapi/WidgetAPI";
 import { ToastContainer } from "react-toastify";
 import DistanceSlab from "./components/dashboard/pricing/DistanceSlab";
 import ViewCompany from "./components/dashboard/companyaccount/ViewCompany";
-// import BookingCalendar from "./components/dashboard/bookings/BookingCalendar";
+import CustomersList from "./components/dashboard/customers/CustomersList";
+import BookingCalendar from "./components/dashboard/bookings/BookingCalendar";
 
 const App = () => {
   return (
@@ -39,8 +40,10 @@ const App = () => {
               <Route path="my-dashboard" index element={<Dashboard />} />
               <Route path="bookings/list" element={<BookingsList />} />
               <Route path="bookings/new" element={<NewBooking />} />
-              {/* <Route path="bookings/calendar" element={<BookingCalendar />} /> */}
+              <Route path="bookings/calendar" element={<BookingCalendar />} />
 
+
+              <Route path="user-profiles/customers/list" element={<CustomersList />} />
               <Route path="view-company" element={<ViewCompany />} />
 
               <Route path="settings/widget-api" element={<WidgetAPI />} />

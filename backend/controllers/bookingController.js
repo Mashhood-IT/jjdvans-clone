@@ -49,7 +49,6 @@ export const getAllBookings = async (req, res) => {
 
 export const updateBookingStatus = async (req, res) => {
     try {
-        console.log("api hit here")
         const { id } = req.params;
         const { status, updatedBy } = req.body;
         const booking = await Booking.findById(id)
@@ -60,9 +59,7 @@ export const updateBookingStatus = async (req, res) => {
             })
 
         }
-        console.log("Booking fetched", booking)
         booking.status = status
-        console.log("new status is", status)
         booking.updatedBy = updatedBy
         await booking.save()
 

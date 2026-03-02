@@ -679,8 +679,6 @@ const WidgetBookingInformation = ({
     const vehiclePayload = {
       vehicleName: selectedCar.vehicleName,
       passengerSeats: selectedCar.passengerSeats || 0,
-      handLuggage: selectedCar.handLuggage || 0,
-      checkinLuggage: selectedCar.checkinLuggage || 0,
       primaryJourneyFare,
       totalFare: calculatedTotalPrice,
       extraHelp: selectedHelpOption ? {
@@ -763,7 +761,6 @@ const WidgetBookingInformation = ({
     };
     localStorage.setItem("widgetPricing", JSON.stringify(pricing));
 
-    // Also update selectedVehicle to include help
     const sv = JSON.parse(localStorage.getItem("selectedVehicle") || "{}");
     if (sv && sv.id === selectedCarId) {
       localStorage.setItem("selectedVehicle", JSON.stringify({
@@ -841,13 +838,10 @@ const WidgetBookingInformation = ({
                   if (selectedCar) {
                     localStorage.setItem("selectedVehicle", JSON.stringify({
                       id,
-                      journeyType: "oneWay",
                       vehicleName: selectedCar.vehicleName,
                       image: selectedCar.image || IMAGES.dummyFile,
                       passengerSeats: selectedCar.passengerSeats || 0,
-                      childSeat: 0,
-                      handLuggage: 0,
-                      checkinLuggage: 0,
+                      halfHourPrice: selectedCar.halfHourPrice
                     }));
                   }
                 }}

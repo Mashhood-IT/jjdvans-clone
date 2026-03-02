@@ -27,11 +27,6 @@ const sidebarItems = [
         route: "/dashboard/bookings/calendar",
         icon: Icons.CalendarDays,
       },
-      {
-        title: "Booking Map",
-        route: "/dashboard/bookings/map",
-        icon: Icons.MapPin,
-      },
     ],
   },
 

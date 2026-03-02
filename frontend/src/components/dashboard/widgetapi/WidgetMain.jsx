@@ -1,9 +1,5 @@
-import React, {useEffect, useState } from "react";
-import {
-  useNavigate,
-  Routes,
-  Route,
-} from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import { toast } from "react-toastify";
 import WidgetBooking from "./WidgetBooking";
 import WidgetPaymentInformation from "./WidgetPaymentInformation";
@@ -23,12 +19,12 @@ const WidgetMain = () => {
     pricing: {},
   });
 
-  const [createBooking, { isLoading: isBookingLoading }] = useCreateBookingMutation();
+  const [createBooking, { isLoading: isBookingLoading }] =
+    useCreateBookingMutation();
 
   useEffect(() => {
     sessionStorage.setItem("widget_tab_open", "true");
   }, []);
-
 
   useEffect(() => {
     if (window.self !== window.top) {
@@ -49,8 +45,13 @@ const WidgetMain = () => {
     const sp = new URLSearchParams(window.location.search);
     let sid = sp.get("session_id");
 
-    if (sid === "%7BCHECKOUT_SESSION_ID%7D" || sid === "{CHECKOUT_SESSION_ID}") {
-      console.warn("Stripe session_id placeholder was not replaced. Skipping booking creation.");
+    if (
+      sid === "%7BCHECKOUT_SESSION_ID%7D" ||
+      sid === "{CHECKOUT_SESSION_ID}"
+    ) {
+      console.warn(
+        "Stripe session_id placeholder was not replaced. Skipping booking creation.",
+      );
       return;
     }
 
@@ -70,16 +71,27 @@ const WidgetMain = () => {
   const handleBookingSubmission = async (finalPayload) => {
     try {
       const inventoryDataRaw = localStorage.getItem("widgetInventoryData");
-      const inventoryData = inventoryDataRaw ? JSON.parse(inventoryDataRaw) : {};
-
+      const inventoryData = inventoryDataRaw
+        ? JSON.parse(inventoryDataRaw)
+        : {};
+      const additionalFare = Number(inventoryData.additionalFare || 0);
       const bookingFormRaw = localStorage.getItem("bookingForm");
       const bookingFormData = bookingFormRaw ? JSON.parse(bookingFormRaw) : {};
       let distanceText = "";
       let durationText = "";
-      if (bookingFormData.segments && Array.isArray(bookingFormData.segments) && bookingFormData.segments.length > 0) {
-        const totalMiles = bookingFormData.segments.reduce((sum, seg) => sum + (seg.miles || 0), 0);
+      if (
+        bookingFormData.segments &&
+        Array.isArray(bookingFormData.segments) &&
+        bookingFormData.segments.length > 0
+      ) {
+        const totalMiles = bookingFormData.segments.reduce(
+          (sum, seg) => sum + (seg.miles || 0),
+          0,
+        );
         distanceText = `${totalMiles.toFixed(2)} mi`;
-        durationText = bookingFormData.segments.map(s => s.durationText).join(' + ');
+        durationText = bookingFormData.segments
+          .map((s) => s.durationText)
+          .join(" + ");
       }
 
       const normalizedPayload = {
@@ -88,10 +100,13 @@ const WidgetMain = () => {
         dropoffFloorNo: inventoryData.dropoffFloor || 0,
         pickupAccess: inventoryData.pickupAccess || "STAIRS",
         dropoffAccess: inventoryData.dropoffAccess || "STAIRS",
-        inventoryItems: inventoryData.items && Array.isArray(inventoryData.items)
-          ? inventoryData.items.map(i => i.name).join(", ")
-          : "",
-        estimatedDuration: (inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0),
+        inventoryItems:
+          inventoryData.items && Array.isArray(inventoryData.items)
+            ? inventoryData.items.map((i) => i.name).join(", ")
+            : "",
+        estimatedDuration:
+          (inventoryData.estimatedHours || 0) * 60 +
+          (inventoryData.estimatedMinutes || 0),
         passengerCount: inventoryData.passengerCount,
         ridingAlong: inventoryData.ridingAlong || false,
         distanceText,
@@ -112,7 +127,9 @@ const WidgetMain = () => {
       navigate("/widget-form/widget-success");
     } catch (err) {
       console.error("Booking submission failed:", err);
-      setError(err?.data?.message || "Failed to save booking. Please try again.");
+      setError(
+        err?.data?.message || "Failed to save booking. Please try again.",
+      );
     }
   };
 
@@ -127,8 +144,19 @@ const WidgetMain = () => {
         <div className="bg-white border border-red-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-red-100 rounded-full p-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-10 w-10 text-red-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
               </svg>
             </div>
           </div>
@@ -136,9 +164,7 @@ const WidgetMain = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-2">
             Something went wrong
           </h2>
-          <p className="text-gray-500 text-sm mb-6">
-            {error}
-          </p>
+          <p className="text-gray-500 text-sm mb-6">{error}</p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
@@ -166,9 +192,7 @@ const WidgetMain = () => {
     );
   }
   return (
-    <div
-      className={`w-full bg-transparent `}
-    >
+    <div className={`w-full bg-transparent `}>
       <div className="w-full mx-auto">
         <Routes>
           <Route
@@ -192,7 +216,6 @@ const WidgetMain = () => {
             }
           />
 
-
           <Route
             path="widget-vehicle"
             element={
@@ -201,10 +224,7 @@ const WidgetMain = () => {
                 totalPrice={formData.pricing.totalPrice}
                 postcodePrice={formData.pricing.postcodePrice}
                 dropOffPrice={formData.pricing.dropOffPrice}
-                onNext={({
-                  totalPrice,
-                  selectedCar,
-                }) => {
+                onNext={({ totalPrice, selectedCar }) => {
                   handleDataChange("pricing", {
                     totalPrice,
                     oneWayFare: selectedCar.oneWayFare,
@@ -214,7 +234,9 @@ const WidgetMain = () => {
                     ...formData.booking,
                     vehicle: selectedCar,
                   });
-                  navigate(`/widget-form/widget-inventory?company=${companyId}`);
+                  navigate(
+                    `/widget-form/widget-inventory?company=${companyId}`,
+                  );
                 }}
               />
             }
@@ -249,6 +271,15 @@ const WidgetMain = () => {
                 }}
                 booking={formData.booking}
                 onBookNow={(bookingData) => {
+                  const inventoryDataRaw = localStorage.getItem(
+                    "widgetInventoryData",
+                  );
+                  const inventoryData = inventoryDataRaw
+                    ? JSON.parse(inventoryDataRaw)
+                    : {};
+                  const additionalFare = Number(
+                    inventoryData.additionalFare || 0,
+                  );
                   const passengerDetails =
                     bookingData?.passengerDetails ||
                     bookingData?.passenger ||
@@ -275,7 +306,8 @@ const WidgetMain = () => {
                     companyId,
                     paymentMethod,
                     referrer: window.location.href,
-                    fare: fare,
+                    fare: Number(fare) + additionalFare,
+                    additionalTimeFare: additionalFare,
                     childSeatCharges: childSeatCharges,
                     vehicle: selectedVehicle,
                     passenger: {
