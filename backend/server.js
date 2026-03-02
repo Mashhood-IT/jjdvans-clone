@@ -6,7 +6,6 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
-// import pricingRoutes from "./routes/pricingRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
@@ -50,24 +49,14 @@ app.use(
 app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  console.log(`Cookies Received: ${JSON.stringify(req.cookies)}`);
-  console.log(`Auth Header: ${req.headers.authorization ? "Present" : "Missing"}`);
-  next();
-});
-
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use("/uploads", express.static("uploads"));
 
-// API Routes
 app.use("/api/auth", authRoutes);
-// app.use("/api/pricing", pricingRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/google", googleRoutes);
 app.use("/api/pricing", vehicleRoutes);
-// app.use("/api/notification", NotificationRoutes);
 
 app.use(errorHandler);
 

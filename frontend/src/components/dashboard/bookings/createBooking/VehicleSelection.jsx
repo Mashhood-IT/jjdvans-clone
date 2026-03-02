@@ -4,6 +4,13 @@ import { toast } from "react-toastify";
 import IMAGES from "../../../../assets/images";
 import SelectOption from "../../../constants/constantcomponents/SelectOption";
 
+const vehicleOptions = [
+  { _id: "1", vehicleName: "Standard Saloon", passengers: 4, childSeat: 2, handLuggage: 2, checkinLuggage: 2, image: "", slabs: [] },
+  { _id: "2", vehicleName: "Estate", passengers: 4, childSeat: 2, handLuggage: 3, checkinLuggage: 3, image: "", slabs: [] },
+  { _id: "3", vehicleName: "MPV", passengers: 6, childSeat: 3, handLuggage: 4, checkinLuggage: 4, image: "", slabs: [] },
+  { _id: "4", vehicleName: "8 Seater", passengers: 8, childSeat: 4, handLuggage: 6, checkinLuggage: 6, image: "", slabs: [] },
+];
+
 const VehicleSelection = ({
   setSelectedVehicle,
   setVehicleExtras,
@@ -22,50 +29,7 @@ const VehicleSelection = ({
     checkinLuggage: 0,
   });
 
-  // const { data: vehicleOptions = [], isLoading } = useGetAllVehiclesQuery();
 
-  const vehicleOptions = [
-  {
-    _id: "1",
-    vehicleName: "Standard Saloon",
-    passengers: 4,
-    childSeat: 2,
-    handLuggage: 2,
-    checkinLuggage: 2,
-    image: "",
-    slabs: [],
-  },
-  {
-    _id: "2",
-    vehicleName: "Estate",
-    passengers: 4,
-    childSeat: 2,
-    handLuggage: 3,
-    checkinLuggage: 3,
-    image: "",
-    slabs: [],
-  },
-  {
-    _id: "3",
-    vehicleName: "MPV",
-    passengers: 6,
-    childSeat: 3,
-    handLuggage: 4,
-    checkinLuggage: 4,
-    image: "",
-    slabs: [],
-  },
-  {
-    _id: "4",
-    vehicleName: "8 Seater",
-    passengers: 8,
-    childSeat: 4,
-    handLuggage: 6,
-    checkinLuggage: 6,
-    image: "",
-    slabs: [],
-  },
-];
 const isLoading = false;
 
   useEffect(() => {

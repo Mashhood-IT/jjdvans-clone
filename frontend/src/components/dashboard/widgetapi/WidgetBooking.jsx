@@ -26,6 +26,7 @@ const WidgetBooking = ({
   const [totalPrice, setTotalPrice] = useState(0);
   const [isReady, setIsReady] = useState(true);
   const [isCoverageValid, setIsCoverageValid] = useState(true);
+  const [pickupCoords, setPickupCoords] = useState(null);
   const [dropoffCoords, setDropoffCoords] = useState({});
 
   const formattedHourlyOptions = useMemo(() => {
@@ -239,6 +240,8 @@ const WidgetBooking = ({
 
 
       <PrimaryForm
+        pickupCoords={pickupCoords}
+        setPickupCoords={setPickupCoords}
         dropoffCoords={dropoffCoords}
         setDropoffCoords={setDropoffCoords}
         companyId={companyId}

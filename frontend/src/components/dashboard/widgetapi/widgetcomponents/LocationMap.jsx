@@ -133,7 +133,7 @@ const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords }) => 
     }, [isLoaded, pickupCoords, dropoffCoords, pickup, dropoffs]);
 
     return (
-        <div className="relative w-full h-[400px] lg:h-[600px] rounded-lg overflow-hidden border border-gray-300 shadow-md bg-gray-50">
+        <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-300 shadow-md bg-gray-50">
             {!isLoaded ? (
                 <div className="flex items-center justify-center h-full bg-gray-100">
                     <div className="text-center">

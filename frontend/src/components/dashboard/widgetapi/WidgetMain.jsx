@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, {useEffect, useState } from "react";
 import {
-  useLocation,
   useNavigate,
   Routes,
   Route,
@@ -10,44 +9,11 @@ import WidgetBooking from "./WidgetBooking";
 import WidgetPaymentInformation from "./WidgetPaymentInformation";
 import { useCreateBookingMutation } from "../../../redux/api/bookingApi";
 import WidgetSuccess from "./widgetcomponents/WidgetSuccess";
-import { useDispatch, useSelector } from "react-redux";
 import WidgetBookingInformation from "./WidgetBookingInformation";
 import WidgetInventory from "./WidgetInventory";
-// import {
-//   selectThemeHistory,
-//   setSelectedThemeId,
-//   setThemeColors,
-//   setThemeHistory,
-// } from "../../../redux/slices/themeSlice"; // Removed Theme Slice
-// import {
-//   useFetchPublicThemeHistoryQuery,
-// } from "../../../redux/api/themeApi"; // Removed Theme API
-// import { skipToken } from "@reduxjs/toolkit/query";
-
-const applyThemeVars = (theme) => {
-  if (!theme) return;
-  const root = document.documentElement;
-
-  const mapping = {
-    bg: "widgetBg",
-    text: "widgetText",
-    primary: "widgetPrimary",
-    hover: "widgetHover",
-    active: "widgetActive",
-    border: "widgetBorder",
-    btnBg: "widgetBtnBg",
-    btnText: "widgetBtnText",
-  };
-
-  Object.entries(theme).forEach(([key, value]) => {
-    const cssVarName = mapping[key] || key;
-    root.style.setProperty(`--${cssVarName}`, value);
-  });
-};
 
 const WidgetMain = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [companyId, setCompanyId] = useState("");
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -57,23 +23,7 @@ const WidgetMain = () => {
     pricing: {},
   });
 
-  // Static Dashboard Theme (based on dashboard.jsx style)
-  // const dashboardTheme = {
-  //   bg: "#ffffff",
-  //   text: "#000000",
-  //   primary: "#07384d",
-  //   hover: "#01f5fe",
-  //   active: "#064f7c",
-  //   border: "#cecece",
-  //   btnBg: "#07384d",
-  //   btnText: "#ffffff",
-  // };
-
-  // const history = useSelector(selectThemeHistory);
-  // const [sendPaymentLink] = useSendPaymentLinkMutation();
   const [createBooking, { isLoading: isBookingLoading }] = useCreateBookingMutation();
-  // const { data: historyRes, isSuccess: isHistorySuccess } =
-  //   useFetchPublicThemeHistoryQuery(companyId ? companyId : skipToken);
 
   useEffect(() => {
     sessionStorage.setItem("widget_tab_open", "true");
@@ -110,11 +60,6 @@ const WidgetMain = () => {
     navigate("/widget-form/widget-success");
   }, [navigate]);
 
-  const applyThemeToDOM = useCallback((themeColors) => {
-    applyThemeVars(themeColors);
-  }, []);
-
-
   const handleDataChange = (section, data) => {
     setFormData((prev) => ({
       ...prev,
@@ -127,22 +72,33 @@ const WidgetMain = () => {
       const inventoryDataRaw = localStorage.getItem("widgetInventoryData");
       const inventoryData = inventoryDataRaw ? JSON.parse(inventoryDataRaw) : {};
 
+      const bookingFormRaw = localStorage.getItem("bookingForm");
+      const bookingFormData = bookingFormRaw ? JSON.parse(bookingFormRaw) : {};
+      let distanceText = "";
+      let durationText = "";
+      if (bookingFormData.segments && Array.isArray(bookingFormData.segments) && bookingFormData.segments.length > 0) {
+        const totalMiles = bookingFormData.segments.reduce((sum, seg) => sum + (seg.miles || 0), 0);
+        distanceText = `${totalMiles.toFixed(2)} mi`;
+        durationText = bookingFormData.segments.map(s => s.durationText).join(' + ');
+      }
+
       const normalizedPayload = {
         ...finalPayload,
         pickupFloorNo: inventoryData.pickupFloor || 0,
         dropoffFloorNo: inventoryData.dropoffFloor || 0,
-        accessType: (inventoryData.pickupAccess === "LIFT" || inventoryData.dropoffAccess === "LIFT")
-          ? "Lift"
-          : "Stairs",
-        inventoryItems: inventoryData.items ? inventoryData.items.map(i => i.name).join(", ") : "",
+        pickupAccess: inventoryData.pickupAccess || "STAIRS",
+        dropoffAccess: inventoryData.dropoffAccess || "STAIRS",
+        inventoryItems: inventoryData.items && Array.isArray(inventoryData.items)
+          ? inventoryData.items.map(i => i.name).join(", ")
+          : "",
         estimatedDuration: (inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0),
-        passengerCount: inventoryData.passengerCount || 1,
+        passengerCount: inventoryData.passengerCount,
         ridingAlong: inventoryData.ridingAlong || false,
+        distanceText,
+        durationText,
       };
 
-      console.log("Real Booking Submission (Normalized):", normalizedPayload);
       const response = await createBooking(normalizedPayload).unwrap();
-      console.log("Booking result:", response);
 
       localStorage.removeItem("selectedVehicle");
       localStorage.removeItem("widgetPricing");
@@ -211,19 +167,8 @@ const WidgetMain = () => {
   }
   return (
     <div
-      className={`w-full bg-transparent  ${location.pathname === "/widget-form/widget-success" ? "py-32 px-4" : location.pathname === "/widget-form/widget-payment" ? "py-0" : "py-6 px-4"
-        }`}
+      className={`w-full bg-transparent `}
     >
-      {location.pathname === "/widget-form" && (
-        <>
-          <div className="text-center mb-5">
-            <h1 className="text-3xl uppercase font-extrabold text-(--widgetText) drop-shadow-sm">
-              Move Smarter. Move Stress-Free
-            </h1>
-          </div>
-        </>
-      )}
-
       <div className="w-full mx-auto">
         <Routes>
           <Route

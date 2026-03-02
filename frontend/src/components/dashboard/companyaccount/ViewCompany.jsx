@@ -5,7 +5,6 @@ import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 
 const ViewCompany = () => {
   const user = useSelector((state) => state.auth.user);
-  console.log(user)
   const fields = [
     { label: "Full Name (Admin)", value: user.fullName },
     { label: "Trading Name", value: user.tradingName },

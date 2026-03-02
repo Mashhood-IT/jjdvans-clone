@@ -86,16 +86,26 @@ const JourneySummaryCard = ({
 
           {/* Additional Drop-offs */}
           {dropList.filter(Boolean).length > 1 && (
-            <div>
-              <p className="text-(--medium-grey) text-xs uppercase tracking-wider mb-2 font-semibold">
+            <div className="space-y-4">
+              <p className="text-(--medium-grey) text-xs uppercase tracking-wider mb-2 font-semibold flex items-center gap-1">
                 ADDITIONAL DROP-OFFS (2ND - 5TH)
-                <Icons.ChevronDown className="inline-block w-4 h-4 ml-1" />
+                <Icons.ChevronDown className="w-4 h-4" />
               </p>
+              {dropList.filter(Boolean).slice(1).map((dropoff, idx) => (
+                <div key={idx} className="flex items-center gap-3 pl-4">
+                  <div className="flex items-center justify-center w-6 h-6 bg-(--light-red) rounded-full shrink-0">
+                    <Icons.MapPin className="w-3 h-3 text-(--primary-dark-red)" />
+                  </div>
+                  <p className="text-(--white) font-medium text-sm">
+                    {dropoff}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        <div className="flex flex-col items-start justify-between lg:min-w-[380px] bg-(--dark-gray) p-6">
+        <div className="flex flex-col items-start justify-between lg:min-w-95 bg-(--dark-gray) p-6">
           <div className="space-y-5 text-start w-full">
             <div>
               <p className="text-(--white) text-xs uppercase tracking-widest mb-2">

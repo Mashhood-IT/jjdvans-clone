@@ -61,18 +61,18 @@ const JourneyCard = ({
     setIsCoverageValid?.(true);
   };
 
-  const fetchSuggestions = async (query, setter) => {};
+  const fetchSuggestions = async (query, setter) => { };
 
-  // const handlePickupChange = (e) => {
-  //   const val = e.target.value;
-  //   setJourneyData({ ...journeyData, pickup: val });
-  //   setIsCoverageValid?.(true);
-  //   if (!val.trim()) {
-  //     setPickupCoords(null);
-  //   }
-  //   if (val.length >= 3) fetchSuggestions(val, setPickupSuggestions);
-  //   else setPickupSuggestions([]);
-  // };
+  const handlePickupChange = (e) => {
+    const val = e.target.value;
+    setJourneyData({ ...journeyData, pickup: val });
+    setIsCoverageValid?.(true);
+    if (!val.trim()) {
+      setPickupCoords(null);
+    }
+    if (val.length >= 3) fetchSuggestions(val, setPickupSuggestions);
+    else setPickupSuggestions([]);
+  };
 
   const handlePickupSelect = async (sug) => {
     const full = `${sug.name} - ${sug.formatted_address}`;
@@ -91,22 +91,22 @@ const JourneyCard = ({
     validateAllLocations(coords, dropoffCoords);
   };
 
-  // const handleDropOffChange = (idx, val) => {
-  //   const updated = [...dropOffs];
-  //   updated[idx] = val;
-  //   setDropOffs(updated);
-  //   setActiveDropIndex(idx);
-  //   setIsCoverageValid?.(true);
-  //   if (!val.trim()) {
-  //     setDropoffCoords((prev) => {
-  //       const next = { ...prev };
-  //       delete next[idx];
-  //       return next;
-  //     });
-  //   }
-  //   if (val.length >= 3) fetchSuggestions(val, setDropOffSuggestions);
-  //   else setDropOffSuggestions([]);
-  // };
+  const handleDropOffChange = (idx, val) => {
+    const updated = [...dropOffs];
+    updated[idx] = val;
+    setDropOffs(updated);
+    setActiveDropIndex(idx);
+    setIsCoverageValid?.(true);
+    if (!val.trim()) {
+      setDropoffCoords((prev) => {
+        const next = { ...prev };
+        delete next[idx];
+        return next;
+      });
+    }
+    if (val.length >= 3) fetchSuggestions(val, setDropOffSuggestions);
+    else setDropOffSuggestions([]);
+  };
 
   const handleDropOffSelect = async (idx, sug) => {
     const full = `${sug.name} - ${sug.formatted_address}`;
@@ -213,7 +213,7 @@ const JourneyCard = ({
                       }))}
                       value={
                         journeyData.hour === "" ||
-                        journeyData.hour === undefined
+                          journeyData.hour === undefined
                           ? ""
                           : journeyData.hour.toString().padStart(2, "0")
                       }
@@ -239,7 +239,7 @@ const JourneyCard = ({
                       )}
                       value={
                         journeyData.minute === "" ||
-                        journeyData.minute === undefined
+                          journeyData.minute === undefined
                           ? ""
                           : journeyData.minute.toString().padStart(2, "0")
                       }
@@ -265,7 +265,7 @@ const JourneyCard = ({
                   name="pickup"
                   placeholder="Pickup Location"
                   value={journeyData.pickup}
-                  // onChange={handlePickupChange}
+                  onChange={handlePickupChange}
                   onBlur={async () => {
                     if (userRole !== "customer") return;
                     if (!journeyData.pickup?.trim()) return;
@@ -284,7 +284,7 @@ const JourneyCard = ({
                           };
                           setPickupCoords(coords);
                         }
-                      } catch {}
+                      } catch { }
                     }
 
                     if (coords) {
@@ -409,7 +409,7 @@ const JourneyCard = ({
                         type="text"
                         value={dropOffs[0]}
                         placeholder="Drop Off 1"
-                        // onChange={(e) => handleDropOffChange(0, e.target.value)}
+                        onChange={(e) => handleDropOffChange(0, e.target.value)}
                         onBlur={async () => {
                           if (userRole !== "customer") return;
                           const coords = dropoffCoords[0] || null;
@@ -430,7 +430,7 @@ const JourneyCard = ({
                                   0: finalCoords,
                                 }));
                               }
-                            } catch {}
+                            } catch { }
                           }
 
                           if (finalCoords) {
@@ -555,9 +555,8 @@ const JourneyCard = ({
                             Drop Off 2
                           </label>
                           <div
-                            className={`relative flex sm:items-center gap-2 ${
-                              dropOffs.length < 4 ? "mb-4" : ""
-                            }`}
+                            className={`relative flex sm:items-center gap-2 ${dropOffs.length < 4 ? "mb-4" : ""
+                              }`}
                           >
                             <input
                               type="text"
@@ -586,7 +585,7 @@ const JourneyCard = ({
                                         [idx]: finalCoords,
                                       }));
                                     }
-                                  } catch {}
+                                  } catch { }
                                 }
 
                                 if (finalCoords) {
@@ -665,29 +664,29 @@ const JourneyCard = ({
                             {dropOffTypes[idx]
                               ?.toLowerCase()
                               ?.includes("airport") && (
-                              <input
-                                name={`dropoff_terminal_${idx}`}
-                                value={
-                                  journeyData[`dropoff_terminal_${idx}`] || ""
-                                }
-                                placeholder="Terminal No."
-                                className="custom_input w-full"
-                                onChange={handleChange}
-                              />
-                            )}
+                                <input
+                                  name={`dropoff_terminal_${idx}`}
+                                  value={
+                                    journeyData[`dropoff_terminal_${idx}`] || ""
+                                  }
+                                  placeholder="Terminal No."
+                                  className="custom_input w-full"
+                                  onChange={handleChange}
+                                />
+                              )}
                             {dropOffTypes[idx]
                               ?.toLowerCase()
                               ?.includes("location") && (
-                              <input
-                                name={`dropoffDoorNumber${idx}`}
-                                value={
-                                  journeyData[`dropoffDoorNumber${idx}`] || ""
-                                }
-                                placeholder="Drop Off Door No."
-                                className="custom_input w-full"
-                                onChange={handleChange}
-                              />
-                            )}
+                                <input
+                                  name={`dropoffDoorNumber${idx}`}
+                                  value={
+                                    journeyData[`dropoffDoorNumber${idx}`] || ""
+                                  }
+                                  placeholder="Drop Off Door No."
+                                  className="custom_input w-full"
+                                  onChange={handleChange}
+                                />
+                              )}
                             <button
                               type="button"
                               onClick={() => removeDropOff(idx)}
@@ -707,9 +706,8 @@ const JourneyCard = ({
                             Drop Off 3
                           </label>
                           <div
-                            className={`relative flex sm:items-center gap-2 ${
-                              dropOffs.length < 4 ? "mb-4" : ""
-                            }`}
+                            className={`relative flex sm:items-center gap-2 ${dropOffs.length < 4 ? "mb-4" : ""
+                              }`}
                           >
                             <input
                               type="text"
@@ -738,7 +736,7 @@ const JourneyCard = ({
                                         [idx]: finalCoords,
                                       }));
                                     }
-                                  } catch {}
+                                  } catch { }
                                 }
 
                                 if (finalCoords) {
@@ -819,29 +817,29 @@ const JourneyCard = ({
                             {dropOffTypes[idx]
                               ?.toLowerCase()
                               ?.includes("airport") && (
-                              <input
-                                name={`dropoff_terminal_${idx}`}
-                                value={
-                                  journeyData[`dropoff_terminal_${idx}`] || ""
-                                }
-                                placeholder="Terminal No."
-                                className="custom_input w-full"
-                                onChange={handleChange}
-                              />
-                            )}
+                                <input
+                                  name={`dropoff_terminal_${idx}`}
+                                  value={
+                                    journeyData[`dropoff_terminal_${idx}`] || ""
+                                  }
+                                  placeholder="Terminal No."
+                                  className="custom_input w-full"
+                                  onChange={handleChange}
+                                />
+                              )}
                             {dropOffTypes[idx]
                               ?.toLowerCase()
                               ?.includes("location") && (
-                              <input
-                                name={`dropoffDoorNumber${idx}`}
-                                value={
-                                  journeyData[`dropoffDoorNumber${idx}`] || ""
-                                }
-                                placeholder="Drop Off Door No."
-                                className="custom_input w-full"
-                                onChange={handleChange}
-                              />
-                            )}
+                                <input
+                                  name={`dropoffDoorNumber${idx}`}
+                                  value={
+                                    journeyData[`dropoffDoorNumber${idx}`] || ""
+                                  }
+                                  placeholder="Drop Off Door No."
+                                  className="custom_input w-full"
+                                  onChange={handleChange}
+                                />
+                              )}
                             <button
                               type="button"
                               onClick={() => removeDropOff(idx)}
@@ -893,7 +891,7 @@ const JourneyCard = ({
                                         [idx]: finalCoords,
                                       }));
                                     }
-                                  } catch {}
+                                  } catch { }
                                 }
 
                                 if (finalCoords) {
@@ -937,29 +935,29 @@ const JourneyCard = ({
                             {dropOffTypes[idx]
                               ?.toLowerCase()
                               ?.includes("airport") && (
-                              <input
-                                name={`dropoff_terminal_${idx}`}
-                                value={
-                                  journeyData[`dropoff_terminal_${idx}`] || ""
-                                }
-                                placeholder="Terminal No."
-                                className="custom_input w-full"
-                                onChange={handleChange}
-                              />
-                            )}
+                                <input
+                                  name={`dropoff_terminal_${idx}`}
+                                  value={
+                                    journeyData[`dropoff_terminal_${idx}`] || ""
+                                  }
+                                  placeholder="Terminal No."
+                                  className="custom_input w-full"
+                                  onChange={handleChange}
+                                />
+                              )}
                             {dropOffTypes[idx]
                               ?.toLowerCase()
                               ?.includes("location") && (
-                              <input
-                                name={`dropoffDoorNumber${idx}`}
-                                value={
-                                  journeyData[`dropoffDoorNumber${idx}`] || ""
-                                }
-                                placeholder="Drop Off Door No."
-                                className="custom_input w-full"
-                                onChange={handleChange}
-                              />
-                            )}
+                                <input
+                                  name={`dropoffDoorNumber${idx}`}
+                                  value={
+                                    journeyData[`dropoffDoorNumber${idx}`] || ""
+                                  }
+                                  placeholder="Drop Off Door No."
+                                  className="custom_input w-full"
+                                  onChange={handleChange}
+                                />
+                              )}
                             <button
                               type="button"
                               onClick={() => removeDropOff(idx)}

@@ -459,6 +459,20 @@ const WidgetBookingInformation = ({
           }
 
           setDurationText(res?.durationText || null);
+
+          // Save single segment to localStorage (same format as multi-dropoff)
+          const singleSegment = [{
+            segmentNumber: 1,
+            from: data.pickup,
+            to: allDropoffs[0],
+            miles: totalMiles,
+            distanceText: res?.distanceText || "",
+            durationText: res?.durationText || "",
+          }];
+          setSegmentBreakdown(singleSegment);
+
+          const updatedData = { ...data, segments: singleSegment };
+          localStorage.setItem("bookingForm", JSON.stringify(updatedData));
         }
 
         const [pickupCoord, dropoffCoord] = await Promise.all([

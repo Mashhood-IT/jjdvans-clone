@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useLoading } from "../../common/LoadingProvider";
+import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 
 import JourneyDetailsModal from "./JourneyDetailsModal";
 import BookingsFilters from "./BookingsFilters";
@@ -15,34 +16,14 @@ import { actionMenuItems } from "../../constants/dashboardTabsData/data";
 const BookingsList = () => {
   const user = useSelector((state) => state.auth.user);
   const { showLoading, hideLoading } = useLoading();
-
+  const { data: allBookings = [], isLoading } = useGetAllBookingsQuery();
+  console.log(allBookings)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // ✅ STATIC DRIVERS
   const [assignedDrivers, setAssignedDrivers] = useState([
     { _id: "1", name: "John Driver" },
     { _id: "2", name: "Ali Khan" },
-  ]);
-
-  // ✅ STATIC BOOKINGS
-  const [allBookings, setAllBookings] = useState([
-    {
-      _id: "b1",
-      bookingId: "BK-1001",
-      status: "Scheduled",
-      passenger: { name: "Sarah" },
-      vehicle: { vehicleName: "Sedan" },
-      primaryJourney: { date: "2026-02-28" },
-    },
-    {
-      _id: "b2",
-      bookingId: "BK-1002",
-      status: "Completed",
-      passenger: { name: "Ahmed" },
-      vehicle: { vehicleName: "SUV" },
-      primaryJourney: { date: "2026-02-20" },
-    },
   ]);
 
   const ALL_STATUSES = [
@@ -84,9 +65,12 @@ const BookingsList = () => {
   const [editBookingData, setEditBookingData] = useState(null);
 
   useEffect(() => {
-    showLoading();
-    setTimeout(() => hideLoading(), 500);
-  }, []);
+    if (isLoading) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+  }, [isLoading]);
 
   const rawfutureBookingsCount = allBookings.filter((b) => {
     const journey = b.primaryJourney;
@@ -197,7 +181,7 @@ const BookingsList = () => {
       />
 
       <BookingsTable
-        assignedDrivers={assignedDrivers}
+        filteredBookings={allBookings}
         startDate={startDate}
         endDate={endDate}
         selectedRow={selectedRow}

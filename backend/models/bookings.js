@@ -5,21 +5,25 @@ const VehicleSchema = new mongoose.Schema({
     vehicleName: String,
     passenger: Number,
     description: String
-})
+}, { _id: false })
 
 const ExtrasSchema = new mongoose.Schema({
     rideAlong: String,
     extraTime: String,
 
 
-})
+}, { _id: false })
 const PassengerSchema = new mongoose.Schema({
     name: String,
     email: String,
     phone: String,
-})
+}, { _id: false })
 
 const BookingSchema = new mongoose.Schema({
+    bookingId: {
+        type: String,
+        required: true
+    },
     bookingType: {
         type: String,
     },
@@ -35,9 +39,6 @@ const BookingSchema = new mongoose.Schema({
     additionalDropoff3: String,
     additionalDropoff4: String,
 
-    pickupPostcode: String,
-    dropoffPostcode: String,
-
     distance: Number,
     duration: Number,
     distanceText: String,
@@ -47,20 +48,23 @@ const BookingSchema = new mongoose.Schema({
     pickupFloorNo: Number,
     notes: String,
 
-    accessType: {
+    pickupAccess: {
         type: String,
-        enum: ["Stairs", "Lift"],
-        default: "Stairs",
+        enum: ["STAIRS", "LIFT"],
+        default: "STAIRS",
+    },
+    dropoffAccess: {
+        type: String,
+        enum: ["STAIRS", "LIFT"],
+        default: "STAIRS",
     },
     inventoryItems: String,
 
-    fare: Number,
+fare: Number,
     totalPrice: Number,
     paymentMethod: String,
     passenger: PassengerSchema,
 
-    voucher: String,
-    voucherApplied: Boolean,
     ridingAlong: Boolean,
     passengerCount: Number,
     estimatedDuration: Number,

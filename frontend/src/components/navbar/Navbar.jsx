@@ -88,7 +88,6 @@ const Navbar = () => {
   }, [closeAllTooltips]);
 
   const handleNotificationClick = (jobId) => {
-    console.log("button clicked")
   };
 
   const superadminLogo = superadminData?.superadminCompanyLogo || user?.superadminCompanyLogo;

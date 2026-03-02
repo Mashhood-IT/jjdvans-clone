@@ -11,6 +11,8 @@ import LocationMap from "./LocationMap";
 
 const PrimaryForm = ({
   formData,
+  pickupCoords,
+  setPickupCoords,
   dropoffCoords,
   setDropoffCoords,
   pickupSuggestions = [],
@@ -27,26 +29,19 @@ const PrimaryForm = ({
   setMode,
   mode,
   handleSubmit,
-  formattedHourlyOptions = [],
-  selectedHourly,
   setSelectedHourly,
   setFormData,
-  companyId,
-  isCoverageValid,
   setIsCoverageValid,
 }) => {
   const bookingSettingData = {
     setting: {
       hourlyPackage: true,
-      advanceBookingMin: { value: 30, unit: "minutes" }
-    }
+      advanceBookingMin: { value: 30, unit: "minutes" },
+    },
   };
 
-  const [pickupCoords, setPickupCoords] = useState(null);
   const [triggerSearchAutocomplete] = useLazySearchGooglePlacesQuery();
   const [triggerGeocode] = useLazyGeocodeQuery();
-
-
 
   const REMOVAL_BOOKING_TYPES = [
     { label: "House Removals", value: "house_removals" },
@@ -75,6 +70,48 @@ const PrimaryForm = ({
     }
   }, [hourlyEnabled, mode, setMode, setSelectedHourly]);
 
+  useEffect(() => {
+    const restoreMarkers = async () => {
+      if (formData?.pickup && !pickupCoords) {
+        try {
+          const res = await triggerGeocode(formData.pickup).unwrap();
+          if (res?.location) {
+            setPickupCoords({
+              lat: Number(res.location.lat),
+              lng: Number(res.location.lng),
+            });
+          }
+        } catch (err) {
+          console.error("Error geocoding pickup on mount:", err);
+        }
+      }
+
+      if (dropOffs && dropOffs.length > 0) {
+        dropOffs.forEach((addr, idx) => {
+          if (addr && !dropoffCoords[idx]) {
+            (async () => {
+              try {
+                const res = await triggerGeocode(addr).unwrap();
+                if (res?.location) {
+                  setDropoffCoords((prev) => ({
+                    ...prev,
+                    [idx]: {
+                      lat: Number(res.location.lat),
+                      lng: Number(res.location.lng),
+                    },
+                  }));
+                }
+              } catch (err) {
+                console.error(`Error geocoding dropoff ${idx} on mount:`, err);
+              }
+            })();
+          }
+        });
+      }
+    };
+
+    restoreMarkers();
+  }, [triggerGeocode, formData?.pickup, JSON.stringify(dropOffs)]);
 
   const handlePickupChange = (e) => {
     const val = e.target.value;
@@ -115,22 +152,20 @@ const PrimaryForm = ({
       }));
       setter(results);
     } catch (err) {
-      toast.error("Error while fetching suggestions")
-      console.log("error in fetching suggestions", err)
+      toast.error("Error while fetching suggestions");
+      console.log("error in fetching suggestions", err);
     }
   };
 
   const handlePickupSelect = async (sug) => {
-
     const full = `${sug.name} - ${sug.formatted_address}`;
     setFormData((prev) => ({ ...prev, pickup: full }));
     setPickupSuggestions([]);
 
-    // Set coordinates from suggestion
     if (sug.location) {
       const coords = {
         lat: Number(sug.location.lat),
-        lng: Number(sug.location.lng)
+        lng: Number(sug.location.lng),
       };
       setPickupCoords(coords);
     } else {
@@ -139,12 +174,12 @@ const PrimaryForm = ({
         if (g?.location) {
           const coords = {
             lat: Number(g.location.lat),
-            lng: Number(g.location.lng)
+            lng: Number(g.location.lng),
           };
           setPickupCoords(coords);
         }
       } catch (err) {
-        console.error('Geocoding error:', err);
+        console.error("Geocoding error:", err);
       }
     }
 
@@ -174,7 +209,6 @@ const PrimaryForm = ({
   };
 
   const handleDropOffSelect = async (idx, sug) => {
-
     const full = `${sug.name} - ${sug.formatted_address}`;
     const updated = [...dropOffs];
     updated[idx] = full;
@@ -184,11 +218,11 @@ const PrimaryForm = ({
     if (sug.location) {
       const coords = {
         lat: Number(sug.location.lat),
-        lng: Number(sug.location.lng)
+        lng: Number(sug.location.lng),
       };
       setDropoffCoords((prev) => ({
         ...prev,
-        [idx]: coords
+        [idx]: coords,
       }));
     } else {
       try {
@@ -196,15 +230,15 @@ const PrimaryForm = ({
         if (g?.location) {
           const coords = {
             lat: Number(g.location.lat),
-            lng: Number(g.location.lng)
+            lng: Number(g.location.lng),
           };
           setDropoffCoords((prev) => ({
             ...prev,
-            [idx]: coords
+            [idx]: coords,
           }));
         }
       } catch (err) {
-        console.error('Geocoding error:', err);
+        console.error("Geocoding error:", err);
       }
     }
 
@@ -213,12 +247,10 @@ const PrimaryForm = ({
 
   return (
     <>
-
-      <div className="grid grid-cols-12 gap-6">
-
+      <div className="grid grid-cols-12 p-7 gap-6">
         <form
           onSubmit={handleSubmit}
-          className="2xl:col-span-4 col-span-6 2xl:col-start-3 col-start-1 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 pt-3 pb-6 text-base text-(--dark-grey) transition duration-300 hover:shadow-xl"
+          className="2xl:col-span-4 md:col-span-6 col-span-12 2xl:col-start-3 col-start-1 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 pt-3 pb-6 text-base text-(--dark-grey) transition duration-300 hover:shadow-xl"
         >
           <div className="mb-4 mt-4">
             <SelectOption
@@ -228,9 +260,11 @@ const PrimaryForm = ({
               options={REMOVAL_BOOKING_TYPES}
               onChange={handleChange}
             />
-          </div >
+          </div>
           <div className="relative mb-4 mt-4">
-            <label className="block text-xs font-medium text-(--dark-gray) mb-1" >Pickup</label>
+            <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+              Pickup
+            </label>
             <input
               type="text"
               name="pickup"
@@ -267,500 +301,478 @@ const PrimaryForm = ({
             )}
           </div>
 
+          {dropOffs.length >= 1 && (
+            <div>
+              <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                Drop Off 1
+              </label>
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
+                <input
+                  type="text"
+                  value={dropOffs[0]}
+                  placeholder="Drop Off 1"
+                  onChange={(e) => handleDropOffChange(0, e.target.value)}
+                  onBlur={async () => {
+                    const coords = dropoffCoords[0] || null;
 
-          {
-            dropOffs.length >= 1 && (
-              <div>
-                <label className="block text-xs font-medium text-(--dark-gray) mb-1">
-                  Drop Off 1
-                </label>
-                <div className="relative flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
-                  <input
-                    type="text"
-                    value={dropOffs[0]}
-                    placeholder="Drop Off 1"
-                    onChange={(e) => handleDropOffChange(0, e.target.value)}
-                    onBlur={async () => {
-                      const coords = dropoffCoords[0] || null;
+                    let finalCoords = coords;
+                    if (!finalCoords && dropOffs[0]?.trim()) {
+                      try {
+                        const g = await triggerGeocode(dropOffs[0]).unwrap();
+                        if (g?.location) {
+                          finalCoords = {
+                            lat: Number(g.location.lat),
+                            lng: Number(g.location.lng),
+                          };
+                          setDropoffCoords((prev) => ({
+                            ...prev,
+                            0: finalCoords,
+                          }));
+                        }
+                      } catch {}
+                    }
 
-                      let finalCoords = coords;
-                      if (!finalCoords && dropOffs[0]?.trim()) {
+                    if (finalCoords) {
+                      validateAllLocations(pickupCoords, {
+                        ...dropoffCoords,
+                        0: finalCoords,
+                      });
+                    }
+                  }}
+                  className="custom_input w-full"
+                />
+                {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
+                  <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
+                    <li
+                      onClick={async () => {
+                        const val = (dropOffs[0] || "").trim();
+                        if (!val) return;
+
+                        let coords = null;
                         try {
-                          const g = await triggerGeocode(
-                            dropOffs[0],
-                          ).unwrap();
-                          if (g?.location) {
-                            finalCoords = {
+                          const g = await triggerGeocode(val).unwrap();
+                          if (
+                            g?.location &&
+                            Number.isFinite(g.location.lat) &&
+                            Number.isFinite(g.location.lng)
+                          ) {
+                            coords = {
                               lat: Number(g.location.lat),
                               lng: Number(g.location.lng),
                             };
+                          }
+                        } catch (err) {
+                          toast.error(err);
+                        }
+                        if (coords) {
+                          const ok = await checkCoverage("dropoff", coords);
+                          if (!ok) {
+                            const updated = [...dropOffs];
+                            updated[idx] = "";
+                            setDropOffs(updated);
                             setDropoffCoords((prev) => ({
                               ...prev,
-                              0: finalCoords,
+                              [idx]: null,
                             }));
+                            return;
                           }
-                        } catch { }
-                      }
+                        }
 
-                      if (finalCoords) {
-                        validateAllLocations(pickupCoords, {
-                          ...dropoffCoords,
-                          0: finalCoords,
-                        });
-                      }
-                    }}
-                    className="custom_input w-full"
-                  />
-                  {dropOffSuggestions.length > 0 &&
-                    activeDropIndex === 0 && (
-                      <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
-                        <li
-                          onClick={async () => {
-                            const val = (dropOffs[0] || "").trim();
-                            if (!val) return;
+                        const updated = [...dropOffs];
+                        updated[0] = val;
+                        setDropOffs(updated);
 
-                            let coords = null;
+                        setDropOffTypes((prev) => ({
+                          ...prev,
+                          [0]: "location",
+                        }));
+                        setDropoffCoords((prev) => ({
+                          ...prev,
+                          [0]: coords,
+                        }));
+                        setDropOffSuggestions([]);
+                      }}
+                      className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
+                    >
+                      ➕ Use: "{dropOffs[0]}"
+                    </li>
+                    {dropOffSuggestions.map((sug, i) => (
+                      <li
+                        key={i}
+                        onClick={() => handleDropOffSelect(0, sug)}
+                        className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
+                      >
+                        {sug.name} - {sug.formatted_address}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+          {dropOffs.length >= 2 && (
+            <div className="flex items-start gap-2 flex-wrap">
+              {dropOffs.length < 5 ? (
+                <div className="w-35 shrink-0">
+                  <button
+                    type="button"
+                    onClick={addDropOff}
+                    className="btn btn-primary"
+                  >
+                    Add Drop Off
+                  </button>
+                </div>
+              ) : null}
+
+              {dropOffs.slice(1, 2).map((val, arrayIdx) => {
+                const idx = arrayIdx + 1;
+                return (
+                  <div key={idx} className="flex-1 min-w-50">
+                    <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                      Drop Off 2
+                    </label>
+                    <div
+                      className={`relative flex sm:items-center gap-2 ${
+                        dropOffs.length < 4 ? "mb-4" : ""
+                      }`}
+                    >
+                      <input
+                        type="text"
+                        value={val}
+                        placeholder="Drop Off 2"
+                        onChange={(e) =>
+                          handleDropOffChange(idx, e.target.value)
+                        }
+                        onBlur={async () => {
+                          const coords = dropoffCoords[idx] || null;
+
+                          let finalCoords = coords;
+                          if (!finalCoords && dropOffs[idx]?.trim()) {
                             try {
-                              const g = await triggerGeocode(val).unwrap();
-                              if (
-                                g?.location &&
-                                Number.isFinite(g.location.lat) &&
-                                Number.isFinite(g.location.lng)
-                              ) {
-                                coords = {
+                              const g = await triggerGeocode(
+                                dropOffs[idx],
+                              ).unwrap();
+                              if (g?.location) {
+                                finalCoords = {
                                   lat: Number(g.location.lat),
                                   lng: Number(g.location.lng),
                                 };
-                              }
-                            } catch (err) {
-                              toast.error(err);
-                            }
-                            if (coords) {
-                              const ok = await checkCoverage(
-                                "dropoff",
-                                coords,
-                              );
-                              if (!ok) {
-                                const updated = [...dropOffs];
-                                updated[idx] = "";
-                                setDropOffs(updated);
                                 setDropoffCoords((prev) => ({
                                   ...prev,
-                                  [idx]: null,
+                                  [idx]: finalCoords,
                                 }));
-                                return;
                               }
-                            }
+                            } catch {}
+                          }
 
-                            const updated = [...dropOffs];
-                            updated[0] = val;
-                            setDropOffs(updated);
+                          if (finalCoords) {
+                            validateAllLocations(pickupCoords, {
+                              ...dropoffCoords,
+                              [idx]: finalCoords,
+                            });
+                          }
+                        }}
+                        className="custom_input w-full"
+                      />
+                      {dropOffSuggestions.length > 0 &&
+                        activeDropIndex === idx && (
+                          <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
+                            <li
+                              onClick={async () => {
+                                const val = (dropOffs[idx] || "").trim();
+                                if (!val) return;
 
-                            setDropOffTypes((prev) => ({
-                              ...prev,
-                              [0]: "location",
-                            }));
-                            setDropoffCoords((prev) => ({
-                              ...prev,
-                              [0]: coords,
-                            }));
-                            setDropOffSuggestions([]);
-                          }}
-                          className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
-                        >
-                          ➕ Use: "{dropOffs[0]}"
-                        </li>
-                        {dropOffSuggestions.map((sug, i) => (
-                          <li
-                            key={i}
-                            onClick={() => handleDropOffSelect(0, sug)}
-                            className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
-                          >
-                            {sug.name} - {sug.formatted_address}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                                let coords = null;
+                                try {
+                                  const g = await triggerGeocode(val).unwrap();
+                                  if (
+                                    g?.location &&
+                                    Number.isFinite(g.location.lat) &&
+                                    Number.isFinite(g.location.lng)
+                                  ) {
+                                    coords = {
+                                      lat: Number(g.location.lat),
+                                      lng: Number(g.location.lng),
+                                    };
+                                  }
+                                } catch (err) {
+                                  toast.error(err);
+                                }
+                                if (coords) {
+                                  validateAllLocations(pickupCoords, {
+                                    ...dropoffCoords,
+                                    [idx]: coords,
+                                  });
+                                }
 
-                </div>
-              </div>
-            )
-          }
-          {
-            dropOffs.length >= 2 && (
-              <div className="flex items-start gap-2 flex-wrap">
-                {dropOffs.length < 5 ? (
-                  <div className="w-35 shrink-0">
-                    <button
-                      type="button"
-                      onClick={addDropOff}
-                      className="btn btn-primary"
-                    >
-                      Add Drop Off
-                    </button>
+                                const updated = [...dropOffs];
+                                updated[idx] = val;
+                                setDropOffs(updated);
+
+                                setDropOffTypes((prev) => ({
+                                  ...prev,
+                                  [idx]: "location",
+                                }));
+                                setDropoffCoords((prev) => ({
+                                  ...prev,
+                                  [idx]: coords,
+                                }));
+                                setDropOffSuggestions([]);
+                              }}
+                              className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
+                            >
+                              ➕ Use: "{dropOffs[idx]}"
+                            </li>
+
+                            {dropOffSuggestions.map((sug, i) => (
+                              <li
+                                key={i}
+                                onClick={() => handleDropOffSelect(idx, sug)}
+                                className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
+                              >
+                                {sug.name} - {sug.formatted_address}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                      <button
+                        type="button"
+                        onClick={() => removeDropOff(idx)}
+                        className="btn btn-cancel text-sm px-3 py-1 w-fit sm:w-auto"
+                      >
+                        &minus;
+                      </button>
+                    </div>
                   </div>
-                ) : null}
+                );
+              })}
+              {dropOffs.slice(2, 3).map((val, arrayIdx) => {
+                const idx = arrayIdx + 2;
+                return (
+                  <div key={idx} className="flex-1 min-w-50">
+                    <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                      Drop Off 3
+                    </label>
+                    <div
+                      className={`relative flex sm:items-center gap-2 ${
+                        dropOffs.length < 4 ? "mb-4" : ""
+                      }`}
+                    >
+                      <input
+                        type="text"
+                        value={val}
+                        placeholder="Drop Off 3"
+                        onChange={(e) =>
+                          handleDropOffChange(idx, e.target.value)
+                        }
+                        onBlur={async () => {
+                          const coords = dropoffCoords[idx] || null;
 
-                {dropOffs.slice(1, 2).map((val, arrayIdx) => {
-                  const idx = arrayIdx + 1;
-                  return (
-                    <div key={idx} className="flex-1 min-w-50">
-                      <label className="block text-xs font-medium text-(--dark-gray) mb-1">
-                        Drop Off 2
-                      </label>
-                      <div
-                        className={`relative flex sm:items-center gap-2 ${dropOffs.length < 4 ? "mb-4" : ""
-                          }`}
-                      >
-                        <input
-                          type="text"
-                          value={val}
-                          placeholder="Drop Off 2"
-                          onChange={(e) =>
-                            handleDropOffChange(idx, e.target.value)
+                          let finalCoords = coords;
+                          if (!finalCoords && dropOffs[idx]?.trim()) {
+                            try {
+                              const g = await triggerGeocode(
+                                dropOffs[idx],
+                              ).unwrap();
+                              if (g?.location) {
+                                finalCoords = {
+                                  lat: Number(g.location.lat),
+                                  lng: Number(g.location.lng),
+                                };
+                                setDropoffCoords((prev) => ({
+                                  ...prev,
+                                  [idx]: finalCoords,
+                                }));
+                              }
+                            } catch {}
                           }
-                          onBlur={async () => {
-                            const coords = dropoffCoords[idx] || null;
 
-                            let finalCoords = coords;
-                            if (!finalCoords && dropOffs[idx]?.trim()) {
-                              try {
-                                const g = await triggerGeocode(
-                                  dropOffs[idx],
-                                ).unwrap();
-                                if (g?.location) {
-                                  finalCoords = {
-                                    lat: Number(g.location.lat),
-                                    lng: Number(g.location.lng),
-                                  };
-                                  setDropoffCoords((prev) => ({
-                                    ...prev,
-                                    [idx]: finalCoords,
-                                  }));
+                          if (finalCoords) {
+                            validateAllLocations(pickupCoords, {
+                              ...dropoffCoords,
+                              [idx]: finalCoords,
+                            });
+                          }
+                        }}
+                        className="custom_input w-full"
+                      />
+                      {dropOffSuggestions.length > 0 &&
+                        activeDropIndex === idx && (
+                          <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
+                            <li
+                              onClick={async () => {
+                                const val = (dropOffs[idx] || "").trim();
+                                if (!val) return;
+
+                                let coords = null;
+                                try {
+                                  const g = await triggerGeocode(val).unwrap();
+                                  if (
+                                    g?.location &&
+                                    Number.isFinite(g.location.lat) &&
+                                    Number.isFinite(g.location.lng)
+                                  ) {
+                                    coords = {
+                                      lat: Number(g.location.lat),
+                                      lng: Number(g.location.lng),
+                                    };
+                                  }
+                                } catch (err) {
+                                  toast.error(err);
                                 }
-                              } catch { }
-                            }
 
-                            if (finalCoords) {
-                              validateAllLocations(pickupCoords, {
-                                ...dropoffCoords,
-                                [idx]: finalCoords,
-                              });
-                            }
-                          }}
-                          className="custom_input w-full"
-                        />
-                        {dropOffSuggestions.length > 0 &&
-                          activeDropIndex === idx && (
-                            <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
-                              <li
-                                onClick={async () => {
-                                  const val = (dropOffs[idx] || "").trim();
-                                  if (!val) return;
-
-                                  let coords = null;
-                                  try {
-                                    const g =
-                                      await triggerGeocode(val).unwrap();
-                                    if (
-                                      g?.location &&
-                                      Number.isFinite(g.location.lat) &&
-                                      Number.isFinite(g.location.lng)
-                                    ) {
-                                      coords = {
-                                        lat: Number(g.location.lat),
-                                        lng: Number(g.location.lng),
-                                      };
-                                    }
-                                  } catch (err) {
-                                    toast.error(err);
-                                  }
-                                  if (coords) {
-                                    validateAllLocations(pickupCoords, {
-                                      ...dropoffCoords,
-                                      [idx]: coords,
-                                    });
-                                  }
-
-                                  const updated = [...dropOffs];
-                                  updated[idx] = val;
-                                  setDropOffs(updated);
-
-                                  setDropOffTypes((prev) => ({
-                                    ...prev,
-                                    [idx]: "location",
-                                  }));
-                                  setDropoffCoords((prev) => ({
-                                    ...prev,
+                                if (coords) {
+                                  validateAllLocations(pickupCoords, {
+                                    ...dropoffCoords,
                                     [idx]: coords,
-                                  }));
-                                  setDropOffSuggestions([]);
-                                }}
-                                className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
+                                  });
+                                }
+
+                                const updated = [...dropOffs];
+                                updated[idx] = val;
+                                setDropOffs(updated);
+
+                                setDropOffTypes((prev) => ({
+                                  ...prev,
+                                  [idx]: "location",
+                                }));
+
+                                setDropoffCoords((prev) => ({
+                                  ...prev,
+                                  [idx]: coords,
+                                }));
+
+                                setDropOffSuggestions([]);
+                              }}
+                              className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
+                            >
+                              ➕ Use: "{dropOffs[idx]}"
+                            </li>
+                            {dropOffSuggestions.map((sug, i) => (
+                              <li
+                                key={i}
+                                onClick={() => handleDropOffSelect(idx, sug)}
+                                className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
                               >
-                                ➕ Use: "{dropOffs[idx]}"
+                                {sug.name} - {sug.formatted_address}
                               </li>
+                            ))}
+                          </ul>
+                        )}
 
-                              {dropOffSuggestions.map((sug, i) => (
-                                <li
-                                  key={i}
-                                  onClick={() =>
-                                    handleDropOffSelect(idx, sug)
-                                  }
-                                  className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
-                                >
-                                  {sug.name} - {sug.formatted_address}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-
-                        <button
-                          type="button"
-                          onClick={() => removeDropOff(idx)}
-                          className="btn btn-cancel text-sm px-3 py-1 w-fit sm:w-auto"
-                        >
-                          &minus;
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-                {dropOffs.slice(2, 3).map((val, arrayIdx) => {
-                  const idx = arrayIdx + 2;
-                  return (
-                    <div key={idx} className="flex-1 min-w-50">
-                      <label className="block text-xs font-medium text-(--dark-gray) mb-1">
-                        Drop Off 3
-                      </label>
-                      <div
-                        className={`relative flex sm:items-center gap-2 ${dropOffs.length < 4 ? "mb-4" : ""
-                          }`}
+                      <button
+                        type="button"
+                        onClick={() => removeDropOff(idx)}
+                        className="btn btn-cancel text-sm px-3 py-1 w-fit sm:w-auto"
                       >
-                        <input
-                          type="text"
-                          value={val}
-                          placeholder="Drop Off 3"
-                          onChange={(e) =>
-                            handleDropOffChange(idx, e.target.value)
+                        &minus;
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {dropOffs.length >= 4 && (
+            <div className="flex items-start gap-2 flex-wrap">
+              {dropOffs.slice(3, 5).map((val, arrayIdx) => {
+                const idx = arrayIdx + 3;
+                return (
+                  <div key={idx} className="flex-1 mt-4 min-w-62.5">
+                    <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                      {`Drop Off ${idx + 1}`}
+                    </label>
+                    <div className="relative flex sm:items-center gap-2 mb-4">
+                      <input
+                        type="text"
+                        value={val}
+                        placeholder={`Drop Off ${idx + 1}`}
+                        onChange={(e) =>
+                          handleDropOffChange(idx, e.target.value)
+                        }
+                        onBlur={async () => {
+                          const coords = dropoffCoords[idx] || null;
+
+                          let finalCoords = coords;
+                          if (!finalCoords && dropOffs[idx]?.trim()) {
+                            try {
+                              const g = await triggerGeocode(
+                                dropOffs[idx],
+                              ).unwrap();
+                              if (g?.location) {
+                                finalCoords = {
+                                  lat: Number(g.location.lat),
+                                  lng: Number(g.location.lng),
+                                };
+                                setDropoffCoords((prev) => ({
+                                  ...prev,
+                                  [idx]: finalCoords,
+                                }));
+                              }
+                            } catch {}
                           }
-                          onBlur={async () => {
-                            const coords = dropoffCoords[idx] || null;
 
-                            let finalCoords = coords;
-                            if (!finalCoords && dropOffs[idx]?.trim()) {
-                              try {
-                                const g = await triggerGeocode(
-                                  dropOffs[idx],
-                                ).unwrap();
-                                if (g?.location) {
-                                  finalCoords = {
-                                    lat: Number(g.location.lat),
-                                    lng: Number(g.location.lng),
-                                  };
-                                  setDropoffCoords((prev) => ({
-                                    ...prev,
-                                    [idx]: finalCoords,
-                                  }));
-                                }
-                              } catch { }
-                            }
-
-                            if (finalCoords) {
-                              validateAllLocations(pickupCoords, {
-                                ...dropoffCoords,
-                                [idx]: finalCoords,
-                              });
-                            }
-                          }}
-                          className="custom_input w-full"
-                        />
-                        {dropOffSuggestions.length > 0 &&
-                          activeDropIndex === idx && (
-                            <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
-                              <li
-                                onClick={async () => {
-                                  const val = (dropOffs[idx] || "").trim();
-                                  if (!val) return;
-
-                                  let coords = null;
-                                  try {
-                                    const g =
-                                      await triggerGeocode(val).unwrap();
-                                    if (
-                                      g?.location &&
-                                      Number.isFinite(g.location.lat) &&
-                                      Number.isFinite(g.location.lng)
-                                    ) {
-                                      coords = {
-                                        lat: Number(g.location.lat),
-                                        lng: Number(g.location.lng),
-                                      };
-                                    }
-                                  } catch (err) {
-                                    toast.error(err);
-                                  }
-
-                                  if (coords) {
-                                    validateAllLocations(pickupCoords, {
-                                      ...dropoffCoords,
-                                      [idx]: coords,
-                                    });
-                                  }
-
-                                  const updated = [...dropOffs];
-                                  updated[idx] = val;
-                                  setDropOffs(updated);
-
-                                  setDropOffTypes((prev) => ({
-                                    ...prev,
-                                    [idx]: "location",
-                                  }));
-
-                                  setDropoffCoords((prev) => ({
-                                    ...prev,
+                          if (finalCoords) {
+                            validateAllLocations(pickupCoords, {
+                              ...dropoffCoords,
+                              [idx]: finalCoords,
+                            });
+                          }
+                        }}
+                        className="custom_input w-full"
+                      />
+                      {dropOffSuggestions.length > 0 &&
+                        activeDropIndex === idx && (
+                          <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
+                            <li
+                              onClick={async () => {
+                                if (coords) {
+                                  validateAllLocations(pickupCoords, {
+                                    ...dropoffCoords,
                                     [idx]: coords,
-                                  }));
-
-                                  setDropOffSuggestions([]);
-                                }}
-                                className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
-                              >
-                                ➕ Use: "{dropOffs[idx]}"
-                              </li>
-                              {dropOffSuggestions.map((sug, i) => (
-                                <li
-                                  key={i}
-                                  onClick={() =>
-                                    handleDropOffSelect(idx, sug)
-                                  }
-                                  className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
-                                >
-                                  {sug.name} - {sug.formatted_address}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-
-                        <button
-                          type="button"
-                          onClick={() => removeDropOff(idx)}
-                          className="btn btn-cancel text-sm px-3 py-1 w-fit sm:w-auto"
-                        >
-                          &minus;
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )
-          }
-
-          {
-            dropOffs.length >= 4 && (
-              <div className="flex items-start gap-2 flex-wrap">
-                {dropOffs.slice(3, 5).map((val, arrayIdx) => {
-                  const idx = arrayIdx + 3;
-                  return (
-                    <div key={idx} className="flex-1 mt-4 min-w-62.5">
-                      <label className="block text-xs font-medium text-(--dark-gray) mb-1">
-                        {`Drop Off ${idx + 1}`}
-                      </label>
-                      <div className="relative flex sm:items-center gap-2 mb-4">
-                        <input
-                          type="text"
-                          value={val}
-                          placeholder={`Drop Off ${idx + 1}`}
-                          onChange={(e) =>
-                            handleDropOffChange(idx, e.target.value)
-                          }
-                          onBlur={async () => {
-                            const coords = dropoffCoords[idx] || null;
-
-                            let finalCoords = coords;
-                            if (!finalCoords && dropOffs[idx]?.trim()) {
-                              try {
-                                const g = await triggerGeocode(
-                                  dropOffs[idx],
-                                ).unwrap();
-                                if (g?.location) {
-                                  finalCoords = {
-                                    lat: Number(g.location.lat),
-                                    lng: Number(g.location.lng),
-                                  };
-                                  setDropoffCoords((prev) => ({
-                                    ...prev,
-                                    [idx]: finalCoords,
-                                  }));
+                                  });
                                 }
-                              } catch { }
-                            }
-
-                            if (finalCoords) {
-                              validateAllLocations(pickupCoords, {
-                                ...dropoffCoords,
-                                [idx]: finalCoords,
-                              });
-                            }
-                          }}
-                          className="custom_input w-full"
-                        />
-                        {dropOffSuggestions.length > 0 &&
-                          activeDropIndex === idx && (
-                            <ul className="absolute z-30 bg-(--white) border rounded shadow max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
+                              }}
+                              className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
+                            >
+                              ➕ Use: "{dropOffs[idx]}"
+                            </li>
+                            {dropOffSuggestions.map((sug, i) => (
                               <li
-                                onClick={async () => {
-                                  if (coords) {
-                                    validateAllLocations(pickupCoords, {
-                                      ...dropoffCoords,
-                                      [idx]: coords,
-                                    });
-                                  }
-                                }}
-                                className="p-2 bg-(--lightest-blue) hover:bg-(--lighter-blue) cursor-pointer border-b text-xs"
+                                key={i}
+                                onClick={() => handleDropOffSelect(idx, sug)}
+                                className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
                               >
-                                ➕ Use: "{dropOffs[idx]}"
+                                {sug.name} - {sug.formatted_address}
                               </li>
-                              {dropOffSuggestions.map((sug, i) => (
-                                <li
-                                  key={i}
-                                  onClick={() =>
-                                    handleDropOffSelect(idx, sug)
-                                  }
-                                  className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer"
-                                >
-                                  {sug.name} - {sug.formatted_address}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                            ))}
+                          </ul>
+                        )}
 
-                        <button
-                          type="button"
-                          onClick={() => removeDropOff(idx)}
-                          className="btn btn-cancel text-sm px-3 py-1 w-fit sm:w-auto"
-                        >
-                          &minus;
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeDropOff(idx)}
+                        className="btn btn-cancel text-sm px-3 py-1 w-fit sm:w-auto"
+                      >
+                        &minus;
+                      </button>
                     </div>
-                  );
-                })}
-              </div>
-            )
-          }
-          {
-            dropOffs.length === 1 && (
-              <button
-                type="button"
-                onClick={addDropOff}
-                className="btn btn-primary mb-5"
-              >
-                Add Drop Off
-              </button>
-            )
-          }
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {dropOffs.length === 1 && (
+            <button
+              type="button"
+              onClick={addDropOff}
+              className="btn btn-primary mb-5"
+            >
+              Add Drop Off
+            </button>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
             <div className="relative">
               <input
@@ -829,9 +841,7 @@ const PrimaryForm = ({
           </div>
         </form>
 
-
-
-        <div className="2xl:col-span-4 col-span-6">
+        <div className="2xl:col-span-4 md:col-span-6 col-span-12">
           <LocationMap
             pickup={formData.pickup}
             dropoffs={dropOffs}

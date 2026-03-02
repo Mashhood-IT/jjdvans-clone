@@ -34,12 +34,9 @@ const Login = () => {
       const data = await loginUser({ email, password }).unwrap();
       dispatch(setUser(data));
       toast.success("Login successful!");
-
       navigate("/dashboard/my-dashboard");
     } catch (err) {
-      const msg = err || "Login failed. Check your credentials.";
-      console.log(err);
-      toast.error(msg);
+      toast.error(err?.data?.message || "Login Failed");
     }
   };
 

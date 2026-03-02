@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DeleteModal from "../../../constants/constantcomponents/DeleteModal";
 import CustomTable from "../../../constants/constantcomponents/CustomTable";
+import { useUpdateBookingStatusMutation } from "../../../../redux/api/bookingApi";
 
 const BookingTableRenderer = ({
   emptyMessage,
@@ -11,7 +12,6 @@ const BookingTableRenderer = ({
   setSelectedRow,
   openViewModal,
   user,
-  updateBookingStatus,
   updateJobStatus,
   sendBookingEmail,
   refetch,
@@ -37,7 +37,7 @@ const BookingTableRenderer = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
-
+const [updateBookingStatus] = useUpdateBookingStatusMutation()
   const formatCurrency = (value, booking) => {
     if (value === undefined || value === null || value === "-") return "-";
 
@@ -224,60 +224,60 @@ const BookingTableRenderer = ({
     }
 
     if (!hasEverBeenAccepted) {
-  if (user?.role === "customer") {
-    return (
-      <span className="italic text-(--medium-grey) text-">
-        No driver assigned
-      </span>
-    );
-  }
+      if (user?.role === "customer") {
+        return (
+          <span className="italic text-(--medium-grey) text-">
+            No driver assigned
+          </span>
+        );
+      }
 
-const rejectedDriverNames = [
-  ...new Set(
-    (item.statusAudit || [])
-      .filter((a) => String(a.status || "").trim().toLowerCase() === "rejected")
-      .map((a) => {
-        const parts = String(a.updatedBy || "").split("|");
-        return parts.length > 1 ? parts[1].trim() : "";
-      })
-      .filter(Boolean)
-  ),
-];
+      const rejectedDriverNames = [
+        ...new Set(
+          (item.statusAudit || [])
+            .filter((a) => String(a.status || "").trim().toLowerCase() === "rejected")
+            .map((a) => {
+              const parts = String(a.updatedBy || "").split("|");
+              return parts.length > 1 ? parts[1].trim() : "";
+            })
+            .filter(Boolean)
+        ),
+      ];
 
-const awaitingDrivers = drivers.filter((d) => {
-  const name = String(d?.name || d?.fullName || "").trim().toLowerCase();
-  return !rejectedDriverNames.some(
-    (rName) => rName.trim().toLowerCase() === name
-  );
-});
+      const awaitingDrivers = drivers.filter((d) => {
+        const name = String(d?.name || d?.fullName || "").trim().toLowerCase();
+        return !rejectedDriverNames.some(
+          (rName) => rName.trim().toLowerCase() === name
+        );
+      });
 
-  if (awaitingDrivers.length === 0 && rejectedDriverNames.length > 0) {
-    return (
-      <div className="text-(--alert-red) italic text-xs">
-        <div className="font-medium mb-0.5">Booking rejected by:</div>
-        <div>{rejectedDriverNames.join(", ")}</div>
-      </div>
-    );
-  }
+      if (awaitingDrivers.length === 0 && rejectedDriverNames.length > 0) {
+        return (
+          <div className="text-(--alert-red) italic text-xs">
+            <div className="font-medium mb-0.5">Booking rejected by:</div>
+            <div>{rejectedDriverNames.join(", ")}</div>
+          </div>
+        );
+      }
 
-  const awaitingNames = awaitingDrivers
-    .map((d) => d?.name || d?.fullName || "Unnamed Driver")
-    .join(", ");
+      const awaitingNames = awaitingDrivers
+        .map((d) => d?.name || d?.fullName || "Unnamed Driver")
+        .join(", ");
 
-  return (
-    <div className="text-(--amber-color) italic">
-      <div className="font-medium">Booking sent to: {awaitingNames}</div>
-      {rejectedDriverNames.length > 0 && (
-        <div className="text-xs text-(--alert-red) mt-1">
-          Rejected by: {rejectedDriverNames.join(", ")}
+      return (
+        <div className="text-(--amber-color) italic">
+          <div className="font-medium">Booking sent to: {awaitingNames}</div>
+          {rejectedDriverNames.length > 0 && (
+            <div className="text-xs text-(--alert-red) mt-1">
+              Rejected by: {rejectedDriverNames.join(", ")}
+            </div>
+          )}
+          <div className="text-xs text-(--medium-color) mt-1">
+            (Awaiting acceptance)
+          </div>
         </div>
-      )}
-      <div className="text-xs text-(--medium-color) mt-1">
-        (Awaiting acceptance)
-      </div>
-    </div>
-  );
-}
+      );
+    }
 
     return <div className="text-sm text-(--dark-grey)">{driverNames}</div>;
   };
@@ -301,15 +301,12 @@ const awaitingDrivers = drivers.filter((d) => {
             row[key] = formatPassenger(item.passenger);
             break;
           case "date": {
-            const journey = item.returnJourney
-              ? item.returnJourney
-              : item.primaryJourney;
-            const rawDate = journey?.date;
-            const hour = journey?.hour;
-            const minute = journey?.minute;
+            const rawDate = item.date;
+            const hour = item.hour;
+            const minute = item.minute;
 
             if (!rawDate || hour === undefined || minute === undefined) {
-              row[key] = "-";
+              row[key] = rawDate || "-";
               break;
             }
             const combinedDate = new Date(rawDate);
@@ -330,11 +327,8 @@ const awaitingDrivers = drivers.filter((d) => {
             row[key] = formatted;
             break;
           }
-          case "pickUp":
-            const pickupLocation = item.returnJourney
-              ? item.returnJourney?.pickup || "-"
-              : item.primaryJourney?.pickup || "-";
-
+          case "pickup": {
+            const pickupLocation = item.pickup || "-";
             row[key] = (
               <div
                 className="w-full max-w-[250px] truncate whitespace-nowrap cursor-default"
@@ -356,11 +350,9 @@ const awaitingDrivers = drivers.filter((d) => {
             );
             row[`${key}_searchText`] = pickupLocation;
             break;
-          case "dropOff":
-            const dropoffLocation = item.returnJourney
-              ? item.returnJourney?.dropoff || "-"
-              : item.primaryJourney?.dropoff || "-";
-
+          }
+          case "dropoff": {
+            const dropoffLocation = item.dropoff || "-";
             row[key] = (
               <div
                 className="w-full max-w-[250px] truncate whitespace-nowrap cursor-default"
@@ -382,10 +374,14 @@ const awaitingDrivers = drivers.filter((d) => {
             );
             row[`${key}_searchText`] = dropoffLocation;
             break;
+          }
           case "vehicle":
             row[key] = item.vehicle?.vehicleName || "-";
             break;
-          case "payment":
+          case "totalPrice":
+            row[key] = formatCurrency(item.totalPrice, item);
+            break;
+          case "paymentMethod":
             row[key] = item.paymentMethod || "-";
             break;
           case "journeyFare":

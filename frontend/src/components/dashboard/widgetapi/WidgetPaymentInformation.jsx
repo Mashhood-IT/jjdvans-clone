@@ -317,10 +317,6 @@ const WidgetPaymentInformation = ({
   const finalFare = fareResult.total;
 
   const onBookNowClick = () => {
-    const passengerCount = Number(formData.passenger || "0");
-    console.log('pc', passengerCount)
-
-    console.log('formdata', formData)
     if (!formData.paymentMethod) {
       toast.error("Please select a payment method.");
       return;
@@ -355,7 +351,6 @@ const WidgetPaymentInformation = ({
     };
 
     onBookNow?.(bookingData);
-    console.log("booking data", bookingData)
 
     localStorage.removeItem("selectedVehicle");
     localStorage.removeItem("widgetPricing");
@@ -497,7 +492,8 @@ const WidgetPaymentInformation = ({
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="Enter full address"
+                      value={booking?.pickup || ""}
+                      placeholder="Pickup Address"
                       readOnly
                       className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
                     />
@@ -505,20 +501,31 @@ const WidgetPaymentInformation = ({
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                    Destination Address
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Enter destination address"
-                      readOnly
-                      className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
-                    />
-                    <Icons.Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  </div>
-                </div>
+                {[
+                  booking?.dropoff,
+                  booking?.additionalDropoff1,
+                  booking?.additionalDropoff2,
+                  booking?.additionalDropoff3,
+                  booking?.additionalDropoff4,
+                ]
+                  .filter(Boolean)
+                  .map((dropoff, idx) => (
+                    <div key={idx}>
+                      <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                        {idx === 0 ? "Destination Address" : `Additional Drop-off ${idx}`}
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={dropoff}
+                          placeholder="Drop-off Address"
+                          readOnly
+                          className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
+                        />
+                        <Icons.Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      </div>
+                    </div>
+                  ))}
               </div>
             </div>
           </div>

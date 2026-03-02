@@ -11,16 +11,14 @@ const CarCardSection = ({
 }) => {
   const [selectedOptions, setSelectedOptions] = useState({});
 
-  // Initialize defaults: Select the first help option for each car if not already selected
   useEffect(() => {
     const defaults = { ...selectedOptions };
     let changed = false;
     carList.forEach((car) => {
       if (!defaults[car._id]) {
-        // Find if vehicle has predefined extraHelp, else fallback to dummy defaults
         const firstOption = car.extraHelp?.[0] ?
           { ...car.extraHelp[0], id: `help-${car._id}-0` } :
-          { id: `help-${car._id}-self`, label: "No I will do it myself. Selfload", price: 0 };
+          { id: `help-${car._id}-self`, label: "Self Load (I will do it myself)", price: 0 };
 
         defaults[car._id] = firstOption;
         changed = true;
@@ -28,7 +26,6 @@ const CarCardSection = ({
     });
     if (changed) {
       setSelectedOptions(defaults);
-      // If we have a selected car, notify parent of its default help price
       if (selectedCarId && defaults[selectedCarId]) {
         onHelpSelect?.(defaults[selectedCarId]);
       }
@@ -42,7 +39,6 @@ const CarCardSection = ({
     };
     setSelectedOptions(newOptions);
 
-    // Only notify parent if this is the currently selected car
     if (carId === selectedCarId) {
       onHelpSelect?.(option);
     }
@@ -50,7 +46,6 @@ const CarCardSection = ({
 
   const handleCarSelect = (carId) => {
     onSelect(carId);
-    // When switching cars, notify parent of this car's selected help price
     if (selectedOptions[carId]) {
       onHelpSelect?.(selectedOptions[carId]);
     }
@@ -77,10 +72,10 @@ const CarCardSection = ({
         const helpOptions = car.extraHelp?.length
           ? car.extraHelp.map((h, i) => ({ id: `help-${_id}-${i}`, label: h.label, price: h.price }))
           : [
-            { id: `help-${_id}-self`, label: "No I will do it myself. Selfload", price: 0 },
-            { id: `help-${_id}-driver`, label: "Driver help. I will help the driver with heavy item(s)", price: 20 },
-            { id: `help-${_id}-2men`, label: "2 Men Team. I don’t need to lift a finger", price: 50 },
-            { id: `help-${_id}-3men`, label: "3 Men Team. I am the boss, bring me the red carpet", price: 100 },
+            { id: `help-${_id}-self`, label: "Self Load", price: 0 },
+            { id: `help-${_id}-driver`, label: "Driver help", price: 20 },
+            { id: `help-${_id}-2men`, label: "2 Men Team", price: 50 },
+            { id: `help-${_id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
         return (
@@ -92,8 +87,7 @@ const CarCardSection = ({
               }`}
             onClick={() => handleCarSelect(_id)}
           >
-            {/* Top Section: Image & Badge */}
-            <div className="bg-gray-50/50 p-6 flex items-center justify-center relative border-b border-gray-100 aspect-video">
+            <div className="bg-gray-50/50 p-4 flex items-center justify-center relative border-b border-gray-100 aspect-video">
               <img
                 src={validImage}
                 alt={vehicleName}
@@ -108,9 +102,8 @@ const CarCardSection = ({
               </div>
             </div>
 
-            {/* Content Section */}
-            <div className="p-5 flex flex-col flex-grow">
-              <div className="flex justify-between items-start mb-3">
+            <div className="p-4 flex flex-col flex-grow">
+              <div className="flex justify-between items-start mb-2 min-h-[50px]">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 tracking-tight leading-tight">
                     {vehicleName}
@@ -130,24 +123,22 @@ const CarCardSection = ({
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="mb-4">
-                <p className="text-xs text-(--dark-grey) bg-gray-50/50 p-2 rounded-lg border border-gray-100/50">
+              <div className="mb-3 min-h-[44px]">
+                <p className="text-[11px] leading-relaxed text-(--dark-grey) bg-gray-50/50 p-2 rounded-xl border border-gray-100/50">
                   {description || "Great for small apartments, studio moves, or picking up large furniture items."}
                 </p>
               </div>
 
-              {/* Service Level Options Grid */}
-              <div className="space-y-3 mt-auto">
+              <div className="space-y-2">
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                  <span className="w-4 h-[1px] bg-gray-200" /> Service Level
+                  <span className="w-4 h-px bg-gray-200" /> Who's helping with the move?
                 </h4>
-                <div className="grid grid-cols-2 gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className={`grid gap-2 ${helpOptions.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" : "grid-cols-2"}`} onClick={(e) => e.stopPropagation()}>
                   {helpOptions.map((option) => (
                     <label
                       key={option.id}
-                      className={`flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all cursor-pointer text-center min-h-[56px] ${activeOption.id === option.id
-                        ? "border-(--main-color) bg-(--main-color)/5 text-(--main-color) ring-2 ring-(--main-color)/10"
+                      className={`flex flex-col items-center justify-center p-1.5 rounded-xl border-2 transition-all cursor-pointer text-center min-h-[50px] ${activeOption.id === option.id
+                        ? "border-(--main-color) bg-(--main-color)/5 text-(--main-color)"
                         : "border-gray-100 hover:border-gray-200 bg-white"
                         }`}
                     >
@@ -169,17 +160,16 @@ const CarCardSection = ({
                 </div>
               </div>
 
-              {/* Footer Button */}
-              <div className="mt-6 pt-4 border-t border-gray-100">
+              <div className="mt-auto pt-4 flex justify-center">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCarSelect(_id);
                     onBook();
                   }}
-                  className={`w-full py-3 rounded-xl font-bold text-sm transition-all duration-300 ${isSelected
-                    ? "bg-(--main-color) text-white shadow-lg shadow-(--main-color)/30 hover:shadow-xl hover:scale-[1.01]"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  className={`btn ${isSelected
+                    ? "btn-success"
+                    : "btn-back"
                     }`}
                 >
                   {isSelected ? "Continue Booking" : "Select & Book"}

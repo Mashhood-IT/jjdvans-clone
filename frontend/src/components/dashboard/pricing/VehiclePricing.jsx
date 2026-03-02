@@ -87,7 +87,6 @@ const VehiclePricing = () => {
   };
 
   const handleSubmit = async () => {
-    console.log("handleSubmit called. selectedAccount:", selectedAccount);
     const formData = new FormData();
 
     formData.append("priceType", "Percentage");
@@ -169,22 +168,22 @@ const VehiclePricing = () => {
     ...item,
     vehicleInfo: (
       <div className="flex items-center gap-3">
-        <div className="size-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
+        <div className="size-10 rounded-lg bg-(--lighter-gray) border border-(--light-gray) flex items-center justify-center overflow-hidden">
           <img src={item.image} alt="" className="w-full h-full object-contain" />
         </div>
-        <span className="font-bold text-gray-900">{item.vehicleName}</span>
+        <span className="font-bold text-(--dark-grey)">{item.vehicleName}</span>
       </div>
     ),
     passengerSeats: (
-      <span className="font-medium text-gray-700">{item.passengerSeats || 0} Seats</span>
+      <span className="text-(--dark-grey)">{item.passengerSeats || 0} Seats</span>
     ),
     description: (
-      <p className="max-w-[200px] truncate text-gray-500" title={item.description}>
+      <p className="max-w-50 truncate text-(--lighter-gray)0" title={item.description}>
         {item.description || "No description"}
       </p>
     ),
     percentageIncrease: (
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-100">
         +{item.percentageIncrease}%
       </span>
     ),
@@ -247,10 +246,11 @@ const VehiclePricing = () => {
             { label: "Vehicle Name", key: "vehicleName" },
             { label: "Passenger Seats", key: "passengerSeats" },
             { label: "Description", key: "description" },
+            { label: "Half Hour Price", key: "halfHourPrice" },
             { label: "Percentage Increase (%)", key: "percentageIncrease" },
           ].map((field) => (
             <div key={field.key}>
-              <label className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-700 mb-1.5">
+              <label className="flex items-center gap-1.5 text-xs sm:text-sm text-(--medium-grey) mb-1.5">
                 {field.label}
               </label>
               <input
@@ -267,24 +267,24 @@ const VehiclePricing = () => {
             </div>
           ))}
           <div>
-            <label className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-700 mb-1.5">
+            <label className="flex items-center gap-1.5 text-xs sm:text-sm text-(--medium-grey) mb-1.5">
               Price Type
             </label>
             <input
               type="text"
-              className="custom_input text-xs sm:text-sm bg-gray-50 text-gray-500 border-gray-200"
+              className="custom_input text-xs sm:text-sm bg-(--lighter-gray) text-(--lighter-gray)0 border-gray-200"
               value="Percentage"
               disabled
             />
           </div>
           <div className="mt-3 sm:mt-4">
-            <label className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-700 mb-2">
+            <label className="flex items-center gap-1.5 text-xs sm:text-sm text-(--medium-grey) mb-2">
               Extra Help Options (Add-ons)
             </label>
             {selectedAccount?.extraHelp?.map((help, index) => (
-              <div key={index} className="flex flex-col sm:flex-row gap-2 mb-3 bg-gray-50 p-3 rounded-xl border border-gray-100 relative">
+              <div key={index} className="flex flex-col sm:flex-row gap-2 mb-3 bg-(--lighter-gray) p-3 rounded-xl border border-(--light-gray) relative">
                 <div className="flex-1">
-                  <label className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Label</label>
+                  <label className="block text-[10px] uppercase text-gray-400 mb-1">Label</label>
                   <input
                     type="text"
                     placeholder="e.g. 2 Men Team"
@@ -301,7 +301,7 @@ const VehiclePricing = () => {
                   />
                 </div>
                 <div className="w-full sm:w-24">
-                  <label className="block text-[10px] font-bold uppercase text-gray-400 mb-1">Price (£)</label>
+                  <label className="block text-[10px] uppercase text-gray-400 mb-1">Price (£)</label>
                   <input
                     type="number"
                     placeholder="0"
@@ -352,7 +352,7 @@ const VehiclePricing = () => {
             </button>
           </div>
           <div>
-            <label className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-700 mb-1.5">
+            <label className="flex items-center gap-1.5 text-xs sm:text-sm text-(--medium-grey) mb-1.5">
               Vehicle Image
             </label>
             <div className="flex gap-2 items-center">

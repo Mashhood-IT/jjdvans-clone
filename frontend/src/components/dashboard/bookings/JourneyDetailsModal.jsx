@@ -41,7 +41,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
   }, [selectedType, viewData, loggedInUser]);
 
   const handleSendEmail = async () => {
-    console.log("handleSendEmail")
 
   };
 

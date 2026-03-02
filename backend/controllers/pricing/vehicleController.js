@@ -5,6 +5,7 @@ export const createVehicle = async (req, res) => {
         const {
             vehicleName,
             passengerSeats,
+            halfHourPrice,
             description,
             priority,
             priceType,
@@ -21,6 +22,7 @@ export const createVehicle = async (req, res) => {
         const vehicle = new Vehicle({
             vehicleName,
             passengerSeats: Number(passengerSeats || 0),
+            halfHourPrice,
             description,
             priority: Number(priority || 0),
             priceType: priceType || "Percentage",
