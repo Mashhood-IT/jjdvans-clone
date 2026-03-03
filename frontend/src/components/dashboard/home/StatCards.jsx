@@ -8,8 +8,9 @@ const nf = new Intl.NumberFormat();
 const StatCards = () => {
   const user = useSelector((state) => state?.auth?.user);
   
-  const {data} = useGetAllBookingsQuery()
-  const bookingsCustomer = data?.filter((b)=> b.passenger)
+  const { data = [] } = useGetAllBookingsQuery();
+
+const bookingsCustomer = data.filter((b) => b.passenger);
 
   
   const cardData = [
