@@ -97,7 +97,7 @@ select:disabled {
   --gradient-primary: linear-gradient(90deg, #25259d 0%, #00d4ff 100%);
 }
 
-@keyframes pulse-intense {
+/* @keyframes pulse-intense {
 
   0%,
   100% {
@@ -113,9 +113,9 @@ select:disabled {
 
 .animate-pulse-intense {
   animation: pulse-intense 1s ease-in-out infinite;
-}
+} */
 
-.theme-dark-1 {
+/* .theme-dark-1 {
   --bg: #07384d;
   --text: #f1efef;
   --primary: #01f5fe;
@@ -143,9 +143,9 @@ select:disabled {
   --active: #a5d8dd;
   --scroll-thumb: rgba(0, 0, 0, 0.2);
   --scroll-track: transparent;
-}
+} */
 
-.bg-theme {
+/* .bg-theme {
   background-color: var(--bg);
 }
 
@@ -155,9 +155,9 @@ select:disabled {
 
 .border-theme {
   border: 1px solid var(--light-gray);
-}
+} */
 
-.text-primary {
+/* .text-primary {
   color: var(--primary);
 }
 
@@ -171,16 +171,16 @@ select:disabled {
 
 .active-theme {
   background-color: var(--active);
-}
+} */
 
-.bg-theme,
+/* .bg-theme,
 .text-theme,
 .hover-theme,
 .active-theme {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
-}
+} */
 
 .btn {
   border-radius: 8px !important;
@@ -506,7 +506,6 @@ select:disabled {
   box-sizing: border-box;
 }
 
-/* Custom Width for Real-time Toast Notifications */
 .custom-toast-width {
   width: 400px !important;
   max-width: 90vw;
@@ -534,7 +533,6 @@ select:disabled {
   }
 }
 
-/* Hide scrollbar only for Widegt */
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -544,8 +542,7 @@ select:disabled {
   display: none;
 }
 
-/* Home Page Animations */
-@keyframes slide {
+/* @keyframes slide {
   0% {
     transform: translateX(0);
   }
@@ -562,15 +559,13 @@ select:disabled {
 
 .animate-slide:hover {
   animation-play-state: paused;
-}
+} */
 
-/* Date input Widget */
 input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   text-transform: uppercase;
   font-size: 15px;
 }
 
-/* Setting General Theme Colors */
 .dull {
   filter: grayscale(80%) brightness(70%);
   opacity: 0.6;
@@ -598,7 +593,7 @@ input[type="date"]::-webkit-datetime-edit-text {
 
 @media (max-width: 640px) {
   .integrations-table-wrapper .flex.justify-center.sm\:justify-end {
-    justify-content: flex-end !important;
+  justify-content: flex-end !important;
   }
 
   .integrations-table-wrapper .flex.justify-center {

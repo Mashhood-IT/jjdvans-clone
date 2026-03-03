@@ -409,11 +409,13 @@ export const Distance = async (req, res) => {
     const distanceText = element.distance?.text || null;
     const distanceValue = element.distance?.value || null;
     const durationText = element.duration?.text || null;
+    const durationValue = element.duration?.value || null;
 
     res.json({
       distanceText,
       distanceValue,
       durationText,
+      durationValue,
       avoidRoutes: avoidQuery || "",
       routeWarnings: null,
     });

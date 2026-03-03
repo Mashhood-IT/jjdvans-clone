@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DeleteModal from "../../../constants/constantcomponents/DeleteModal";
 import CustomTable from "../../../constants/constantcomponents/CustomTable";
-import { useUpdateBookingStatusMutation } from "../../../../redux/api/bookingApi";
+import { useUpdateBookingMutation, useDeleteBookingMutation } from "../../../../redux/api/bookingApi";
 
 const BookingTableRenderer = ({
   emptyMessage,
@@ -37,7 +37,8 @@ const BookingTableRenderer = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
-const [updateBookingStatus] = useUpdateBookingStatusMutation()
+  const [updateBooking] = useUpdateBookingMutation();
+  const [deleteBooking] = useDeleteBookingMutation();
   const formatCurrency = (value, booking) => {
     if (value === undefined || value === null || value === "-") return "-";
 
@@ -610,108 +611,9 @@ const [updateBookingStatus] = useUpdateBookingStatusMutation()
             }
 
             row[key] = (
-              <SelectStatus
-                value={
-                  isDriver ? item.jobStatus || "New" : item.status || "No Show"
-                }
-                onChange={async (newStatus) => {
-                  try {
-                    if (isDriver) {
-                      const response = await updateJobStatus({
-                        jobId: item.jobId,
-                        jobStatus: newStatus,
-                      }).unwrap();
-
-                      if (
-                        !response.success &&
-                        response.message?.includes("already been accepted")
-                      ) {
-                        toast.warning(
-                          "This booking was just accepted by another driver!",
-                        );
-                        refetch();
-                        return;
-                      }
-                      toast.success("Status updated");
-                      refetch();
-                      return;
-                    }
-
-                    if (String(newStatus).toLowerCase() === "accepted") {
-                      if (user?.role?.toLowerCase() === "clientadmin") {
-                        const driversArr = Array.isArray(item.drivers)
-                          ? item.drivers
-                          : [];
-
-                        if (driversArr.length > 1) {
-                          toast.error(
-                            "Please assign only one driver before accepting the booking!",
-                          );
-                          return;
-                        }
-                      }
-
-                      const wasAlreadyAccepted = (item.statusAudit || []).some(
-                        (audit) =>
-                          String(audit.status || "").toLowerCase() ===
-                          "accepted",
-                      );
-
-                      const driversArr = Array.isArray(item.drivers)
-                        ? item.drivers
-                        : [];
-
-                      const singleDriver = driversArr[0];
-                      const singleDriverId = getIdStr(
-                        typeof singleDriver === "object"
-                          ? singleDriver._id
-                          : singleDriver,
-                      );
-
-                      const jobsArray = jobData?.jobs || [];
-                      const jobForDriver = jobsArray.find(
-                        (j) =>
-                          getIdStr(j?.bookingId) === getIdStr(item?._id) &&
-                          getIdStr(j?.driverId) === getIdStr(singleDriverId),
-                      );
-                      await updateBookingStatus({
-                        id: item._id,
-                        status: "Accepted",
-                        updatedBy: `${user.role} | ${user.fullName}`,
-                      }).unwrap();
-
-                      refetch();
-
-                      const siblingJobs = jobsArray.filter(
-                        (j) =>
-                          getIdStr(j?.bookingId) === getIdStr(item?._id) &&
-                          getIdStr(j?._id) !== getIdStr(jobForDriver._id),
-                      );
-                      await Promise.all(
-                        siblingJobs.map((j) =>
-                          updateJobStatus({
-                            jobId: j._id,
-                            jobStatus: "Already Assigned",
-                          }),
-                        ),
-                      );
-                    }
-
-                    await updateBookingStatus({
-                      id: item._id,
-                      status: newStatus,
-                      updatedBy: `${user.role} | ${user.fullName}`,
-                    }).unwrap();
-
-                    toast.success("Status updated");
-                    refetch();
-                  } catch (err) {
-                    const message = err?.data?.message;
-                    toast.error(message);
-                    refetch();
-                  }
-                }}
-              />
+              <span className="capitalize text-(--dark-grey)">
+                {isDriver ? item.jobStatus || "New" : item.status || "New"}
+              </span>
             );
             break;
           }
@@ -742,22 +644,7 @@ const [updateBookingStatus] = useUpdateBookingStatusMutation()
                     <div className="mt-2 w-56 bg-(--white) border border-(--lightest-gray) rounded-lg js-actions-menu shadow-lg">
                       {actionMenuItems
                         .filter((action) => {
-                          if (user?.role === "driver") {
-                            return (
-                              action === "View" || action === "Status Audit"
-                            );
-                          }
-                          if (user?.role === "customer") {
-                            if (action === "Delete") return false;
-                            if (action === "Completed") return false;
-                            if (
-                              action === "Edit" &&
-                              String(item?.status || "").toLowerCase() ===
-                              "completed"
-                            ) {
-                              return false;
-                            }
-                          }
+
                           return true;
                         })
                         .map((action, i) => (
@@ -765,78 +652,13 @@ const [updateBookingStatus] = useUpdateBookingStatusMutation()
                             key={i}
                             onClick={async () => {
                               try {
-                                if (action === "Status Audit") {
-                                  openAuditModal(item.statusAudit);
-                                } else if (action === "View") {
+                                if (action === "View") {
                                   openViewModal(item);
-                                } else if (action === "Completed") {
-                                  try {
-                                    if (
-                                      String(
-                                        item?.status || "",
-                                      ).toLowerCase() === "completed"
-                                    ) {
-                                      toast.info(
-                                        "Booking is already completed",
-                                      );
-                                      setSelectedActionRow(null);
-                                      return;
-                                    }
-
-                                    await updateBookingStatus({
-                                      id: item._id,
-                                      status: "Completed",
-                                      updatedBy: `${user.role} | ${user.fullName}`,
-                                    }).unwrap();
-                                    toast.success(
-                                      "Booking marked as Completed",
-                                    );
-                                    refetch();
-                                    openCompletionModal(item);
-                                    setSelectedActionRow(null);
-                                  } catch (err) {
-                                    toast.error(getErrMsg(err));
-                                  }
                                 } else if (action === "Edit") {
-                                  if (user?.role === "driver") {
-                                    toast.info("Drivers cannot edit bookings");
-                                    return;
-                                  }
-
-                                  if (
-                                    user?.role === "customer" &&
-                                    String(item?.status || "").toLowerCase() ===
-                                    "completed"
-                                  ) {
-                                    toast.error(
-                                      "Completed bookings cannot be edited by customers.",
-                                    );
-                                    return;
-                                  }
-
                                   const bookingSetting =
                                     bookingSettingData?.setting ||
                                     bookingSettingData?.bookingSetting;
 
-                                  if (
-                                    user?.role === "customer" &&
-                                    bookingSetting?.companyId ===
-                                    user?.companyId
-                                  ) {
-                                    const cancelWindow =
-                                      bookingSetting?.cancelBookingWindow;
-                                    if (
-                                      cancelWindow &&
-                                      isWithinCancelWindow(item, cancelWindow)
-                                    ) {
-                                      const windowText = `${cancelWindow.value
-                                        } ${cancelWindow.unit.toLowerCase()}`;
-                                      toast.error(
-                                        `Cannot edit booking. Pickup time is within the ${windowText} cancellation window.`,
-                                      );
-                                      return;
-                                    }
-                                  }
 
                                   const editedData = { ...item };
                                   editedData.__editReturn =
@@ -849,84 +671,12 @@ const [updateBookingStatus] = useUpdateBookingStatusMutation()
                                       },
                                     };
                                   }
-                                  if (item.returnJourney?.flightArrival) {
-                                    editedData.returnJourney = {
-                                      ...editedData.returnJourney,
-                                      flightArrival: {
-                                        ...item.returnJourney.flightArrival,
-                                      },
-                                    };
-                                  }
-
                                   setEditBookingData(editedData);
                                   setShowEditModal(true);
                                 } else if (action === "Delete") {
-                                  if (item?.status === "Deleted") {
-                                    try {
-                                      await restoreOrDeleteBooking({
-                                        id: item._id,
-                                        action: "delete",
-                                        updatedBy: `${user.role} | ${user.fullName}`,
-                                      }).unwrap();
-                                      toast.success(
-                                        "Booking permanently deleted",
-                                      );
-                                      refetch();
-                                      setSelectedActionRow(null);
-                                    } catch (err) {
-                                      toast.error(
-                                        "Failed to permanently delete booking",
-                                      );
-                                    }
-                                  } else {
-                                    try {
-                                      await updateBookingStatus({
-                                        id: item._id,
-                                        status: "Deleted",
-                                        updatedBy: `${user.role} | ${user.fullName}`,
-                                      }).unwrap();
-                                      toast.success(
-                                        "Booking marked as Deleted",
-                                      );
-                                      refetch();
-                                      setSelectedActionRow(null);
-                                    } catch (err) {
-                                      toast.error(
-                                        "Failed to mark booking as Deleted",
-                                      );
-                                    }
-                                  }
-                                } else if (action === "Copy Booking") {
-                                  const copied = { ...item };
-                                  delete copied._id;
-                                  if (copied.passenger?._id)
-                                    delete copied.passenger._id;
-                                  if (copied.vehicle?._id)
-                                    delete copied.vehicle._id;
-                                  if (copied.primaryJourney?._id)
-                                    delete copied.primaryJourney._id;
-                                  if (copied.returnJourney?._id)
-                                    delete copied.returnJourney._id;
-
-                                  copied.bookingId = "";
-                                  copied.status = "Pending";
-                                  copied.statusAudit = [];
-                                  copied.createdAt = new Date().toISOString();
-                                  copied.drivers = [];
-                                  copied.__copyMode = true;
-
-                                  if (item.returnJourney) {
-                                    copied.primaryJourney = {
-                                      ...item.returnJourney,
-                                    };
-                                    delete copied.returnJourney;
-                                    copied.__copyReturn = false;
-                                  } else {
-                                    copied.__copyReturn = false;
-                                  }
-
-                                  setEditBookingData(copied);
-                                  setShowEditModal(true);
+                                  setSelectedDeleteId(item._id);
+                                  setShowDeleteModal(true);
+                                  setSelectedActionRow(null);
                                 }
                               } catch (err) {
                                 toast.error(getErrMsg(err));
@@ -943,7 +693,7 @@ const [updateBookingStatus] = useUpdateBookingStatusMutation()
                           <button
                             onClick={async () => {
                               try {
-                                await updateBookingStatus({
+                                await updateBooking({
                                   id: item._id,
                                   status: "Cancelled",
                                   updatedBy: `${user.role} | ${user.fullName}`,
@@ -1080,11 +830,7 @@ const [updateBookingStatus] = useUpdateBookingStatusMutation()
         isOpen={showDeleteModal}
         onConfirm={async () => {
           try {
-            await restoreOrDeleteBooking({
-              id: selectedDeleteId,
-              action: "delete",
-              updatedBy: `${user.role} | ${user.fullName}`,
-            }).unwrap();
+            await deleteBooking(selectedDeleteId).unwrap();
             toast.success("Booking permanently deleted");
             refetch();
           } catch (err) {

@@ -5,21 +5,26 @@ import Sidebar from "../components/sidebar/Sidebar";
 
 const DashboardLayout = () => {
   const [activeSubTabs, setActiveSubTabs] = useState({});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   return (
     <>
       <div className="h-screen flex flex-col overflow-hidden bg-(--lightest-gray)">
         <div className="shrink-0 md:px-4 md:py-4">
-          <Navbar />
+          <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         </div>
 
         <div className="flex flex-1 min-h-0 md:px-4 md:pb-4">
           <div
-            className={`shrink-0 hidden md:block ${activeSubTabs ? "md:mr-5" : "md:mr-4"}`}
+            className={`shrink-0 hidden md:block transition-all duration-300 ${isSidebarOpen ? "md:mr-5" : "md:mr-0"}`}
+            style={{ width: isSidebarOpen ? undefined : "0px", overflow: isSidebarOpen ? undefined : "hidden" }}
           >
             <Sidebar
               activeSubTabs={activeSubTabs}
               setActiveSubTabs={setActiveSubTabs}
+              isOpen={isSidebarOpen}
             />
           </div>
 

@@ -7,9 +7,7 @@ import SelectedSearch from "../../constants/constantcomponents/SelectedSearch";
 import SelectDateRange from "../../constants/constantcomponents/SelectDateRange";
 
 const BookingsFilters = ({
-  handleStatusChange,
   futureCount,
-  selectedStatus,
   selectedDrivers,
   setSelectedDrivers,
   selectedPassengers,
@@ -24,18 +22,17 @@ const BookingsFilters = ({
   setShowDiv,
   setShowColumnModal,
   setShowKeyboardModal,
-  statusList,
   passengerList,
   vehicleList,
 }) => {
   const user = useSelector((state) => state.auth.user);
 
-const driverListForFilter = [
-  { label: "John Doe", value: "d1" },
-  { label: "Ali Khan", value: "d2" },
-  { label: "Sarah Ahmed", value: "d3" },
-  { label: "Michael Smith", value: "d4" },
-];
+  const driverListForFilter = [
+    { label: "John Doe", value: "d1" },
+    { label: "Ali Khan", value: "d2" },
+    { label: "Sarah Ahmed", value: "d3" },
+    { label: "Michael Smith", value: "d4" },
+  ];
 
   return (
     <>
@@ -58,14 +55,7 @@ const driverListForFilter = [
               <Icons.Filter size={17} />
             </button>
           </div>
-          <div className="flex-1 min-w-37.5 lg:w-64 lg:flex-none order-3 lg:order-2">
-            <SelectedSearch
-              selected={selectedStatus}
-              setSelected={handleStatusChange}
-              statusList={statusList}
-              showCount={true}
-            />
-          </div>
+
           <div className="flex-1 min-w-45 lg:w-72 lg:flex-none order-4 lg:order-3">
             <SelectDateRange
               futureCount={futureCount}
@@ -84,28 +74,14 @@ const driverListForFilter = [
             >
               <Icons.Columns3 size={17} />
             </button>
-            <button
-              onClick={() => setShowKeyboardModal(true)}
-              className="icon-box icon-box-primary"
-              title="Keyboard Shortcuts"
-            >
-              <Icons.Keyboard size={16} />
-            </button>
+          
           </div>
         </div>
       </div>
 
       {showDiv && (
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4">
-          <div className="w-full sm:w-64">
-            <SelectedSearch
-              selected={selectedDrivers}
-              setSelected={setSelectedDrivers}
-              statusList={driverListForFilter}
-              placeholder="Select Driver"
-              showCount={false}
-            />
-          </div>
+         
           <div className="w-full sm:w-64">
             <SelectedSearch
               selected={selectedPassengers}

@@ -12,6 +12,19 @@ const WidgetInventory = ({ onContinue, onBack }) => {
     const [dropoffAccess, setDropoffAccess] = useState("STAIRS");
     const [estimatedHours, setEstimatedHours] = useState(0);
     const [estimatedMinutes, setEstimatedMinutes] = useState(0);
+
+    const [additionalDropoffs, setAdditionalDropoffs] = useState([]);
+
+    const [floorAccess, setFloorAccess] = useState({
+        additionalDropoff1Floor: 0,
+        additionalDropoff1Access: "STAIRS",
+        additionalDropoff2Floor: 0,
+        additionalDropoff2Access: "STAIRS",
+        additionalDropoff3Floor: 0,
+        additionalDropoff3Access: "STAIRS",
+        additionalDropoff4Floor: 0,
+        additionalDropoff4Access: "STAIRS",
+    });
     const [ridingAlong, setRidingAlong] = useState(false);
     const [passengerCount, setPassengerCount] = useState(0);
     const [items, setItems] = useState([]);
@@ -42,6 +55,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 if (inv.items && Array.isArray(inv.items)) setItems(inv.items);
                 if (inv.initialGoogleMinutes !== undefined)
                     setInitialGoogleMinutes(inv.initialGoogleMinutes);
+                if (inv.floorAccess)
+                    setFloorAccess((prev) => ({ ...prev, ...inv.floorAccess }));
                 return;
             } catch (err) {
                 console.error("Error parsing widgetInventoryData:", err);
@@ -84,6 +99,15 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                     setEstimatedMinutes(totalMinutes % 60);
                     setInitialGoogleMinutes(totalMinutes);
                 }
+
+                const ad = [
+                    { id: 1, address: data.additionalDropoff1 },
+                    { id: 2, address: data.additionalDropoff2 },
+                    { id: 3, address: data.additionalDropoff3 },
+                    { id: 4, address: data.additionalDropoff4 },
+                ].filter((d) => d.address && d.address.trim() !== "");
+                setAdditionalDropoffs(ad);
+
             } catch (err) {
                 console.error("Error parsing bookingForm for duration:", err);
             }
@@ -137,6 +161,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             items,
             initialGoogleMinutes,
             additionalFare,
+            floorAccess,
         };
         localStorage.setItem("widgetInventoryData", JSON.stringify(inventoryData));
 
@@ -304,8 +329,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setPickupAccess("LIFT")}
                                         className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "LIFT"
-                                                ? "bg-gray-900 text-white"
-                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            ? "bg-gray-900 text-white"
+                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
                                         LIFT
@@ -313,8 +338,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setPickupAccess("STAIRS")}
                                         className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "STAIRS"
-                                                ? "bg-gray-900 text-white"
-                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            ? "bg-gray-900 text-white"
+                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
                                         STAIRS
@@ -366,8 +391,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setDropoffAccess("LIFT")}
                                         className={`flex-1 cursor-pointer  px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "LIFT"
-                                                ? "bg-gray-900 text-white"
-                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            ? "bg-gray-900 text-white"
+                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
                                         LIFT
@@ -375,8 +400,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setDropoffAccess("STAIRS")}
                                         className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "STAIRS"
-                                                ? "bg-gray-900 text-white"
-                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            ? "bg-gray-900 text-white"
+                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
                                         STAIRS
@@ -385,6 +410,100 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                             </div>
                         </div>
                     </div>
+
+                    {additionalDropoffs.map((ad) => (
+                        <div key={ad.id} className="mt-8 pt-8 border-t border-gray-100">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Icons.MapPin className="w-4 h-4 text-gray-600" />
+                                <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                    Additional Drop-off {ad.id}
+                                </span>
+                            </div>
+
+                            <p className="text-sm text-gray-500 mb-4 wrap-break-word">
+                                {ad.address}
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm text-gray-600 mb-2">
+                                        Floor Level
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() =>
+                                                setFloorAccess((prev) => ({
+                                                    ...prev,
+                                                    [`additionalDropoff${ad.id}Floor`]: Math.max(
+                                                        0,
+                                                        prev[`additionalDropoff${ad.id}Floor`] - 1,
+                                                    ),
+                                                }))
+                                            }
+                                            className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        >
+                                            <Icons.Minus className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                        <div className="flex-1 text-center">
+                                            <span className="text-2xl font-bold text-gray-900">
+                                                {floorAccess[`additionalDropoff${ad.id}Floor`]}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() =>
+                                                setFloorAccess((prev) => ({
+                                                    ...prev,
+                                                    [`additionalDropoff${ad.id}Floor`]:
+                                                        prev[`additionalDropoff${ad.id}Floor`] + 1,
+                                                }))
+                                            }
+                                            className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        >
+                                            <Icons.Plus className="w-4 h-4 text-gray-600" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm text-gray-600 mb-2">
+                                        Access Type
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() =>
+                                                setFloorAccess((prev) => ({
+                                                    ...prev,
+                                                    [`additionalDropoff${ad.id}Access`]: "LIFT",
+                                                }))
+                                            }
+                                            className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
+                                                "LIFT"
+                                                ? "bg-gray-900 text-white"
+                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                                }`}
+                                        >
+                                            LIFT
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                setFloorAccess((prev) => ({
+                                                    ...prev,
+                                                    [`additionalDropoff${ad.id}Access`]: "STAIRS",
+                                                }))
+                                            }
+                                            className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
+                                                "STAIRS"
+                                                ? "bg-gray-900 text-white"
+                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                                }`}
+                                        >
+                                            STAIRS
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
                 <div className="bg-gray-900 rounded-lg md:p-8 p-3 mb-6 relative overflow-hidden">

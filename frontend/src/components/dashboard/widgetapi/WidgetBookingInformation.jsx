@@ -360,7 +360,15 @@ const WidgetBookingInformation = ({
       const totalMiles = data.segments.reduce((sum, seg) => sum + seg.miles, 0);
       setActualMiles(totalMiles);
       setDistanceText(`${totalMiles.toFixed(2)} mi`);
-      setDurationText(data.segments.map(s => s.durationText).join(' + '));
+
+      const totalSeconds = data.segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
+      if (totalSeconds > 0) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const mins = Math.round((totalSeconds % 3600) / 60);
+        setDurationText(hours > 0 ? `${hours} hours ${mins} mins` : `${mins} mins`);
+      } else {
+        setDurationText(data.segments.map((s) => s.durationText).join(" + "));
+      }
     }
 
 
@@ -421,6 +429,7 @@ const WidgetBookingInformation = ({
               miles: segmentMiles,
               distanceText: res.distanceText,
               durationText: res.durationText,
+              durationValue: res.durationValue,
             });
 
             totalMiles += segmentMiles;
@@ -432,7 +441,11 @@ const WidgetBookingInformation = ({
           setSegmentBreakdown(segments);
           setActualMiles(totalMiles);
           setDistanceText(`${totalMiles.toFixed(2)} mi`);
-          setDurationText(segments.map(s => s.durationText).join(' + '));
+
+          const totalSeconds = segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
+          const hours = Math.floor(totalSeconds / 3600);
+          const mins = Math.round((totalSeconds % 3600) / 60);
+          setDurationText(hours > 0 ? `${hours} hours ${mins} mins` : `${mins} mins`);
 
           const updatedData = { ...data, segments };
           localStorage.setItem("bookingForm", JSON.stringify(updatedData));
@@ -468,6 +481,7 @@ const WidgetBookingInformation = ({
             miles: totalMiles,
             distanceText: res?.distanceText || "",
             durationText: res?.durationText || "",
+            durationValue: res?.durationValue || 0,
           }];
           setSegmentBreakdown(singleSegment);
 

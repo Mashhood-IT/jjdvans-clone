@@ -5,13 +5,9 @@ import { useSelector } from "react-redux";
 import useUIStore from "../../../store/useUIStore";
 import Icons from "../../../assets/icons";
 import classNames from "classnames";
-import { useGetCompanyByIdQuery } from "../../../redux/api/companyApi";
-import IMAGES from "../../../assets/images";
-import { useGetSuperadminInfoQuery } from "../../../redux/api/userApi";
 
 const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
     const user = useSelector((state) => state?.auth?.user);
-    const companyId = user?.companyId;
     const permissions = user?.permissions || [];
     const userRole = user?.role;
     const location = useLocation();
@@ -19,11 +15,6 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
     const toggleSidebar = useUIStore((state) => state.toggleSidebar);
 
     const [activeMain, setActiveMain] = useState(null);
-
-    const { data: superadminData } = useGetSuperadminInfoQuery();
-    const { data: companyData } = useGetCompanyByIdQuery(companyId, {
-        skip: !companyId,
-    });
 
     const sidebarTabs = sidebarItems
         .map((item) => {
@@ -124,21 +115,8 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
         }));
     };
 
-    const superadminLogo =
-        superadminData?.superadminCompanyLogo || user?.superadminCompanyLogo;
-    const clientCompanyLogo = companyData?.profileImage;
-    const companyName =
-        userRole === "superadmin"
-            ? superadminData?.superadminCompanyName
-            : companyData?.companyName;
-    const companyLogo =
-        userRole === "superadmin"
-            ? superadminLogo || IMAGES.dashboardSmallLogo
-            : clientCompanyLogo || IMAGES.dashboardSmallLogo;
-
     return (
         <>
-            {/* Background Overlay */}
             {isOpen && (
                 <div
                     className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -152,7 +130,7 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                     isOpen ? "w-64" : "w-0 overflow-hidden"
                 )}
             >
-                <div className="flex flex-col h-full bg-theme text-theme overflow-hidden">
+                <div className="flex flex-col h-full text-theme overflow-hidden">
                     <div className="flex border-b border-(--light-gray) justify-between p-3">
                         <h1 className="text-xl font-bold uppercase">
                             {["clientadmin", "superadmin", "demo"].includes(user?.role)
@@ -301,8 +279,8 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                             })}
                         </ul>
                     </div>
-                    <div className="mt-auto border-t border-[var(--light-gray)]">
-                        <footer className="bg-theme md:p-3 p-2 text-theme text-sm text-center">
+                    <div className="mt-auto border-t border-(--light-gray)">
+                        <footer className=" md:p-3 p-2 text-theme text-sm text-center">
                             © {new Date().getFullYear()} MTL Booking App. <br /> All
                             rights reserved.
                         </footer>

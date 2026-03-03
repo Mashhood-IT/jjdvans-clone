@@ -6,7 +6,7 @@ const CustomModal = ({
   onClose,
   heading,
   children,
-  modalClassName = "",
+  modalClassName = "w-full sm:w-auto md:min-w-[450px] max-w-[95vw] sm:max-w-4xl max-h-[90vh]",
 }) => {
   if (!isOpen) return null;
 
@@ -16,12 +16,12 @@ const CustomModal = ({
       onClick={onClose}
     >
       <div
-        className={`w-full sm:w-auto md:min-w-[450px] max-w-[95vw] sm:max-w-4xl max-h-[90vh] bg-(--white) rounded-2xl border border-[var(--light-gray)] overflow-hidden flex flex-col shadow-2xl ${modalClassName}`}
+        className={`bg-(--white) rounded-2xl border border-[var(--light-gray)] overflow-hidden flex flex-col shadow-2xl ${modalClassName}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center bg-theme border-b border-(--light-gray) p-3 shrink-0">
+        <div className="flex justify-between items-center border-b border-(--light-gray) p-3 shrink-0">
           <h2
-            className="text-lg sm:text-xl font-bold text-theme md:ps-3"
+            className="text-lg sm:text-xl font-bold md:ps-3"
             style={{
               fontFamily: "sans-serif",
             }}

@@ -26,23 +26,7 @@ const BookingsList = () => {
     { _id: "2", name: "Ali Khan" },
   ]);
 
-  const ALL_STATUSES = [
-    "Scheduled",
-    "New",
-    "Accepted",
-    "On Route",
-    "At Location",
-    "Ride Started",
-    "Completed",
-    "At Waiting",
-    "Extra Stop",
-    "Deleted",
-    "Late Cancel",
-    "No Show",
-  ];
-
   const [selectedRow, setSelectedRow] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState(["All"]);
   const [selectedActionRow, setSelectedActionRow] = useState(null);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditData, setAuditData] = useState([]);
@@ -81,22 +65,7 @@ const BookingsList = () => {
 
   const futureBookingsCount = rawfutureBookingsCount.length;
 
-  const statusCountMap = ALL_STATUSES.reduce((acc, status) => {
-    acc[status] = 0;
-    return acc;
-  }, {});
 
-  allBookings.forEach((b) => {
-    if (b?.status && statusCountMap.hasOwnProperty(b.status)) {
-      statusCountMap[b.status] += 1;
-    }
-  });
-
-  const dynamicStatusList = Object.entries(statusCountMap).map(
-    ([label, count]) => ({ label, count }),
-  );
-
-  dynamicStatusList.push({ label: "All", count: allBookings.length });
 
   const passengerMap = new Map();
   allBookings.forEach((booking) => {
@@ -159,8 +128,7 @@ const BookingsList = () => {
       <BookingsFilters
         futureCount={futureBookingsCount}
         assignedDrivers={assignedDrivers}
-        selectedStatus={selectedStatus}
-        setSelectedStatus={setSelectedStatus}
+
         selectedDrivers={selectedDrivers}
         setSelectedDrivers={setSelectedDrivers}
         selectedPassengers={selectedPassengers}
@@ -175,7 +143,6 @@ const BookingsList = () => {
         setShowDiv={setShowDiv}
         setShowColumnModal={setShowColumnModal}
         setShowKeyboardModal={setShowKeyboardModal}
-        statusList={dynamicStatusList}
         passengerList={passengerList}
         vehicleList={vehicleList}
       />
@@ -196,7 +163,7 @@ const BookingsList = () => {
         actionMenuItems={actionMenuItems}
         setEditBookingData={setEditBookingData}
         setShowEditModal={setShowEditModal}
-        selectedStatus={selectedStatus}
+
         selectedPassengers={selectedPassengers}
         selectedVehicleTypes={selectedVehicleTypes}
         setShowViewModal={setShowViewModal}
@@ -207,14 +174,6 @@ const BookingsList = () => {
         selectedDrivers={selectedDrivers}
         setSelectedDrivers={setSelectedDrivers}
       />
-
-      <CustomModal
-        isOpen={showAuditModal}
-        onClose={() => setShowAuditModal(false)}
-        heading="Status Audit"
-      >
-        <AuditModal auditData={auditData} />
-      </CustomModal>
 
       <CustomModal
         isOpen={showViewModal}
@@ -235,7 +194,8 @@ const BookingsList = () => {
       <CustomModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        heading="New Booking"
+        heading={editBookingData?._id ? "Edit Booking" : "New Booking"}
+        modalClassName="max-w-5xl w-full max-h-full"
       >
         <NewBooking
           editBookingData={editBookingData}

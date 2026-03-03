@@ -5,11 +5,11 @@ import classNames from "classnames";
 import Icons from "../../assets/icons";
 import sidebarItems from "../constants/constantcomponents/sidebarItems";
 
-const Sidebar = ({ activeSubTabs, setActiveSubTabs }) => {
+const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
   const user = useSelector((state) => state?.auth?.user);
   const userRole = user?.role;
   const location = useLocation();
-  const isOpen = true;
+
 
   const [activeMain, setActiveMain] = useState(null);
 
@@ -296,7 +296,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs }) => {
           </div>
           <div
             className={`w-full ${isOpen ? "lg:block" : "hidden"
-              } border-t border-(--light-gray) bg-theme z-10`}
+              } border-t border-(--light-gray) z-10`}
           >
             <div
               className={`${isOpen ? "text-center" : "flex justify-center"}`}
@@ -315,7 +315,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs }) => {
             <div
               className={classNames(
                 "w-12 mr-2.5 flex flex-col",
-                "bg-theme ml-1.75",
+                "ml-1.75",
                 "h-fit",
                 "border-r border-(--light-gray)",
                 "absolute overflow-hidden left-14",
@@ -386,7 +386,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs }) => {
 
             return (
               <div
-                className="w-12 flex flex-col bg-theme rounded-r-xl border-r border-(--light-gray) h-fit absolute overflow-hidden left-27.25"
+                className="w-12 flex flex-col rounded-r-xl border-r border-(--light-gray) h-fit absolute overflow-hidden left-27.25"
                 style={
                   isMobileView
                     ? { maxWidth: "100vw" }

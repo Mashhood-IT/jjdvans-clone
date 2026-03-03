@@ -9,11 +9,11 @@ const StatCards = () => {
   const user = useSelector((state) => state?.auth?.user);
   
   const {data} = useGetAllBookingsQuery()
-  const bookingsCustomer = data.filter((b)=> b.passenger)
+  const bookingsCustomer = data?.filter((b)=> b.passenger)
 
   
   const cardData = [
-    { title: "Total Bookings", value: data.length, icon: "FileText" },
+    { title: "Total Bookings", value: data?.length, icon: "FileText" },
     {
       title: "Total Customers",
       value: bookingsCustomer.length,

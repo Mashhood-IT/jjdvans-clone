@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Icons from "../../../assets/icons";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
-import { BookingCalendarstatusColors } from "../../constants/dashboardTabsData/data";
+
 
 const BookingCalendar = () => {
   const { data: bookings = [], isLoading, error } = useGetAllBookingsQuery();
@@ -12,8 +12,8 @@ const BookingCalendar = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const monthNames = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -38,7 +38,7 @@ const BookingCalendar = () => {
       : null,
     pickup: booking.pickup || "N/A",
     dropoff: booking.dropoff || "N/A",
-    status: booking.status || "New",
+
     passenger: booking.passenger?.name || "N/A",
     email: booking.passenger?.email || "N/A",
     phone: booking.passenger?.phone || "N/A",
@@ -105,9 +105,8 @@ const BookingCalendar = () => {
             return (
               <div
                 key={index}
-                className={`min-h-28 border rounded p-1 ${
-                  day ? "bg-(--white)" : "bg-(--lightest-gray)"
-                }`}
+                className={`min-h-28 border rounded p-1 ${day ? "bg-(--white)" : "bg-(--lightest-gray)"
+                  }`}
               >
                 {day && (
                   <>
@@ -116,10 +115,7 @@ const BookingCalendar = () => {
                     {dayBookings.map((booking) => (
                       <div
                         key={booking.id}
-                        className={`text-[11px] p-1 rounded mb-1 truncate cursor-pointer ${
-                          BookingCalendarstatusColors[booking.status]?.bgClass ||
-                          "bg-theme text-(--white)"
-                        }`}
+                        className="text-[11px] p-1 rounded mb-1 truncate cursor-pointer bg-(--lighter-blue) text-(--navy-blue)"
                         onMouseEnter={(e) => {
                           setHoveredEvent(booking);
                           handleMouseMove(e);
@@ -149,7 +145,7 @@ const BookingCalendar = () => {
               <p><strong>Phone:</strong> {hoveredEvent.phone}</p>
               <p><strong>Pickup:</strong> {hoveredEvent.pickup}</p>
               <p><strong>Dropoff:</strong> {hoveredEvent.dropoff}</p>
-              <p><strong>Status:</strong> {hoveredEvent.status}</p>
+
             </div>
           </div>
         )}

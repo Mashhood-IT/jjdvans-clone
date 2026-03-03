@@ -214,6 +214,17 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               </span>
             </div>
 
+            {viewData?.extraTime && Number(viewData.extraTime) > 0 && (
+              <div className="text-sm">
+                <strong className="text-(--dark-gray) font-semibold">
+                  Extra Time:
+                </strong>
+                <span className="ml-2 text-(--dark-grey)">
+                  {viewData.extraTime} mins
+                </span>
+              </div>
+            )}
+
             <div className="text-sm">
               <strong className="text-(--dark-gray) font-semibold">
                 Duration:
@@ -307,6 +318,17 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                           </strong>
                           <span className="text-(--dark-grey) text-xs">
                             {viewData?.dropoffAccess || "STAIRS"} / Floor {viewData?.dropoffFloorNo || 0}
+                          </span>
+                        </div>
+                      )}
+
+                      {idx > 0 && viewData[`additionalDropoff${idx}Access`] && (
+                        <div className="flex flex-col xs:flex-row xs:items-start gap-1">
+                          <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
+                            Access / Floor:
+                          </strong>
+                          <span className="text-(--dark-grey) text-xs">
+                            {viewData[`additionalDropoff${idx}Access`]} / Floor {viewData[`additionalDropoff${idx}FloorNo`] || 0}
                           </span>
                         </div>
                       )}

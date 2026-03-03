@@ -220,53 +220,33 @@ const WidgetPaymentInformation = ({
     localStorage.setItem("widgetPaymentData", JSON.stringify(dataToSave));
   }, [passengerDetails, formData]);
 
-  const calculateFinalFare = () => {
-    const baseFare = parseFloat(fare || 0);
+  const pricingInfo = useMemo(() => {
+    const pricingDataRaw = localStorage.getItem("widgetPricing");
+    const pricingData = pricingDataRaw ? JSON.parse(pricingDataRaw) : {};
+
+    const inventoryDataRaw = localStorage.getItem("widgetInventoryData");
+    const inventoryData = inventoryDataRaw ? JSON.parse(inventoryDataRaw) : {};
+
+    const baseFare = Number(pricingData.baseFare || 0);
+    const workersCharges = Number(pricingData.extraHelp?.price || 0);
+    const extraTimeCharges = Number(inventoryData.additionalFare || 0);
+
     const childSeatCount = parseIntSafe(formData.childSeat || "0");
     const childSeatTotal = childSeatCount * childSeatUnitPrice;
-    const totalBeforeDiscount = baseFare + childSeatTotal;
 
-    let finalFare = totalBeforeDiscount;
-
- 
-    let paymentMethodSurcharge = 0;
-    if (formData.paymentMethod && generalPricing?.paymentMethodSurcharges) {
-      const methodSurcharge = generalPricing.paymentMethodSurcharges.find(
-        (item) => item.paymentMethod === formData.paymentMethod,
-      );
-      if (methodSurcharge && methodSurcharge.surchargePercent > 0) {
-        paymentMethodSurcharge =
-          (finalFare * methodSurcharge.surchargePercent) / 100;
-        finalFare = finalFare + paymentMethodSurcharge;
-      }
-    }
-    if (paymentMethodSurcharge === 0) {
-      const cardPaymentSurchargePercent = parseFloat(
-        generalPricing?.cardPaymentAmount || 0,
-      );
-      if (cardPaymentSurchargePercent > 0 && formData.paymentMethod) {
-        const paymentMethodLower = formData.paymentMethod.toLowerCase();
-        if (
-          paymentMethodLower === "stripe, card" ||
-          paymentMethodLower === "payment link"
-        ) {
-          paymentMethodSurcharge =
-            (finalFare * cardPaymentSurchargePercent) / 100;
-          finalFare = finalFare + paymentMethodSurcharge;
-        }
-      }
-    }
-
-    const result = parseFloat(finalFare.toFixed(2));
+    const total = baseFare + workersCharges + extraTimeCharges + childSeatTotal;
 
     return {
-      total: result,
-      childSeatCharges: childSeatTotal,
+      baseFare,
+      workersCharges,
+      extraTimeCharges,
+      childSeatTotal,
+      total,
+      currencySymbol: pricingData.currencySymbol || "£"
     };
-  };
+  }, [formData.childSeat, childSeatUnitPrice]);
 
-  const fareResult = calculateFinalFare();
-  const finalFare = fareResult.total;
+  const finalFare = pricingInfo.total;
 
   const onBookNowClick = () => {
     if (!formData.paymentMethod) {
@@ -286,8 +266,11 @@ const WidgetPaymentInformation = ({
         passenger: Number(formData.passenger) || 0,
       },
       fareBreakdown: {
-        baseFare: fare,
-        total: finalFare,
+        baseFare: pricingInfo.baseFare,
+        workersCharges: pricingInfo.workersCharges,
+        extraTimeCharges: pricingInfo.extraTimeCharges,
+        childSeatCharges: pricingInfo.childSeatTotal,
+        total: pricingInfo.total,
       },
     };
 
@@ -477,29 +460,39 @@ const WidgetPaymentInformation = ({
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Standard Moving Rate</span>
+                  <span className="text-gray-600">Original Fare</span>
                   <span className="font-medium text-gray-900">
-                    {currencySymbol}1,250.00
+                    {pricingInfo.currencySymbol}
+                    {pricingInfo.baseFare.toFixed(2)}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Distance Fee (65 miles)</span>
-                  <span className="font-medium text-gray-900">
-                    {currencySymbol}385.00
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Professional Packing</span>
-                  <span className="font-medium text-gray-900">
-                    {currencySymbol}250.00
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Service Tax (5%)</span>
-                  <span className="font-medium text-gray-900">
-                    {currencySymbol}94.25
-                  </span>
-                </div>
+                {pricingInfo.workersCharges > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Extra Workers</span>
+                    <span className="font-medium text-gray-900">
+                      +{pricingInfo.currencySymbol}
+                      {pricingInfo.workersCharges.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {pricingInfo.extraTimeCharges > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Extra Time</span>
+                    <span className="font-medium text-gray-900">
+                      +{pricingInfo.currencySymbol}
+                      {pricingInfo.extraTimeCharges.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {pricingInfo.childSeatTotal > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Child Seats</span>
+                    <span className="font-medium text-gray-900">
+                      +{pricingInfo.currencySymbol}
+                      {pricingInfo.childSeatTotal.toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-gray-200 pt-4 mb-6">

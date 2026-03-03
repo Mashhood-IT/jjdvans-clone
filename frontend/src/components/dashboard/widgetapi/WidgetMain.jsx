@@ -3,11 +3,93 @@ import { useNavigate, Routes, Route } from "react-router-dom";
 import { toast } from "react-toastify";
 import WidgetBooking from "./WidgetBooking";
 import WidgetPaymentInformation from "./WidgetPaymentInformation";
-import { useCreateBookingMutation } from "../../../redux/api/bookingApi";
+import { useCreateBookingMutation, useUpdateBookingMutation } from "../../../redux/api/bookingApi";
 import WidgetSuccess from "./widgetcomponents/WidgetSuccess";
 import WidgetBookingInformation from "./WidgetBookingInformation";
 import WidgetInventory from "./WidgetInventory";
 import WidgetBookingDetails from "./WidgetBookingDetails";
+import { Link, useLocation } from "react-router-dom";
+
+const Breadcrumbs = () => {
+  const location = useLocation();
+  const sp = new URLSearchParams(location.search);
+  const companyId = sp.get("company") || "";
+
+  const steps = [
+    { name: "Journey", path: "/widget-form", match: ["/widget-form", "/widget-form/widget-details"] },
+    { name: "Vehicle", path: "/widget-form/widget-vehicle", match: ["/widget-form/widget-vehicle"] },
+    { name: "Inventory", path: "/widget-form/widget-inventory", match: ["/widget-form/widget-inventory"] },
+    { name: "Payment", path: "/widget-form/widget-payment", match: ["/widget-form/widget-payment"] },
+  ];
+
+  const currentPath = location.pathname.endsWith("/") ? location.pathname.slice(0, -1) : location.pathname;
+
+  const currentStepIndex = steps.findIndex(step =>
+    step.match.some(m => {
+      const normalizedM = m.endsWith("/") ? m.slice(0, -1) : m;
+      return normalizedM === currentPath;
+    })
+  );
+
+  const getStepAvailability = (index) => {
+    if (index === 0) return true;
+    if (index === 1) return !!localStorage.getItem("bookingForm");
+    if (index === 2) return !!localStorage.getItem("selectedVehicle");
+    if (index === 3) return !!localStorage.getItem("widgetInventoryData");
+    return false;
+  };
+
+  if (currentPath === "/widget-form/widget-success") return null;
+
+  return (
+    <nav className="flex items-center justify-center space-x-2 md:space-x-4 mb-8 px-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
+      {steps.map((step, index) => {
+        const isActive = index === currentStepIndex;
+        const isAvailable = getStepAvailability(index);
+        const isCompleted = index < currentStepIndex;
+
+        return (
+          <React.Fragment key={step.name}>
+            <div className="flex items-center">
+              {isAvailable && !isActive ? (
+                <Link
+                  to={`${step.path}?company=${companyId}`}
+                  className="flex items-center text-sm font-medium text-gray-900 hover:text-(--main-color) transition-colors"
+                >
+                  <span
+                    className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] mr-2 ${isCompleted ? "bg-(--main-color) text-white" : "border-2 border-gray-900 bg-white text-gray-900"
+                      }`}
+                  >
+                    {isCompleted ? "✓" : index + 1}
+                  </span>
+                  {step.name}
+                </Link>
+              ) : (
+                <div
+                  className={`flex items-center text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-400"
+                    }`}
+                >
+                  <span
+                    className={`flex items-center justify-center w-6 h-6 rounded-full border-2 text-[10px] mr-2 transition-colors ${isActive
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-gray-300 bg-white text-gray-400"
+                      }`}
+                  >
+                    {index + 1}
+                  </span>
+                  {step.name}
+                </div>
+              )}
+            </div>
+            {index < steps.length - 1 && (
+              <div className="w-4 md:w-8 h-px bg-gray-300 mx-1 md:mx-2" />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </nav>
+  );
+};
 
 const WidgetMain = () => {
   const navigate = useNavigate();
@@ -19,10 +101,14 @@ const WidgetMain = () => {
     payment: {},
     pricing: {},
     source: new URLSearchParams(window.location.search).get("source") || "widget",
+    isEdit: new URLSearchParams(window.location.search).get("isEdit") === "true",
+    bookingId: new URLSearchParams(window.location.search).get("bookingId"),
   });
 
-  const [createBooking, { isLoading: isBookingLoading }] =
-    useCreateBookingMutation();
+  const [createBooking, { isLoading: isBookingLoading }] = useCreateBookingMutation();
+  const [updateBooking, { isLoading: isUpdateLoading }] = useUpdateBookingMutation();
+
+  const isLoading = isBookingLoading || isUpdateLoading;
 
   useEffect(() => {
     sessionStorage.setItem("widget_tab_open", "true");
@@ -98,10 +184,23 @@ const WidgetMain = () => {
           0,
         );
         distanceText = `${totalMiles.toFixed(2)} mi`;
-        durationText = bookingFormData.segments
-          .map((s) => s.durationText)
-          .join(" + ");
+        const totalSeconds = bookingFormData.segments.reduce(
+          (sum, seg) => sum + (seg.durationValue || 0),
+          0,
+        );
+        if (totalSeconds > 0) {
+          const hours = Math.floor(totalSeconds / 3600);
+          const mins = Math.round((totalSeconds % 3600) / 60);
+          durationText =
+            hours > 0 ? `${hours} hours ${mins} mins` : `${mins} mins`;
+        } else {
+          durationText = bookingFormData.segments
+            .map((s) => s.durationText)
+            .join(" + ");
+        }
       }
+
+      const addedMinutes = Math.max(0, ((inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0)) - (inventoryData.initialGoogleMinutes || 0));
 
       const normalizedPayload = {
         ...finalPayload,
@@ -109,13 +208,23 @@ const WidgetMain = () => {
         totalPrice: totalPrice,
         extras: {
           ...finalPayload.extras,
-          extraTime: additionalFare.toString(),
+          extraTime: addedMinutes.toString(),
           rideAlong: finalPayload.ridingAlong ? "Yes" : "No"
         },
         pickupFloorNo: inventoryData.pickupFloor || 0,
         dropoffFloorNo: inventoryData.dropoffFloor || 0,
         pickupAccess: inventoryData.pickupAccess || "STAIRS",
         dropoffAccess: inventoryData.dropoffAccess || "STAIRS",
+
+        additionalDropoff1FloorNo: inventoryData.floorAccess?.additionalDropoff1Floor || 0,
+        additionalDropoff1Access: inventoryData.floorAccess?.additionalDropoff1Access || "STAIRS",
+        additionalDropoff2FloorNo: inventoryData.floorAccess?.additionalDropoff2Floor || 0,
+        additionalDropoff2Access: inventoryData.floorAccess?.additionalDropoff2Access || "STAIRS",
+        additionalDropoff3FloorNo: inventoryData.floorAccess?.additionalDropoff3Floor || 0,
+        additionalDropoff3Access: inventoryData.floorAccess?.additionalDropoff3Access || "STAIRS",
+        additionalDropoff4FloorNo: inventoryData.floorAccess?.additionalDropoff4Floor || 0,
+        additionalDropoff4Access: inventoryData.floorAccess?.additionalDropoff4Access || "STAIRS",
+
         inventoryItems:
           inventoryData.items && Array.isArray(inventoryData.items)
             ? inventoryData.items.map((i) => i.name).join(", ")
@@ -127,9 +236,15 @@ const WidgetMain = () => {
         ridingAlong: inventoryData.ridingAlong || false,
         distanceText,
         durationText,
+        extraTime: addedMinutes.toString(),
       };
 
-      const response = await createBooking(normalizedPayload).unwrap();
+      let response;
+      if (formData.isEdit && formData.bookingId) {
+        response = await updateBooking({ id: formData.bookingId, ...normalizedPayload }).unwrap();
+      } else {
+        response = await createBooking(normalizedPayload).unwrap();
+      }
 
       localStorage.removeItem("selectedVehicle");
       localStorage.removeItem("widgetPricing");
@@ -139,7 +254,7 @@ const WidgetMain = () => {
       localStorage.removeItem("widgetInventoryData");
 
       localStorage.setItem("isWidgetFormFilled", "true");
-      toast.success(response.message || "Booking Request Received");
+      toast.success(response.message || (formData.isEdit ? "Booking Updated Successfully" : "Booking Request Received"));
 
       // Notify parent if inside an iframe
       window.parent.postMessage({ type: "bookingSuccess" }, "*");
@@ -212,8 +327,9 @@ const WidgetMain = () => {
     );
   }
   return (
-    <div className={`w-full bg-transparent `}>
+    <div className={`w-full bg-transparent py-4 md:py-8`}>
       <div className="w-full mx-auto">
+        <Breadcrumbs />
         <Routes>
           <Route
             index
@@ -296,7 +412,7 @@ const WidgetMain = () => {
             element={
               <WidgetPaymentInformation
                 companyId={companyId}
-                loading={isBookingLoading}
+                loading={isLoading}
                 fare={formData.pricing.totalPrice || 0}
                 vehicle={{
                   ...formData.vehicle,
@@ -386,7 +502,7 @@ const WidgetMain = () => {
             element={
               <WidgetPaymentInformation
                 companyId={companyId}
-                loading={isBookingLoading}
+                loading={isLoading}
                 fare={formData.pricing.totalPrice || 0}
                 vehicle={formData.vehicle}
                 booking={formData.booking}

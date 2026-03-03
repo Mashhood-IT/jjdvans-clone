@@ -45,6 +45,32 @@ const BookingSchema = new mongoose.Schema({
 
     dropoffFloorNo: Number,
     pickupFloorNo: Number,
+
+    additionalDropoff1FloorNo: Number,
+    additionalDropoff1Access: {
+        type: String,
+        enum: ["STAIRS", "LIFT"],
+        default: "STAIRS",
+    },
+    additionalDropoff2FloorNo: Number,
+    additionalDropoff2Access: {
+        type: String,
+        enum: ["STAIRS", "LIFT"],
+        default: "STAIRS",
+    },
+    additionalDropoff3FloorNo: Number,
+    additionalDropoff3Access: {
+        type: String,
+        enum: ["STAIRS", "LIFT"],
+        default: "STAIRS",
+    },
+    additionalDropoff4FloorNo: Number,
+    additionalDropoff4Access: {
+        type: String,
+        enum: ["STAIRS", "LIFT"],
+        default: "STAIRS",
+    },
+
     notes: String,
 
     pickupAccess: {
