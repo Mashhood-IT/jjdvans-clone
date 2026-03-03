@@ -1,17 +1,22 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import Icons from "../../../assets/icons";
+import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 
 const nf = new Intl.NumberFormat();
 
-const RoleCards = () => {
+const StatCards = () => {
   const user = useSelector((state) => state?.auth?.user);
+  
+  const {data} = useGetAllBookingsQuery()
+  const bookingsCustomer = data.filter((b)=> b.passenger)
 
+  
   const cardData = [
-    { title: "Total Bookings", value: 10, icon: "FileText" },
+    { title: "Total Bookings", value: data.length, icon: "FileText" },
     {
       title: "Total Customers",
-      value: 10,
+      value: bookingsCustomer.length,
 
       icon: "Users",
     },
@@ -27,6 +32,7 @@ const RoleCards = () => {
   const visibleCards = cardData.filter((card) =>
     roleVisibility[user?.role?.toLowerCase()]?.includes(card.title)
   );
+
 
   return (
     <section className="w-full">
@@ -65,4 +71,4 @@ const RoleCards = () => {
   );
 };
 
-export default RoleCards;
+export default StatCards;

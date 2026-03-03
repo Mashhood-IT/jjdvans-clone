@@ -282,7 +282,7 @@ const VehiclePricing = () => {
               Extra Help Options (Add-ons)
             </label>
             {selectedAccount?.extraHelp?.map((help, index) => (
-              <div key={index} className="flex flex-col sm:flex-row gap-2 mb-3 bg-(--lighter-gray) p-3 rounded-xl border border-(--light-gray) relative">
+              <div key={index} className="flex flex-col sm:flex-row gap-2 mb-3 bg-(--lightest-gray) p-3 rounded-xl border border-(--light-gray) relative">
                 <div className="flex-1">
                   <label className="block text-[10px] uppercase text-gray-400 mb-1">Label</label>
                   <input

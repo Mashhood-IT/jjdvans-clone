@@ -16,7 +16,7 @@ import { actionMenuItems } from "../../constants/dashboardTabsData/data";
 const BookingsList = () => {
   const user = useSelector((state) => state.auth.user);
   const { showLoading, hideLoading } = useLoading();
-  const { data: allBookings = [], isLoading } = useGetAllBookingsQuery();
+  const { data: allBookings = [], isLoading, refetch } = useGetAllBookingsQuery();
   console.log(allBookings)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -239,7 +239,10 @@ const BookingsList = () => {
       >
         <NewBooking
           editBookingData={editBookingData}
-          onClose={() => setShowEditModal(false)}
+          onClose={() => {
+            setShowEditModal(false);
+            refetch();
+          }}
         />
       </CustomModal>
     </>

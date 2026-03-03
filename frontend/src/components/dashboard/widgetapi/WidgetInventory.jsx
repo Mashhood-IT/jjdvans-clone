@@ -48,8 +48,6 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             }
         }
 
-
-
         const bookingForm = localStorage.getItem("bookingForm");
         if (bookingForm) {
             try {

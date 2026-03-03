@@ -669,17 +669,12 @@ const WidgetBookingInformation = ({
     }
 
     const selectedCar = carList.find(car => car._id === selectedCarId);
-    if (!selectedCar || !selectedCar.vehicleName) {
-      toast.error("Please select a valid vehicle.");
-      return;
-    }
-
-    const primaryJourneyFare = calculatedTotalPrice;
+    const primaryJourneyFare = computedPrimaryFare;
 
     const vehiclePayload = {
       vehicleName: selectedCar.vehicleName,
       passengerSeats: selectedCar.passengerSeats || 0,
-      primaryJourneyFare,
+      baseFare: primaryJourneyFare,
       totalFare: calculatedTotalPrice,
       extraHelp: selectedHelpOption ? {
         label: selectedHelpOption.label,
@@ -689,7 +684,7 @@ const WidgetBookingInformation = ({
 
     onNext({
       totalPrice: calculatedTotalPrice,
-      primaryJourneyFare,
+      baseFare: primaryJourneyFare,
       selectedCar: vehiclePayload,
       segmentBreakdown,
     });

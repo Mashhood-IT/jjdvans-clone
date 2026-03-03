@@ -1,5 +1,5 @@
 import React from "react";
-import RoleCards from "./RoleCards";
+import StatCards from "./StatCards";
 import { useSelector } from "react-redux";
 import LoadingEffect from "../../common/LoadingEffect";
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
@@ -17,7 +17,7 @@ const Dashboard = () => {
         name="Stats"
       />
       <div className="space-y-6 max-w-full">
-        <RoleCards />
+        <StatCards />
       </div>
     </>
   );

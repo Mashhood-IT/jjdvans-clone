@@ -3,18 +3,14 @@ import IMAGES from "../../../assets/images";
 
 import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
 
-const BASE_API_URL= "http://localhost:5000/api"
+const BASE_API_URL = "http://localhost:5000/api"
 const PDFContent = forwardRef(({ viewData = {}, companyData = {} }, ref) => {
   const isAirport = (s = "") => s.toLowerCase().includes("airport");
-  const pj = viewData?.returnJourneyToggle
-    ? viewData?.returnJourney || {}
-    : viewData?.primaryJourney || {};
-  const pickupIsAirport = isAirport(pj.pickup);
-  const dropIsAirport = isAirport(pj.dropoff);
+  const pickupIsAirport = isAirport(viewData?.pickup);
+  const dropIsAirport = isAirport(viewData?.dropoff);
 
-  const isFullUrl = companyData.profileImage?.startsWith("http");
-
-  const finalImageUrl = companyData.profileImage
+  const isFullUrl = companyData?.profileImage?.startsWith("http");
+  const finalImageUrl = companyData?.profileImage
     ? isFullUrl
       ? companyData.profileImage
       : `${BASE_API_URL}/${companyData.profileImage.replace(/\\/g, "/")}`
@@ -116,8 +112,8 @@ const PDFContent = forwardRef(({ viewData = {}, companyData = {} }, ref) => {
               </h2>
               <p>
                 <strong>Date & Time:</strong> &nbsp;
-                {pj.date && pj.hour != null
-                  ? formatDateTime(pj.date, pj.hour, pj.minute)
+                {viewData.date && viewData.hour != null
+                  ? formatDateTime(viewData.date, viewData.hour, viewData.minute)
                   : "N/A"}
               </p>
 
@@ -128,18 +124,42 @@ const PDFContent = forwardRef(({ viewData = {}, companyData = {} }, ref) => {
                 <strong>Payment Type:</strong> &nbsp;
                 {viewData?.paymentMethod || "Card Payment"}
               </p>
-              <p
+              <div
                 style={{
-                  fontWeight: "bold",
-                  color: "red",
+                  marginTop: "10px",
+                  padding: "10px",
+                  backgroundColor: "#f3f4f6",
+                  borderRadius: "4px",
+                  textAlign: "right"
                 }}
               >
-                <strong>Fare:</strong> &nbsp;
-                {viewData?.returnJourneyToggle
-                  ? viewData.returnJourneyFare
-                  : viewData.journeyFare || 0} &nbsp;
-                GBP
-              </p>
+                <div style={{ fontSize: "11px", color: "#4b5563", marginBottom: "4px" }}>
+                  <strong>Base Fare:</strong> ${Number(viewData?.fare || 0).toFixed(2)}
+                </div>
+                {viewData?.additionalTimeFare > 0 && (
+                  <div style={{ fontSize: "11px", color: "#4b5563", marginBottom: "4px" }}>
+                    <strong>Additional Time:</strong> +${Number(viewData?.additionalTimeFare).toFixed(2)}
+                  </div>
+                )}
+                {viewData?.workersCharges > 0 && (
+                  <div style={{ fontSize: "11px", color: "#4b5563", marginBottom: "4px" }}>
+                    <strong>Extra Men:</strong> +${Number(viewData?.workersCharges).toFixed(2)}
+                  </div>
+                )}
+                <p
+                  style={{
+                    fontWeight: "bold",
+                    color: "red",
+                    fontSize: "14px",
+                    margin: "5px 0 0 0",
+                    borderTop: "1px solid #d1d5db",
+                    paddingTop: "5px"
+                  }}
+                >
+                  <strong>Total Fare:</strong> ${Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(2)} &nbsp;
+                  GBP
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -184,50 +204,43 @@ const PDFContent = forwardRef(({ viewData = {}, companyData = {} }, ref) => {
               </h5>
               <p style={{ margin: 0 }}>
                 <strong style={{ color: "#6b7280" }}>Address:</strong> &nbsp;
-                {pj.pickup || "N/A"}
+                {viewData.pickup || "N/A"}
+              </p>
+
+              <p style={{ margin: "4px 0" }}>
+                <strong style={{ color: "#6b7280" }}>Access / Floor:</strong> &nbsp;
+                {viewData.pickupAccess || "STAIRS"} / Floor {viewData.pickupFloorNo || 0}
+              </p>
+
+              <p style={{ margin: "4px 0" }}>
+                <strong style={{ color: "#6b7280" }}>Duration:</strong> &nbsp;
+                {viewData.durationText || "N/A"} (Est: {viewData.estimatedDuration || 0} mins)
               </p>
 
               <p style={{ margin: "4px 0" }}>
                 <strong style={{ color: "#6b7280" }}>Booking Type:</strong> &nbsp;
-                {viewData?.mode || "Transfer"}
+                {viewData?.bookingType === "piano_electronics" ? "Piano/Electronics" : (viewData?.mode || "Transfer")}
               </p>
-
-              {viewData?.mode === "Hourly" && pj?.hourlyOption && (
-                <>
-                  <p style={{ margin: "4px 0" }}>
-                    <strong style={{ color: "#6b7280" }}>{typeof pj.hourlyOption === "string" ? "Package" : "No. of Hours"}:</strong> &nbsp;
-                    {typeof pj.hourlyOption === "string"
-                      ? pj.hourlyOption
-                      : `${pj.hourlyOption.hours || pj.hourlyOption.value?.hours || "—"} hours`}
-                  </p>
-                  {typeof pj.hourlyOption === "object" && (
-                    <p style={{ margin: "4px 0" }}>
-                      <strong style={{ color: "#6b7280" }}>Miles Allowed:</strong> &nbsp;
-                      {pj.hourlyOption.distance || pj.hourlyOption.value?.distance || "—"} miles
-                    </p>
-                  )}
-                </>
-              )}
 
               {pickupIsAirport ? (
                 <>
                   <p style={{ margin: "4px 0" }}>
                     <strong style={{ color: "#6b7280" }}>Arriving From:</strong> &nbsp;
-                    {pj.arrivefrom || "—"}
+                    {viewData.arrivefrom || "—"}
                   </p>
                   <p style={{ margin: "4px 0" }}>
                     <strong style={{ color: "#6b7280" }}>Pick Me After:</strong> &nbsp;
-                    {pj.pickmeAfter || "—"}
+                    {viewData.pickmeAfter || "—"}
                   </p>
                   <p style={{ margin: "4px 0" }}>
                     <strong style={{ color: "#6b7280" }}>Flight No.:</strong> &nbsp;
-                    {pj.flightNumber || "—"}
+                    {viewData.flightNumber || "—"}
                   </p>
                 </>
               ) : (
                 <p style={{ margin: "4px 0" }}>
                   <strong style={{ color: "#6b7280" }}>Door No.:</strong> &nbsp;
-                  {pj.pickupDoorNumber || "—"}
+                  {viewData.pickupDoorNumber || "—"}
                 </p>
               )}
             </div>
@@ -243,20 +256,44 @@ const PDFContent = forwardRef(({ viewData = {}, companyData = {} }, ref) => {
               </h5>
               <p style={{ margin: 0 }}>
                 <strong style={{ color: "#6b7280" }}>Address:</strong> &nbsp;
-                {pj.dropoff || "N/A"}
+                {viewData.dropoff || "N/A"}
               </p>
+              <p style={{ margin: "4px 0" }}>
+                <strong style={{ color: "#6b7280" }}>Access / Floor:</strong> &nbsp;
+                {viewData.dropoffAccess || "STAIRS"} / Floor {viewData.dropoffFloorNo || 0}
+              </p>
+              {viewData.additionalDropoff1 && (
+                <p style={{ margin: "4px 0" }}>
+                  <strong style={{ color: "#6b7280" }}>Addl Drop 1:</strong> {viewData.additionalDropoff1}
+                </p>
+              )}
+              {viewData.additionalDropoff2 && (
+                <p style={{ margin: "4px 0" }}>
+                  <strong style={{ color: "#6b7280" }}>Addl Drop 2:</strong> {viewData.additionalDropoff2}
+                </p>
+              )}
+              {viewData.additionalDropoff3 && (
+                <p style={{ margin: "4px 0" }}>
+                  <strong style={{ color: "#6b7280" }}>Addl Drop 3:</strong> {viewData.additionalDropoff3}
+                </p>
+              )}
+              {viewData.additionalDropoff4 && (
+                <p style={{ margin: "4px 0" }}>
+                  <strong style={{ color: "#6b7280" }}>Addl Drop 4:</strong> {viewData.additionalDropoff4}
+                </p>
+              )}
               {dropIsAirport ? (
                 <>
                   <p style={{ margin: "4px 0" }}>
                     <strong style={{ color: "#6b7280" }}>Terminal:</strong> &nbsp;
-                    {pj.dropoff_terminal_0 || "—"}
+                    {viewData.dropoff_terminal_0 || "—"}
                   </p>
                 </>
               ) : (
                 <>
                   <p style={{ margin: "4px 0" }}>
                     <strong style={{ color: "#6b7280" }}>Door No.:</strong> &nbsp;
-                    {pj.dropoffDoorNumber0 || "—"}
+                    {viewData.dropoffDoorNumber0 || "—"}
                   </p>
                 </>
               )}
@@ -299,7 +336,7 @@ const PDFContent = forwardRef(({ viewData = {}, companyData = {} }, ref) => {
             </p>
             <hr style={{ borderColor: "#e5e7eb", margin: "20px 0" }} />
             <h4 style={{ fontSize: "16px", color: "#111827" }}>Notes</h4>
-            <p>{pj.notes || "None"}</p>
+            <p>{viewData.notes || "None"}</p>
           </div>
         </div>
         <div

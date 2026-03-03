@@ -3,20 +3,12 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import PDFContent from "./PDFContent";
 import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
 import Icons from "../../../assets/icons";
 import moment from "moment-timezone";
 import SelectOption from "../../constants/constantcomponents/SelectOption";
 import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
 
 const JourneyDetailsModal = ({ viewData = {} }) => {
-
-  const j = viewData?.returnJourneyToggle
-    ? viewData?.returnJourney || {}
-    : viewData?.primaryJourney || {};
-
-  const isAirport = (s = "") => s.toLowerCase().includes("airport");
-  const pickupIsAirport = isAirport(j.pickup);
 
   const [selectedType, setSelectedType] = useState("Send Customer");
   const [email, setEmail] = useState("");
@@ -98,7 +90,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
 
     if (!isKm && !isMiles) return text;
 
- 
+
   };
 
   const formatDateTime = (dateStr, hour, minute) => {
@@ -121,21 +113,13 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
   };
 
   const pickupTime =
-    viewData?.primaryJourney?.date && viewData?.primaryJourney?.hour
+    viewData?.date && viewData?.hour !== undefined
       ? formatDateTime(
-          viewData.primaryJourney.date,
-          viewData.primaryJourney.hour,
-          viewData.primaryJourney.minute,
-        )
-      : viewData?.returnJourneyToggle &&
-          viewData?.returnJourney?.date &&
-          viewData?.returnJourney?.hour
-        ? formatDateTime(
-            viewData.returnJourney.date,
-            viewData.returnJourney.hour,
-            viewData.returnJourney.minute,
-          )
-        : "N/A";
+        viewData.date,
+        viewData.hour,
+        viewData.minute,
+      )
+      : "N/A";
 
   const isCancelled = viewData?.status === "Cancelled";
 
@@ -145,13 +129,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
         className="max-w-4xl w-full mx-auto space-y-6 px-6 pb-6 pt-2"
         id="pdf-container"
       >
-        <div
-          className={`${
-            loggedInUser.role === "driver" || loggedInUser.role === "customer"
-              ? "hidden"
-              : "flex"
-          } flex-col md:flex-row md:items-center gap-3 md:gap-4`}
-        >
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
           <SelectOption
             options={["Send Customer", "Send  Admin"]}
             value={selectedType}
@@ -175,9 +153,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
             <button
               className="btn btn-success text-sm px-4 py-1.5"
               onClick={handleSendEmail}
-              disabled={isSending}
             >
-              {isSending ? "Sending..." : "Send"}
+              {"Send"}
             </button>
             <button
               onClick={downloadPDF}
@@ -202,8 +179,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               <strong className="text-(--dark-gray) font-semibold">
                 Booking Type:
               </strong>
-              <span className="ml-2 text-(--dark-gray)">
-                {viewData?.mode || "Transfer"}
+              <span className="ml-2 text-(--dark-grey)">
+                {viewData?.bookingType || "N/A"}
               </span>
             </div>
             <div className="text-sm">
@@ -213,8 +190,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               <span className="ml-2 text-(--dark-grey)">
                 {viewData?.createdAt
                   ? moment(viewData.createdAt)
-                      .tz(timezone)
-                      .format("DD/MM/YYYY HH:mm:ss")
+                    .tz(timezone)
+                    .format("DD/MM/YYYY HH:mm:ss")
                   : "N/A"}
               </span>
             </div>
@@ -233,22 +210,16 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                 Notes:
               </strong>
               <span className="ml-2 text-(--dark-grey)">
-                {viewData?.primaryJourney?.notes ||
-                  (viewData?.returnJourneyToggle &&
-                    viewData?.returnJourney?.notes) ||
-                  "None"}
+                {viewData?.notes || "None"}
               </span>
             </div>
 
             <div className="text-sm">
               <strong className="text-(--dark-gray) font-semibold">
-                Internal Notes:
+                Duration:
               </strong>
               <span className="ml-2 text-(--dark-grey)">
-                {viewData?.primaryJourney?.internalNotes ||
-                  (viewData?.returnJourneyToggle &&
-                    viewData?.returnJourney?.internalNotes) ||
-                  "None"}
+                {viewData?.durationText || "N/A"} (Est: {viewData?.estimatedDuration || 0} mins)
               </span>
             </div>
 
@@ -271,56 +242,30 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     Address:
                   </strong>
                   <span className="text-(--dark-grey) text-xs wrap-break-word">
-                    {j.pickup || "N/A"}
+                    {viewData?.pickup || "N/A"}
                   </span>
                 </div>
 
-                {!pickupIsAirport && j.pickupDoorNumber && (
+                {viewData?.pickupDoorNumber && (
                   <div className="flex flex-col xs:flex-row xs:items-start gap-1">
                     <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
                       Door No.:
                     </strong>
                     <span className="text-(--dark-grey) text-xs">
-                      {j.pickupDoorNumber}
+                      {viewData.pickupDoorNumber}
                     </span>
                   </div>
                 )}
 
-                {pickupIsAirport &&
-                  (j.arrivefrom || j.pickmeAfter || j.flightNumber) && (
-                    <div className="space-y-2 pt-2 border-t border-(--light-gray)">
-                      {j.flightNumber && (
-                        <div className="flex flex-col xs:flex-row xs:items-start gap-1">
-                          <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
-                            Flight No.:
-                          </strong>
-                          <span className="text-(--dark-grey) text-xs">
-                            {j.flightNumber}
-                          </span>
-                        </div>
-                      )}
-                      {j.arrivefrom && (
-                        <div className="flex flex-col xs:flex-row xs:items-start gap-1">
-                          <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
-                            Arrive From:
-                          </strong>
-                          <span className="text-(--dark-grey) text-xs wrap-break-word">
-                            {j.arrivefrom}
-                          </span>
-                        </div>
-                      )}
-                      {j.pickmeAfter && (
-                        <div className="flex flex-col xs:flex-row xs:items-start gap-1">
-                          <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
-                            Pick Me After:
-                          </strong>
-                          <span className="text-(--dark-grey) text-xs">
-                            {j.pickmeAfter}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                <div className="flex flex-col xs:flex-row xs:items-start gap-1">
+                  <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
+                    Access / Floor:
+                  </strong>
+                  <span className="text-(--dark-grey) text-xs">
+                    {viewData?.pickupAccess || "STAIRS"} / Floor {viewData?.pickupFloorNo || 0}
+                  </span>
+                </div>
+
               </div>
             </div>
 
@@ -331,16 +276,15 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               <div className="ml-0 sm:ml-1 space-y-3">
                 {[0, 1, 2, 3, 4].map((idx) => {
                   const dropMap = [
-                    j.dropoff,
-                    j.additionalDropoff1,
-                    j.additionalDropoff2,
-                    j.additionalDropoff3,
-                    j.additionalDropoff4,
+                    viewData?.dropoff,
+                    viewData?.additionalDropoff1,
+                    viewData?.additionalDropoff2,
+                    viewData?.additionalDropoff3,
+                    viewData?.additionalDropoff4,
                   ];
                   const drop = dropMap[idx];
                   if (!drop) return null;
 
-                  const isAirport = drop.toLowerCase().includes("airport");
 
                   return (
                     <div
@@ -349,58 +293,33 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     >
                       <div className="flex flex-col gap-1">
                         <strong className="text-(--dark-gray) text-xs">
-                          Address {idx + 1}:
+                          {idx === 0 ? "Main Drop Off" : `Additional Drop Off ${idx}`}:
                         </strong>
                         <span className="text-(--dark-grey) text-xs wrap-break-word">
                           {drop}
                         </span>
                       </div>
 
-                      {!isAirport && j[`dropoffDoorNumber${idx}`] && (
+                      {idx === 0 && (
                         <div className="flex flex-col xs:flex-row xs:items-start gap-1">
                           <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
-                            Door No.:
+                            Access / Floor:
                           </strong>
                           <span className="text-(--dark-grey) text-xs">
-                            {j[`dropoffDoorNumber${idx}`]}
+                            {viewData?.dropoffAccess || "STAIRS"} / Floor {viewData?.dropoffFloorNo || 0}
                           </span>
                         </div>
                       )}
 
-                      {isAirport && j[`dropoff_terminal_${idx}`] && (
-                        <div className="flex flex-col xs:flex-row xs:items-start gap-1">
-                          <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
-                            Terminal No.:
-                          </strong>
-                          <span className="text-(--dark-grey) text-xs">
-                            {j[`dropoff_terminal_${idx}`]}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
               </div>
-
-              {(viewData?.primaryJourney?.terminal ||
-                viewData?.returnJourney?.terminal) && (
-                <div className="mt-3 ml-0 sm:ml-1 text-sm">
-                  <strong className="text-(--dark-gray)">Terminal:</strong>
-                  <span className="ml-2 text-(--medium-grey)">
-                    {viewData?.primaryJourney?.terminal ||
-                      (viewData?.returnJourneyToggle &&
-                        viewData?.returnJourney?.terminal) ||
-                      "—"}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
 
           <div className="space-y-5 bg-(--white) p-5 sm:p-6 rounded-lg shadow-sm border border-(--lightest-gray) ">
-            {!(
-              loggedInUser?.role === "driver" && viewData?.status !== "Accepted"
-            ) && (
+            <div>
               <div className="text-sm">
                 <strong className="text-(--dark-grey) font-semibold block mb-2">
                   Passenger Details:
@@ -427,78 +346,43 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                       Phone:
                     </strong>
                     <span className="text-(--dark-grey) text-xs">
-                      {formatPhoneNumber(viewData.passenger.phone) || "N/A"}
+                      {formatPhoneNumber(viewData?.passenger?.phone) || "N/A"}
                     </span>
                   </div>
                 </div>
               </div>
-            )}
 
-            <div className="text-sm">
-              <strong className="text-(--dark-grey) font-semibold block mb-2">
-                Vehicle Details:
-              </strong>
-              <div className="ml-0 sm:ml-1 mt-2 bg-(--lightest-gray)  p-3 sm:p-4 rounded-md border border-(--lightest-gray)">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                  <div className="flex flex-col gap-1">
-                    <strong className="text-(--dark-gray) text-xs">
-                      Vehicle:
-                    </strong>
-                    <span className="text-(--dark-grey) text-xs wrap-break-word">
-                      {viewData?.vehicle?.vehicleName || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <strong className="text-(--dark-gray) text-xs">
-                      Passengers:
-                    </strong>
-                    <span className="text-(--dark-grey) text-xs">
-                      {viewData?.vehicle?.passenger || 0}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <strong className="text-(--dark-gray) text-xs">
-                      Child Seats:
-                    </strong>
-                    <div>
-                      <span className="text-(--dark-grey) text-xs">
-                        {viewData?.vehicle?.childSeat || 0}
+              <div className="text-sm">
+                <strong className="text-(--dark-grey) font-semibold block mb-2">
+                  Vehicle Details:
+                </strong>
+                <div className="ml-0 sm:ml-1 mt-2 bg-(--lightest-gray)  p-3 sm:p-4 rounded-md border border-(--lightest-gray)">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="flex flex-col gap-1">
+                      <strong className="text-(--dark-gray) text-xs">
+                        Vehicle:
+                      </strong>
+                      <span className="text-(--dark-grey) text-xs wrap-break-word">
+                        {viewData?.vehicle?.vehicleName || "N/A"}
                       </span>
-                      {(viewData.vehicle.babySeat > 0 ||
-                        viewData.vehicle.carSeat > 0 ||
-                        viewData.vehicle.boosterSeat > 0) && (
-                        <span className="text-xs text-(--dark-grey) ml-1">
-                          (
-                          {[
-                            viewData.vehicle.babySeat > 0 &&
-                              `${viewData.vehicle.babySeat} Baby`,
-                            viewData.vehicle.carSeat > 0 &&
-                              `${viewData.vehicle.carSeat} Car`,
-                            viewData.vehicle.boosterSeat > 0 &&
-                              `${viewData.vehicle.boosterSeat} Booster`,
-                          ]
-                            .filter(Boolean)
-                            .join(", ")}
-                          )
-                        </span>
-                      )}
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <strong className="text-(--dark-gray) text-xs">
-                      Small Luggage:
-                    </strong>
-                    <span className="text-(--dark-grey) text-xs">
-                      {viewData?.vehicle?.handLuggage || 0}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1 col-span-2">
-                    <strong className="text-(--dark-gray) text-xs">
-                      Large Luggage:
-                    </strong>
-                    <span className="text-(--dark-grey) text-xs">
-                      {viewData?.vehicle?.checkinLuggage || 0}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <strong className="text-(--dark-gray) text-xs">
+                        Passengers:
+                      </strong>
+                      <span className="text-(--dark-grey) text-xs">
+                        {viewData?.passengerCount || 0}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1 col-span-2">
+                      <strong className="text-(--dark-gray) text-xs">
+                        Luggage:
+                      </strong>
+                      <span className="text-(--dark-grey) text-xs">
+                        {viewData?.inventoryItems || 0}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -508,85 +392,43 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
 
         <div className="bg-(--white) p-5 sm:p-6 rounded-lg shadow-sm border border-(--lightest-gray) ">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium">
-              <span className="text-(--dark-gray)">Fare:</span>
-              <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
-                {loggedInUser.role === "driver" ? (
-                  <>
-                    $
-                    {Number(
-                      viewData?.driverFare ?? viewData?.returnDriverFare ?? 0,
-                    ).toFixed(2)}
-                    Dollar
-                  </>
-                ) : (
-                  <>
-                    {viewData?.returnJourneyToggle
-                      ? viewData?.returnJourneyFare
-                      : viewData?.journeyFare}
-                    &nbsp;
-                    Dollar
-                  </>
-                )}
-              </span>
-
-              {viewData?.mode === "Hourly" && j?.hourlyOption && (
-                <>
-                  <div className="text-sm">
-                    <strong className="text-(--dark-gray) font-semibold">
-                      {typeof j.hourlyOption === "string"
-                        ? "Package"
-                        : "No. of Hours"}
-                      :
-                    </strong>
-                    <span className="ml-2 text-(--dark-gray)">
-                      {typeof j.hourlyOption === "string"
-                        ? j.hourlyOption
-                        : `${j.hourlyOption.hours || j.hourlyOption.value?.hours || "—"} hours`}
-                    </span>
+            <div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+              {(viewData?.fare !== undefined || viewData?.additionalTimeFare || viewData?.workersCharges) && (
+                <div className="space-y-1 border-b border-gray-200 pb-2 mb-2">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Base Fare:</span>
+                    <span>${Number(viewData?.fare || 0).toFixed(2)}</span>
                   </div>
-                  {typeof j.hourlyOption === "object" && (
-                    <div className="text-sm">
-                      <strong className="text-(--dark-gray) font-semibold">
-                        Miles Allowed:
-                      </strong>
-                      <span className="ml-2 text-(--dark-gray)">
-                        {j.hourlyOption.distance ||
-                          j.hourlyOption.value?.distance ||
-                          "—"}
-                        miles
-                      </span>
+                  {viewData?.additionalTimeFare > 0 && (
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Additional Time Charges:</span>
+                      <span>+${Number(viewData?.additionalTimeFare).toFixed(2)}</span>
                     </div>
                   )}
-                </>
+                  {viewData?.workersCharges > 0 && (
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Extra Men Charges:</span>
+                      <span>+${Number(viewData?.workersCharges).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
               )}
+              <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium flex items-center justify-center">
+                <span className="text-(--dark-gray)">Total Fare:</span>
+                <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
+                  $
+                  {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(2)}
+                  &nbsp;Dollar
+                </span>
+              </div>
             </div>
           </div>
-          <div className="text-center text-(--dark-grey) mt-3 text-xs sm:text-sm">
-            <span className="font-medium">Approx. Distance:</span>
-            <span className="ml-2">
-              {convertDistance(
-                viewData?.primaryJourney?.distanceText ||
-                  (viewData?.returnJourneyToggle &&
-                    viewData?.returnJourney?.distanceText),
-              )}
-            </span>
-          </div>
         </div>
-
-        <div>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-2 text-center">
-            <span className="text-(--dark-gray) font-medium text-sm sm:text-base">
-              Booking Status -
-            </span>
-            <span
-              className={`font-bold text-base sm:text-lg ${
-                isCancelled ? "text-(--alert-red)" : "text-(--success-color)"
-              }`}
-            >
-              {viewData?.status || "Pending"}
-            </span>
-          </div>
+        <div className="text-center text-(--dark-grey) mt-3 text-xs sm:text-sm">
+          <span className="font-medium">Approx. Distance:</span>
+          <span className="ml-2">
+            {viewData?.distanceText}
+          </span>
         </div>
       </div>
       <PDFContent ref={pdfRef} viewData={viewData} companyData={companyData} />

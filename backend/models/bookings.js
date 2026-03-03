@@ -8,7 +8,6 @@ const VehicleSchema = new mongoose.Schema({
 }, { _id: false })
 
 const ExtrasSchema = new mongoose.Schema({
-    rideAlong: String,
     extraTime: String,
 
 
@@ -60,7 +59,9 @@ const BookingSchema = new mongoose.Schema({
     },
     inventoryItems: String,
 
-fare: Number,
+    fare: Number,
+    additionalTimeFare: Number,
+    workersCharges: Number,
     totalPrice: Number,
     paymentMethod: String,
     passenger: PassengerSchema,
@@ -70,7 +71,12 @@ fare: Number,
     estimatedDuration: Number,
 
     vehicle: VehicleSchema,
-    extras: ExtrasSchema,
+    extraTime: String,
+    source: {
+        type: String,
+        enum: ["widget", "admin"],
+        default: "widget"
+    }
 
 }, { timestamps: true })
 

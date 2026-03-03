@@ -35,7 +35,7 @@ const AuthLayout = () => {
               <span className="text-xl font-semibold uppercase">
                 {isLoading
                   ? "Loading..."
-                  : superadminInfo?.superadminCompanyName || "Booking App"}
+                  : "Flexible Budget Removals Limited"}
               </span>
             </div>
           </div>

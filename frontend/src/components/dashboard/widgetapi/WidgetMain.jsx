@@ -7,6 +7,7 @@ import { useCreateBookingMutation } from "../../../redux/api/bookingApi";
 import WidgetSuccess from "./widgetcomponents/WidgetSuccess";
 import WidgetBookingInformation from "./WidgetBookingInformation";
 import WidgetInventory from "./WidgetInventory";
+import WidgetBookingDetails from "./WidgetBookingDetails";
 
 const WidgetMain = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const WidgetMain = () => {
     vehicle: {},
     payment: {},
     pricing: {},
+    source: new URLSearchParams(window.location.search).get("source") || "widget",
   });
 
   const [createBooking, { isLoading: isBookingLoading }] =
@@ -71,10 +73,17 @@ const WidgetMain = () => {
   const handleBookingSubmission = async (finalPayload) => {
     try {
       const inventoryDataRaw = localStorage.getItem("widgetInventoryData");
-      const inventoryData = inventoryDataRaw
-        ? JSON.parse(inventoryDataRaw)
-        : {};
+      const inventoryData = inventoryDataRaw ? JSON.parse(inventoryDataRaw) : {};
+
+      const pricingDataRaw = localStorage.getItem("widgetPricing");
+      const pricingData = pricingDataRaw ? JSON.parse(pricingDataRaw) : {};
+
       const additionalFare = Number(inventoryData.additionalFare || 0);
+      const workersCharges = Number(pricingData.extraHelp?.price || 0);
+      const baseFare = Number(pricingData.baseFare || finalPayload.fare || 0);
+
+      const totalPrice = baseFare + additionalFare + workersCharges;
+
       const bookingFormRaw = localStorage.getItem("bookingForm");
       const bookingFormData = bookingFormRaw ? JSON.parse(bookingFormRaw) : {};
       let distanceText = "";
@@ -96,6 +105,13 @@ const WidgetMain = () => {
 
       const normalizedPayload = {
         ...finalPayload,
+        fare: baseFare,
+        totalPrice: totalPrice,
+        extras: {
+          ...finalPayload.extras,
+          extraTime: additionalFare.toString(),
+          rideAlong: finalPayload.ridingAlong ? "Yes" : "No"
+        },
         pickupFloorNo: inventoryData.pickupFloor || 0,
         dropoffFloorNo: inventoryData.dropoffFloor || 0,
         pickupAccess: inventoryData.pickupAccess || "STAIRS",
@@ -124,6 +140,10 @@ const WidgetMain = () => {
 
       localStorage.setItem("isWidgetFormFilled", "true");
       toast.success(response.message || "Booking Request Received");
+
+      // Notify parent if inside an iframe
+      window.parent.postMessage({ type: "bookingSuccess" }, "*");
+
       navigate("/widget-form/widget-success");
     } catch (err) {
       console.error("Booking submission failed:", err);
@@ -203,15 +223,30 @@ const WidgetMain = () => {
                 data={formData.booking}
                 onSubmitSuccess={(data) => {
                   handleDataChange("booking", data);
+                  navigate(`/widget-form/widget-details?company=${companyId}`);
+                }}
+                onChange={(data) => handleDataChange("booking", data)}
+              />
+            }
+          />
+
+          <Route
+            path="widget-details"
+            element={
+              <WidgetBookingDetails
+                companyId={companyId}
+                data={formData.booking}
+                onSubmitSuccess={(data) => {
+                  handleDataChange("booking", data);
                   handleDataChange("pricing", {
                     dropOffPrice: data.dropOffPrice || 0,
                   });
                   navigate(`/widget-form/widget-vehicle?company=${companyId}`);
                 }}
+                onBack={() => {
+                  navigate(`/widget-form?company=${companyId}`);
+                }}
                 onChange={(data) => handleDataChange("booking", data)}
-                onCheckedPriceFound={(matchedPrice) =>
-                  handleDataChange("pricing", matchedPrice)
-                }
               />
             }
           />
@@ -271,15 +306,20 @@ const WidgetMain = () => {
                 }}
                 booking={formData.booking}
                 onBookNow={(bookingData) => {
+                  const pricingDataRaw = localStorage.getItem("widgetPricing");
+                  const pricingData = pricingDataRaw ? JSON.parse(pricingDataRaw) : {};
+
                   const inventoryDataRaw = localStorage.getItem(
                     "widgetInventoryData",
                   );
                   const inventoryData = inventoryDataRaw
                     ? JSON.parse(inventoryDataRaw)
                     : {};
-                  const additionalFare = Number(
-                    inventoryData.additionalFare || 0,
-                  );
+
+                  const baseFare = Number(pricingData.baseFare || formData.pricing.totalPrice || 0);
+                  const additionalFare = Number(inventoryData.additionalFare || 0);
+                  const workersCharges = Number(pricingData.extraHelp?.price || 0);
+
                   const passengerDetails =
                     bookingData?.passengerDetails ||
                     bookingData?.passenger ||
@@ -291,8 +331,7 @@ const WidgetMain = () => {
                     bookingData?.selectedVehicle ||
                     bookingData?.vehicle ||
                     formData.vehicle;
-                  const fare =
-                    bookingData?.fare || formData.pricing.totalPrice || 0;
+
                   const childSeatCharges = bookingData?.childSeatCharges || 0;
                   const fareBreakdown = bookingData?.fareBreakdown || {};
 
@@ -306,8 +345,9 @@ const WidgetMain = () => {
                     companyId,
                     paymentMethod,
                     referrer: window.location.href,
-                    fare: Number(fare) + additionalFare,
+                    fare: baseFare,
                     additionalTimeFare: additionalFare,
+                    workersCharges: workersCharges,
                     childSeatCharges: childSeatCharges,
                     vehicle: selectedVehicle,
                     passenger: {
@@ -318,6 +358,7 @@ const WidgetMain = () => {
                     voucher: voucher || null,
                     voucherApplied: !!voucher,
                     fareBreakdown: fareBreakdown,
+                    source: formData.source,
                     ...formData.booking,
                   };
 
@@ -384,6 +425,7 @@ const WidgetMain = () => {
                     },
                     voucher: voucher || null,
                     voucherApplied: !!voucher,
+                    source: formData.source,
                     ...formData.booking,
                   };
 
@@ -407,7 +449,7 @@ const WidgetMain = () => {
                 data={formData.booking}
                 onSubmitSuccess={(data) => {
                   handleDataChange("booking", data);
-                  navigate(`/widget-form/widget-vehicle?company=${companyId}`);
+                  navigate(`/widget-form/widget-details?company=${companyId}`);
                 }}
                 onChange={(data) => handleDataChange("booking", data)}
               />
