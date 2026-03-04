@@ -19,7 +19,7 @@ const DashboardLayout = () => {
         <div className="flex flex-1 min-h-0 md:px-4 md:pb-4">
           <div
             className={`shrink-0 hidden md:block transition-all duration-300 ${isSidebarOpen ? "md:mr-5" : "md:mr-0"}`}
-            style={{ width: isSidebarOpen ? undefined : "0px", overflow: isSidebarOpen ? undefined : "hidden" }}
+            style={{ width: isSidebarOpen ? undefined : "80px", overflow: isSidebarOpen ? undefined : "hidden" }}
           >
             <Sidebar
               activeSubTabs={activeSubTabs}

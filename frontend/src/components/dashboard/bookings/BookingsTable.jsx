@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Icons from "../../../assets/icons";
 import moment from "moment-timezone";
-import SelectStatus from "../../constants/constantcomponents/SelectStatus";
 import BookingTableRenderer from "./bookingsTable/BookingTableRenderer";
 
 const BookingsTable = ({
@@ -74,7 +73,6 @@ const BookingsTable = ({
         setTooltip={setTooltip}
         assignedDrivers={assignedDrivers}
         Icons={Icons}
-        SelectStatus={SelectStatus}
         moment={moment}
         timezone={timezone}
         emptyMessage="No bookings found..."
