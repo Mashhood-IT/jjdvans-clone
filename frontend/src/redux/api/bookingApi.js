@@ -41,6 +41,13 @@ export const bookingApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Bookings"],
     }),
+    sendBookingEmail: builder.mutation({
+      query: ({ bookingId, email, type = "confirmation" }) => ({
+        url: "/booking/send-booking-email",
+        method: "POST",
+        body: { bookingId, email, type },
+      }),
+    }),
   })
 })
 
@@ -49,5 +56,6 @@ export const {
   useGetBookingByIdQuery,
   useCreateBookingMutation,
   useUpdateBookingMutation,
-  useDeleteBookingMutation
+  useDeleteBookingMutation,
+  useSendBookingEmailMutation
 } = bookingApi

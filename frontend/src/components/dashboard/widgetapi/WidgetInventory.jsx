@@ -37,6 +37,12 @@ const WidgetInventory = ({ onContinue, onBack }) => {
     const [additionalFare, setAdditionalFare] = useState(0);
 
     useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    }, []);
+
+    useEffect(() => {
         const savedInventory = localStorage.getItem("widgetInventoryData");
         if (savedInventory) {
             try {
@@ -189,7 +195,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="bg-(--lighter-gray) py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className=" mb-4">
                     <button
@@ -211,12 +217,12 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                     Step 3: Survey your moving scope and our availability
                 </p>
 
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-gray-900">Item Inventory</h2>
+                        <h2 className="text-lg font-bold text-(--dark-gray)">Item Inventory</h2>
                         <button
                             onClick={() => setShowItemInput(!showItemInput)}
-                            className="flex cursor-pointer items-center gap-2 px-3 py-1.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                            className="flex cursor-pointer items-center gap-2 px-3 py-1.5 bg-(--dark-gray) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
                         >
                             <Icons.Plus className="w-4 h-4" />
                             <span className="text-sm font-medium">Add Item</span>
@@ -237,7 +243,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                 />
                                 <button
                                     onClick={handleAddItem}
-                                    className="px-4 py-2 cursor-pointer bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                                    className="px-4 py-2 cursor-pointer bg-gray-900 text-(--white) rounded-lg hover:bg-gray-800 transition-colors"
                                 >
                                     Add
                                 </button>
@@ -259,7 +265,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                             {items.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg"
+                                    className="flex items-center justify-between px-4 py-3 bg-(--lighter-gray) border border-gray-200 rounded-lg"
                                 >
                                     <span className="text-gray-900 font-medium">{item.name}</span>
                                     <button
@@ -282,7 +288,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                     )}
                 </div>
 
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-6">
                         Floor & Accessibility
                     </h2>
@@ -303,7 +309,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => setPickupFloor(Math.max(0, pickupFloor - 1))}
-                                        className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                                     >
                                         <Icons.Minus className="w-4 h-4 text-gray-600" />
                                     </button>
@@ -314,7 +320,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     </div>
                                     <button
                                         onClick={() => setPickupFloor(pickupFloor + 1)}
-                                        className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                                     >
                                         <Icons.Plus className="w-4 h-4 text-gray-600" />
                                     </button>
@@ -329,7 +335,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setPickupAccess("LIFT")}
                                         className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "LIFT"
-                                            ? "bg-gray-900 text-white"
+                                            ? "bg-gray-900 text-(--white)"
                                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
@@ -338,7 +344,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setPickupAccess("STAIRS")}
                                         className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "STAIRS"
-                                            ? "bg-gray-900 text-white"
+                                            ? "bg-gray-900 text-(--white)"
                                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
@@ -365,7 +371,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                         onClick={() =>
                                             setDropoffFloor(Math.max(0, dropoffFloor - 1))
                                         }
-                                        className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                                     >
                                         <Icons.Minus className="w-4 h-4 text-gray-600" />
                                     </button>
@@ -376,7 +382,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     </div>
                                     <button
                                         onClick={() => setDropoffFloor(dropoffFloor + 1)}
-                                        className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                                     >
                                         <Icons.Plus className="w-4 h-4 text-gray-600" />
                                     </button>
@@ -391,7 +397,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setDropoffAccess("LIFT")}
                                         className={`flex-1 cursor-pointer  px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "LIFT"
-                                            ? "bg-gray-900 text-white"
+                                            ? "bg-gray-900 text-(--white)"
                                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
@@ -400,7 +406,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                     <button
                                         onClick={() => setDropoffAccess("STAIRS")}
                                         className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "STAIRS"
-                                            ? "bg-gray-900 text-white"
+                                            ? "bg-gray-900 text-(--white)"
                                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                             }`}
                                     >
@@ -440,7 +446,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                                     ),
                                                 }))
                                             }
-                                            className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                            className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                                         >
                                             <Icons.Minus className="w-4 h-4 text-gray-600" />
                                         </button>
@@ -457,7 +463,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                                         prev[`additionalDropoff${ad.id}Floor`] + 1,
                                                 }))
                                             }
-                                            className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                            className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                                         >
                                             <Icons.Plus className="w-4 h-4 text-gray-600" />
                                         </button>
@@ -478,7 +484,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                             }
                                             className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
                                                 "LIFT"
-                                                ? "bg-gray-900 text-white"
+                                                ? "bg-gray-900 text-(--white)"
                                                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                                 }`}
                                         >
@@ -493,7 +499,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                             }
                                             className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
                                                 "STAIRS"
-                                                ? "bg-gray-900 text-white"
+                                                ? "bg-gray-900 text-(--white)"
                                                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                                 }`}
                                         >
@@ -534,15 +540,15 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                 onClick={() => adjustDuration(false)}
                                 className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
                             >
-                                <Icons.Minus className="w-5 h-5 text-white" />
+                                <Icons.Minus className="w-5 h-5 text-(--white)" />
                             </button>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-6xl font-bold text-white tabular-nums">
+                                <span className="text-6xl font-bold text-(--white) tabular-nums">
                                     {String(estimatedHours).padStart(2, "0")}
                                 </span>
-                                <span className="text-6xl font-bold text-white">:</span>
-                                <span className="text-6xl font-bold text-white tabular-nums">
+                                <span className="text-6xl font-bold text-(--white)">:</span>
+                                <span className="text-6xl font-bold text-(--white) tabular-nums">
                                     {String(estimatedMinutes).padStart(2, "0")}
                                 </span>
                             </div>
@@ -551,7 +557,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                 onClick={() => adjustDuration(true)}
                                 className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
                             >
-                                <Icons.Plus className="w-5 h-5 text-white" />
+                                <Icons.Plus className="w-5 h-5 text-(--white)" />
                             </button>
                         </div>
 
@@ -566,13 +572,13 @@ const WidgetInventory = ({ onContinue, onBack }) => {
 
                     <div className="mt-4 pt-4 border-t border-gray-700">
                         <p className="text-sm text-gray-400 text-center">Additional time charges</p>
-                        <p className="text-2xl font-bold text-white text-center">
+                        <p className="text-2xl font-bold text-(--white) text-center">
                             £{additionalFare.toFixed(2)}
                         </p>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-6">
                         Travel Preference
                     </h2>
@@ -604,7 +610,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
       left-1
       w-5 h-5
       md:w-6 md:h-6
-      bg-white
+      bg-(--white)
       rounded-full
       shadow
       transition-transform duration-300
@@ -635,7 +641,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                         onClick={() =>
                                             setPassengerCount(Math.max(0, passengerCount - 1))
                                         }
-                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
                                     >
                                         <Icons.Minus className="w-4 h-4 text-gray-600" />
                                     </button>
@@ -649,7 +655,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                                                 Math.min(totalSeats, passengerCount + 1),
                                             )
                                         }
-                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+                                        className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
                                     >
                                         <Icons.Plus className="w-4 h-4 text-gray-600" />
                                     </button>

@@ -140,14 +140,14 @@ const PrimaryForm = ({
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:pr-4">
             <div className="relative">
               <div className="flex items-center gap-x-1 text-gray-400">
-                <Icons.MapPin size={15} />
+                <Icons.Map size={15} />
                 <span className="text-xs text-(--dark-grey)">Service Type</span>
               </div>
               <select
                 name="bookingType"
                 value={formData.bookingType || ""}
                 onChange={handleChange}
-                className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent appearance-none bg-white text-gray-800 font-medium"
+                className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent appearance-none bg-(--white) text-gray-800 font-medium"
               >
                 <option value="">Select service</option>
                 {REMOVAL_BOOKING_TYPES.map(opt => (
@@ -187,7 +187,7 @@ const PrimaryForm = ({
                     <li
                       key={idx}
                       onClick={() => handlePickupSelect(sug)}
-                      className="p-3 text-sm hover:bg-gray-50 cursor-pointer border-b last:border-0 transition-colors"
+                      className="p-3 text-sm hover:bg-(--lighter-gray) cursor-pointer border-b last:border-0 transition-colors"
                     >
                       {sug.name} - {sug.formatted_address}
                     </li>
@@ -212,7 +212,7 @@ const PrimaryForm = ({
                 className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent text-(--dark-gray)"
               />
               {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
-                <ul className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2">
+                <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2">
                   <li
                     onClick={async () => {
                       const val = (dropOffs[0] || "").trim();
@@ -234,7 +234,7 @@ const PrimaryForm = ({
                     <li
                       key={i}
                       onClick={() => handleDropOffSelect(0, sug)}
-                      className="p-3 text-sm hover:bg-gray-50 cursor-pointer border-b last:border-0 transition-colors"
+                      className="p-3 text-sm hover:bg-(--lighter-gray) cursor-pointer border-b last:border-0 transition-colors"
                     >
                       {sug.name} - {sug.formatted_address}
                     </li>

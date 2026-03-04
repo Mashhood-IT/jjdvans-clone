@@ -319,7 +319,7 @@ const VehiclePricing = () => {
                 </div>
                 <button
                   type="button"
-                  className="absolute -top-2 -right-2 bg-white shadow-md rounded-full p-1 text-(--alert-red) cursor-pointer"
+                  className="absolute -top-2 -right-2 bg-(--white) shadow-md rounded-full p-1 text-(--alert-red) cursor-pointer"
                   onClick={() => {
                     const updated = [...selectedAccount.extraHelp];
                     updated.splice(index, 1);

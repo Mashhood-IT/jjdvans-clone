@@ -57,7 +57,7 @@ const Breadcrumbs = () => {
                   className="flex items-center text-sm font-medium text-gray-900 hover:text-(--main-color) transition-colors"
                 >
                   <span
-                    className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] mr-2 ${isCompleted ? "bg-(--main-color) text-white" : "border-2 border-gray-900 bg-white text-gray-900"
+                    className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] mr-2 ${isCompleted ? "bg-(--main-color) text-(--white)" : "border-2 border-gray-900 bg-(--white) text-gray-900"
                       }`}
                   >
                     {isCompleted ? "✓" : index + 1}
@@ -71,8 +71,8 @@ const Breadcrumbs = () => {
                 >
                   <span
                     className={`flex items-center justify-center w-6 h-6 rounded-full border-2 text-[10px] mr-2 transition-colors ${isActive
-                      ? "border-gray-900 bg-gray-900 text-white"
-                      : "border-gray-300 bg-white text-gray-400"
+                      ? "border-gray-900 bg-gray-900 text-(--white)"
+                      : "border-gray-300 bg-(--white) text-gray-400"
                       }`}
                   >
                     {index + 1}
@@ -276,7 +276,7 @@ const WidgetMain = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
-        <div className="bg-white border border-red-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+        <div className="bg-(--white) border border-red-200 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-red-100 rounded-full p-4">
               <svg
@@ -311,7 +311,7 @@ const WidgetMain = () => {
                 localStorage.removeItem("widgetPaymentData");
                 navigate("/widget-form");
               }}
-              className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium text-sm transition"
+              className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-(--white) rounded-full font-medium text-sm transition"
             >
               Start Again
             </button>

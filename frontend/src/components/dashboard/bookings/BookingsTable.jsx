@@ -4,17 +4,13 @@ import { toast } from "react-toastify";
 import Icons from "../../../assets/icons";
 import moment from "moment-timezone";
 import SelectStatus from "../../constants/constantcomponents/SelectStatus";
-import CustomTable from "../../constants/constantcomponents/CustomTable";
 import BookingTableRenderer from "./bookingsTable/BookingTableRenderer";
 
 const BookingsTable = ({
   assignedDrivers,
-  selectedColumns,
   selectedActionRow,
   setSelectedActionRow,
-  openAuditModal,
   openViewModal,
-  openDriverModal,
   actionMenuItems,
   setEditBookingData,
   setShowEditModal,
@@ -26,17 +22,6 @@ const BookingsTable = ({
   const user = useSelector((state) => state.auth.user);
   const timezone = useSelector((state) => state.timezone?.timezone) || "UTC";
   const [tooltip, setTooltip] = useState({ show: false, text: "", x: 0, y: 0 });
-  const updateJobStatus = async () => { };
-  const sendBookingEmail = async () => { };
-  const bookingSettingData = {};
-  const isBookingsLoading = false;
-  const refetchBookings = () => { };
-
-  const jobData = {};
-  const isJobsLoading = false;
-  const refetchJobs = () => { };
-
-  const driversData = {};
 
   const tableHeaders = [
     { key: "bookingId", label: "Booking ID" },
@@ -51,28 +36,7 @@ const BookingsTable = ({
     { key: "actions", label: "Actions" },
   ];
   const filteredTableHeaders = tableHeaders;
-  const exportTableData = [];
-  const emptyTableRows = [];
-  const isDriver = false;
-  const refetch = () => { };
   const getErrMsg = (err) => err?.message || "Something went wrong";
-
-
-  useEffect(() => {
-    function handleFocus() {
-      if (isDriver) {
-        refetchJobs();
-      } else {
-        refetchBookings();
-        refetchJobs();
-      }
-    }
-
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [refetchBookings, refetchJobs, isDriver]);
 
   useEffect(() => {
     function handleDocClick(e) {
@@ -89,40 +53,18 @@ const BookingsTable = ({
     return () => document.removeEventListener("mousedown", handleDocClick);
   }, [selectedActionRow, setSelectedActionRow]);
 
-
-
-  if (isDriver ? isJobsLoading : isBookingsLoading) {
-    return (
-      <CustomTable
-        tableHeaders={filteredTableHeaders}
-        tableData={[]}
-        exportTableData={[]}
-        emptyMessage="Loading bookings..."
-        showSearch
-        showRefresh
-      />
-    );
-  }
-
   return (
     <>
       <BookingTableRenderer
         filteredTableHeaders={filteredTableHeaders}
         filteredBookings={filteredBookings}
-        emptyTableRows={emptyTableRows}
-        exportTableData={exportTableData}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         openViewModal={openViewModal}
         user={user}
-        updateJobStatus={updateJobStatus}
-        sendBookingEmail={sendBookingEmail}
-        refetch={refetch}
         getErrMsg={getErrMsg}
         selectedActionRow={selectedActionRow}
         setSelectedActionRow={setSelectedActionRow}
-        openAuditModal={openAuditModal}
-        openDriverModal={openDriverModal}
         openCompletionModal={openCompletionModal}
         setEditBookingData={setEditBookingData}
         setShowEditModal={setShowEditModal}
@@ -130,11 +72,7 @@ const BookingsTable = ({
         toast={toast}
         tooltip={tooltip}
         setTooltip={setTooltip}
-        driversData={driversData}
-        jobData={jobData}
         assignedDrivers={assignedDrivers}
-        bookingSettingData={bookingSettingData}
-        isDriver={isDriver}
         Icons={Icons}
         SelectStatus={SelectStatus}
         moment={moment}

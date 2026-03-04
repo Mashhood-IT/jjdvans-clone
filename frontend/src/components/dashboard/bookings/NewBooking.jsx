@@ -8,19 +8,18 @@ const NewBooking = ({ onClose, editBookingData }) => {
   const iframeRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const isEdit = !!editBookingData?._id;
+  const [isSeededFromDb, setIsSeededFromDb] = useState(!isEdit);
 
   const { data: existingBooking, isLoading: isBookingLoading } = useGetBookingByIdQuery(
     editBookingData?._id,
     { skip: !isEdit }
   );
 
-  // Seed localStorage with existing booking data before the iframe loads
   useEffect(() => {
-    if (!isEdit || !existingBooking) return;
+    if (!isEdit || !existingBooking || isSeededFromDb) return;
 
     const b = existingBooking;
 
-    // 1. bookingForm — journey details
     const bookingForm = {
       pickup: b.pickup || "",
       dropoff: b.dropoff || "",
@@ -39,12 +38,10 @@ const NewBooking = ({ onClose, editBookingData }) => {
     };
     localStorage.setItem("bookingForm", JSON.stringify(bookingForm));
 
-    // 2. selectedVehicle
     if (b.vehicle) {
       localStorage.setItem("selectedVehicle", JSON.stringify(b.vehicle));
     }
 
-    // 3. widgetInventoryData — inventory / floor / access
     const inventoryData = {
       pickupFloor: b.pickupFloorNo || 0,
       dropoffFloor: b.dropoffFloorNo || 0,
@@ -84,7 +81,9 @@ const NewBooking = ({ onClose, editBookingData }) => {
       passengerDetails: b.passenger || {},
     };
     localStorage.setItem("widgetPaymentData", JSON.stringify(paymentData));
-  }, [isEdit, existingBooking, companyId]);
+
+    setIsSeededFromDb(true);
+  }, [isEdit, existingBooking, companyId, isSeededFromDb]);
 
   // Clean up localStorage on unmount
   useEffect(() => {
@@ -119,10 +118,10 @@ const NewBooking = ({ onClose, editBookingData }) => {
   const widgetUrl = `/widget-form?company=${companyId}&source=admin${isEdit ? `&isEdit=true&bookingId=${editBookingData._id}` : ""}`;
 
   // Wait for booking data to be fetched and seeded into localStorage before rendering iframe
-  if (isEdit && isBookingLoading) {
+  if (isEdit && (isBookingLoading || !isSeededFromDb)) {
     return (
       <div className="w-full relative" style={{ minHeight: "600px" }}>
-        <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-(--white) z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </div>
@@ -132,7 +131,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
   return (
     <div className="w-full relative">
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-(--white) z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       )}

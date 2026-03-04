@@ -141,7 +141,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
         className={classNames(
           getCollapsedWidth(),
           "min-w-16",
-          "text-white",
+          "text-(--white)",
           "flex items-start gap-0",
           "duration-300",
           "relative",
@@ -152,7 +152,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
           className={classNames(
             isOpen ? "w-64" : "w-16",
             isMobileView ? "rounded-none" : "rounded-2xl",
-            "flex flex-col h-full bg-[#07384d] relative border-r border-(--light-gray) overflow-hidden",
+            "flex flex-col h-full bg-(--navy-blue) relative border-r border-(--light-gray) overflow-hidden",
           )}
         >
           <div className="flex-1 overflow-y-auto pr-0.5 custom_scrollbar">
@@ -301,7 +301,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
             <div
               className={`${isOpen ? "text-center" : "flex justify-center"}`}
             >
-              <footer className="p-3 text-white text-sm text-center">
+              <footer className="p-3 text-(--white) text-sm text-center">
                 © {new Date().getFullYear()} MTL Booking App. <br /> All
                 rights reserved.
               </footer>

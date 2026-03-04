@@ -133,7 +133,7 @@ const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords }) => 
     }, [isLoaded, pickupCoords, dropoffCoords, pickup, dropoffs]);
 
     return (
-        <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-300 shadow-md bg-gray-50">
+        <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-300 shadow-md bg-(--lighter-gray)">
             {!isLoaded ? (
                 <div className="flex items-center justify-center h-full bg-gray-100">
                     <div className="text-center">
@@ -146,7 +146,7 @@ const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords }) => 
             )}
 
             {isLoaded && (pickupCoords || Object.keys(dropoffCoords).length > 0) && (
-                <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg text-xs z-10">
+                <div className="absolute bottom-4 left-4 bg-(--white) p-3 rounded-lg shadow-lg text-xs z-10">
                     {pickupCoords && (
                         <div className="flex items-center gap-2 mb-1">
                             <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>

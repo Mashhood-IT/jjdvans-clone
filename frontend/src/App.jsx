@@ -20,6 +20,7 @@ import DistanceSlab from "./components/dashboard/pricing/DistanceSlab";
 import ViewCompany from "./components/dashboard/companyaccount/ViewCompany";
 import CustomersList from "./components/dashboard/customers/CustomersList";
 import BookingCalendar from "./components/dashboard/bookings/BookingCalendar";
+import BookingSettings from "./components/dashboard/settings/BookingSettings";
 
 const App = () => {
   return (
@@ -52,6 +53,8 @@ const App = () => {
                 path="pricing/distance-slab"
                 element={<DistanceSlab />}
               />
+
+              <Route path="settings/booking" element={<BookingSettings />} />
 
               <Route path="profile" element={<EditProfile />} />
               <Route path="logout" element={<Logout />} />

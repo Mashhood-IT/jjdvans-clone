@@ -8,29 +8,49 @@ const CarCardSection = ({
   onBook,
   onHelpSelect,
   currencySymbol = "$",
+  savedExtraHelpPrice = null,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState({});
 
+  // Initialize default helper options per vehicle, but allow a saved
+  // extra help price (from an existing booking) to override for the
+  // currently selected vehicle.
   useEffect(() => {
     const defaults = { ...selectedOptions };
     let changed = false;
+
     carList.forEach((car) => {
+      // For the pre-selected car in edit mode, we'll choose the helper
+      // based on savedExtraHelpPrice later in render, so skip default.
+      if (
+        car._id === selectedCarId &&
+        savedExtraHelpPrice !== null &&
+        savedExtraHelpPrice !== undefined
+      ) {
+        return;
+      }
+
       if (!defaults[car._id]) {
-        const firstOption = car.extraHelp?.[0] ?
-          { ...car.extraHelp[0], id: `help-${car._id}-0` } :
-          { id: `help-${car._id}-self`, label: "Self Load (I will do it myself)", price: 0 };
+        const firstOption = car.extraHelp?.[0]
+          ? { ...car.extraHelp[0], id: `help-${car._id}-0` }
+          : {
+            id: `help-${car._id}-self`,
+            label: "Self Load (I will do it myself)",
+            price: 0,
+          };
 
         defaults[car._id] = firstOption;
         changed = true;
       }
     });
+
     if (changed) {
       setSelectedOptions(defaults);
       if (selectedCarId && defaults[selectedCarId]) {
         onHelpSelect?.(defaults[selectedCarId]);
       }
     }
-  }, [carList, selectedCarId]);
+  }, [carList, selectedCarId, savedExtraHelpPrice]);
 
   const handleHelpChange = (carId, option) => {
     const newOptions = {
@@ -63,9 +83,6 @@ const CarCardSection = ({
           price: basePrice = 0,
         } = car;
 
-        const activeOption = selectedOptions[_id] || (car.extraHelp?.[0] ? { ...car.extraHelp[0], id: `help-${_id}-0` } : { label: "Standard", price: 0, id: `help-${_id}-0` });
-        const currentTotalPrice = basePrice + (activeOption.price || 0);
-
         const validImage = car.image || car.profilecarimg || IMAGES.profilecarimg;
         const isSelected = selectedCarId === _id;
 
@@ -78,16 +95,46 @@ const CarCardSection = ({
             { id: `help-${_id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
+        // Determine which helper option should appear selected.
+        let activeOption = selectedOptions[_id];
+
+        // In edit mode, always prefer the helper option that matches the
+        // price restored from the database for the selected vehicle.
+        if (
+          _id === selectedCarId &&
+          savedExtraHelpPrice !== null &&
+          savedExtraHelpPrice !== undefined
+        ) {
+          const matchByPrice = helpOptions.find(
+            (opt) => Number(opt.price) === Number(savedExtraHelpPrice)
+          );
+          if (matchByPrice) {
+            activeOption = matchByPrice;
+          }
+        }
+
+        // Fallback to first helper option if nothing matched
+        if (!activeOption) {
+          activeOption =
+            helpOptions[0] || {
+              id: `help-${_id}-self`,
+              label: "Self Load",
+              price: 0,
+            };
+        }
+
+        const currentTotalPrice = basePrice + (activeOption?.price || 0);
+
         return (
           <div
             key={_id}
-            className={`group rounded-2xl transition-all duration-300 overflow-hidden border-2 bg-white flex flex-col ${isSelected
+            className={`group rounded-2xl transition-all duration-300 overflow-hidden border-2 bg-(--white) flex flex-col ${isSelected
               ? "border-(--main-color) shadow-xl ring-1 ring-(--main-color)/20 scale-[1.02]"
               : "border-gray-100 hover:border-gray-200 hover:shadow-lg"
               }`}
             onClick={() => handleCarSelect(_id)}
           >
-            <div className="bg-gray-50/50 p-4 flex items-center justify-center relative border-b border-gray-100 aspect-video">
+            <div className="bg-(--lighter-gray)/50 p-4 flex items-center justify-center relative border-b border-gray-100 aspect-video">
               <img
                 src={validImage}
                 alt={vehicleName}
@@ -95,7 +142,7 @@ const CarCardSection = ({
                 onError={(e) => (e.currentTarget.src = "/placeholder-car.png")}
               />
               <div className="absolute top-4 right-4">
-                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isSelected ? "bg-(--main-color) text-white" : "bg-gray-100 text-gray-500"
+                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isSelected ? "bg-(--main-color) text-(--white)" : "bg-gray-100 text-gray-500"
                   }`}>
                   {isSelected ? "Selected" : "Available"}
                 </div>
@@ -124,7 +171,7 @@ const CarCardSection = ({
               </div>
 
               <div className="mb-3 min-h-[44px]">
-                <p className="text-[11px] leading-relaxed text-(--dark-grey) bg-gray-50/50 p-2 rounded-xl border border-gray-100/50">
+                <p className="text-[11px] leading-relaxed text-(--dark-grey) bg-(--lighter-gray)/50 p-2 rounded-xl border border-gray-100/50">
                   {description || "Great for small apartments, studio moves, or picking up large furniture items."}
                 </p>
               </div>
@@ -139,7 +186,7 @@ const CarCardSection = ({
                       key={option.id}
                       className={`flex flex-col items-center justify-center p-1.5 rounded-xl border-2 transition-all cursor-pointer text-center min-h-[50px] ${activeOption.id === option.id
                         ? "border-(--main-color) bg-(--main-color)/5 text-(--main-color)"
-                        : "border-gray-100 hover:border-gray-200 bg-white"
+                        : "border-gray-100 hover:border-gray-200 bg-(--white)"
                         }`}
                     >
                       <input

@@ -160,19 +160,19 @@ const Navbar = ({ toggleSidebar }) => {
 
   return (
     <>
-      <nav className="bg-[#07384d] text-white md:rounded-2xl rounded-none z-20 relative p-3 sm:p-4 lg:p-[17.2px] flex flex-col-reverse md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
+      <nav className="bg-(--navy-blue) text-(--white) md:rounded-2xl rounded-none z-20 relative p-3 sm:p-4 lg:p-[17.2px] flex flex-col-reverse md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
         <div className="flex items-center justify-between w-full md:w-auto shrink-0">
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleSidebar}
               className="cursor-pointer p-2 rounded-lg md:border-hidden! border border-theme"
             >
-              <Icons.Menu className="text-white" />
+              <Icons.Menu className="text-(--white)" />
             </button>
             <h1 className="text-xl hidden lg:block font-bold uppercase">
               ADMIN PANEL
             </h1>
-            <p className="font-semibold hidden md:block text-white truncate">
+            <p className="font-semibold hidden md:block text-(--white) truncate">
               [&nbsp;{displayName || "Guest"}&nbsp;]
             </p>
           </div>
@@ -183,7 +183,7 @@ const Navbar = ({ toggleSidebar }) => {
                 onClick={toggleUser}
                 className="flex cursor-pointer items-center gap-2 p-2 rounded-lg border border-(--white) text-sm shadow-md"
               >
-                <Icons.User className="w-4 h-4 text-white" />
+                <Icons.User className="w-4 h-4 text-(--white)" />
               </button>
               {isDropdownOpen && <UserDropdown />}
             </div>

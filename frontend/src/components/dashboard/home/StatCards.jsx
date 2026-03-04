@@ -7,12 +7,12 @@ const nf = new Intl.NumberFormat();
 
 const StatCards = () => {
   const user = useSelector((state) => state?.auth?.user);
-  
+
   const { data = [] } = useGetAllBookingsQuery();
 
-const bookingsCustomer = data.filter((b) => b.passenger);
+  const bookingsCustomer = data.filter((b) => b.passenger);
 
-  
+
   const cardData = [
     { title: "Total Bookings", value: data?.length, icon: "FileText" },
     {
@@ -43,12 +43,12 @@ const bookingsCustomer = data.filter((b) => b.passenger);
             card.skeleton ? (
               <div
                 key={`s-${index}`}
-                className="h-24 sm:h-32 animate-pulse rounded-xl sm:rounded-2xl bg-[#07384d]"
+                className="h-24 sm:h-32 animate-pulse rounded-xl sm:rounded-2xl bg-(--navy-blue)"
               />
             ) : (
               <article
                 key={index}
-                className="relative overflow-hidden rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 bg-[#07384d] text-white shadow-md sm:shadow-lg focus-within:ring-2 focus-within:ring-theme/40"
+                className="relative overflow-hidden rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 bg-(--navy-blue) text-(--white) shadow-md sm:shadow-lg focus-within:ring-2 focus-within:ring-theme/40"
                 role="region"
                 aria-label={card.title}
                 tabIndex={0}

@@ -368,7 +368,7 @@ const JourneyCard = ({
                   />
                   {/* Arriving From with Arrow Icon */}
                   {journeyData.arrivefrom?.includes("|") ? (
-                    <div className="flex items-center gap-2 border rounded px-3 py-2 bg-white custom_input">
+                    <div className="flex items-center gap-2 border rounded px-3 py-2 bg-(--white) custom_input">
                       <span className="font-medium text-gray-700">
                         {journeyData.arrivefrom.split("|")[0]}
                       </span>

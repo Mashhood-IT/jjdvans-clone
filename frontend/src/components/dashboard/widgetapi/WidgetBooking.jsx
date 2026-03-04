@@ -62,7 +62,7 @@ const WidgetBooking = ({
     e.preventDefault();
 
     if (!formData.pickup || !dropOffs[0]?.trim()) {
-      toast.error("Pickup and Drop Off 1 are required.");
+      toast.error("Pickup and Drop Off are required.");
       return;
     }
 

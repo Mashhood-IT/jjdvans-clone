@@ -7,6 +7,8 @@ import Icons from "../../../assets/icons";
 import moment from "moment-timezone";
 import SelectOption from "../../constants/constantcomponents/SelectOption";
 import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
+import { useSendBookingEmailMutation } from "../../../redux/api/bookingApi";
+import { toast } from "react-toastify";
 
 const JourneyDetailsModal = ({ viewData = {} }) => {
 
@@ -24,6 +26,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
     : null;
   const loggedInUser = useSelector((state) => state.auth?.user);
 
+  const [sendBookingEmail] = useSendBookingEmailMutation();
   useEffect(() => {
     if (selectedType === "Send Customer") {
       setEmail(viewData?.passenger?.email || "");
@@ -33,6 +36,15 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
   }, [selectedType, viewData, loggedInUser]);
 
   const handleSendEmail = async () => {
+    try {
+      await sendBookingEmail({
+        email,
+        bookingId: viewData?._id,
+      }).unwrap();
+      toast.success("Email sent successfully!");
+    } catch (err) {
+      toast.error("Failed to send email");
+    }
 
   };
 
@@ -154,7 +166,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               className="btn btn-success text-sm px-4 py-1.5"
               onClick={handleSendEmail}
             >
-              {"Send"}
+              Send
             </button>
             <button
               onClick={downloadPDF}

@@ -49,11 +49,6 @@ const sidebarItems = [
 
     subTabs: [
       {
-        title: "General",
-        route: "/dashboard/pricing/general",
-        icon: Icons.Settings,
-      },
-      {
         title: "Vehicle Pricing",
         route: "/dashboard/pricing/vehicle",
         icon: Icons.Truck,
@@ -71,11 +66,7 @@ const sidebarItems = [
     icon: Icons.Settings,
     route: "/dashboard/settings",
     subTabs: [
-      {
-        title: "General",
-        route: "/dashboard/settings/general",
-        icon: Icons.Sliders,
-      },
+
       {
         title: "Booking",
         route: "/dashboard/settings/booking",

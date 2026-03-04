@@ -80,6 +80,13 @@ const WidgetPaymentInformation = ({
     return generalPricing?.childSeatPrice || 10.0;
   }, [generalPricing]);
 
+  // Always scroll to the top when landing on the Payment step
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
   useEffect(() => {
     const loadInitialData = () => {
       const savedFormData = localStorage.getItem("widgetPaymentData");
@@ -284,7 +291,7 @@ const WidgetPaymentInformation = ({
   };
 
   return (
-    <div className="bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="bg-(--lighter-gray) py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
@@ -303,9 +310,9 @@ const WidgetPaymentInformation = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-(--white) rounded-lg shadow-sm p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white text-sm font-semibold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
                   01
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">Client Profile</h2>
@@ -326,7 +333,7 @@ const WidgetPaymentInformation = ({
                       })
                     }
                     placeholder="John"
-                    className="w-full px-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   />
                 </div>
                 <div className="col-span-6">
@@ -336,7 +343,7 @@ const WidgetPaymentInformation = ({
                   <input
                     type="text"
                     placeholder="Doe"
-                    className="w-full px-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   />
                 </div>
 
@@ -354,7 +361,7 @@ const WidgetPaymentInformation = ({
                       })
                     }
                     placeholder="john.doe@corporate.com"
-                    className="w-full px-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   />
                 </div>
                 <div className="mt-4 col-span-6">
@@ -371,15 +378,15 @@ const WidgetPaymentInformation = ({
                       })
                     }
                     placeholder="john.doe@corporate.com"
-                    className="w-full px-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="bg-(--white) rounded-lg shadow-sm p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white text-sm font-semibold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
                   02
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">Service Requirements</h2>
@@ -403,7 +410,7 @@ const WidgetPaymentInformation = ({
                           : ""
                       }
                       readOnly
-                      className="w-full pl-10 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none"
+                      className="w-full pl-10 pr-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none"
                     />
                     <Icons.Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   </div>
@@ -455,12 +462,12 @@ const WidgetPaymentInformation = ({
           </div>
 
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+            <div className="bg-(--white) rounded-lg shadow-sm p-6 sticky top-8">
               <h3 className="text-xl font-bold text-gray-900 mb-6">Price Estimate</h3>
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Original Fare</span>
+                  <span className="text-gray-600">Base Fare</span>
                   <span className="font-medium text-gray-900">
                     {pricingInfo.currencySymbol}
                     {pricingInfo.baseFare.toFixed(2)}
@@ -515,7 +522,7 @@ const WidgetPaymentInformation = ({
 
               <div className="mt-6 rounded-lg overflow-hidden">
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2482.1317876843673!2d-0.2659298230151974!3d51.529142609114196!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e6ca0a23249c9f9%3A0xff8c140d933157ec!2sRegent%20Business%20Strategies%20Limited!5e0!3m2!1sen!2s!4v1772031383444!5m2!1sen!2s" width="600" height="200" style={{ border: 0 }} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
-                <div className="bg-gray-900 text-white px-4 py-2 text-center text-sm font-medium">
+                <div className="bg-gray-900 text-(--white) px-4 py-2 text-center text-sm font-medium">
                   • LIVE ROUTE PREVIEW
                 </div>
               </div>

@@ -157,16 +157,61 @@ const WidgetBookingInformation = ({
     }));
   }, []);
 
+  // Restore selected vehicle from localStorage / DB-seeded data
   useEffect(() => {
     try {
       const savedVehicle = localStorage.getItem("selectedVehicle");
-      if (savedVehicle) {
-        const parsed = JSON.parse(savedVehicle);
+      if (!savedVehicle) return;
+
+      const parsed = JSON.parse(savedVehicle);
+
+      // If we already have an id, just use it
+      if (parsed.id) {
         setSelectedCarId(parsed.id);
+        return;
       }
 
+      // Fallback: try to match by vehicleName with vehicles list from API
+      if (parsed.vehicleName && Array.isArray(carList) && carList.length > 0) {
+        const match = carList.find(
+          (c) => c.vehicleName && c.vehicleName === parsed.vehicleName
+        );
+        if (match) {
+          setSelectedCarId(match._id);
+          localStorage.setItem(
+            "selectedVehicle",
+            JSON.stringify({
+              ...parsed,
+              id: match._id,
+              vehicleName: match.vehicleName || parsed.vehicleName,
+              image: match.image || parsed.image || IMAGES.profilecarimg,
+              passengerSeats: match.passengerSeats || parsed.passengerSeats || 0,
+              halfHourPrice: match.halfHourPrice || parsed.halfHourPrice || 0,
+            })
+          );
+        }
+      }
     } catch (err) {
-      console.error("Error parsing selectedVehicle from localStorage:", err);
+      console.error("Error restoring selectedVehicle from localStorage:", err);
+    }
+  }, [carList]);
+
+  // Restore previously chosen extra help (Self Load / 2 Men etc.) from DB-seeded pricing
+  useEffect(() => {
+    try {
+      const rawPricing = localStorage.getItem("widgetPricing");
+      if (!rawPricing) return;
+
+      const parsed = JSON.parse(rawPricing);
+      if (parsed.extraHelp && typeof parsed.extraHelp.price === "number") {
+        setExtraHelpPrice(parsed.extraHelp.price);
+        setSelectedHelpOption({
+          label: parsed.extraHelp.label || parsed.extraHelp.label === "" ? parsed.extraHelp.label : "Self Load",
+          price: parsed.extraHelp.price,
+        });
+      }
+    } catch (err) {
+      console.error("Error restoring widgetPricing from localStorage:", err);
     }
   }, []);
 
@@ -809,7 +854,7 @@ const WidgetBookingInformation = ({
             )}
 
             {isVehiclesLoading ? (
-              <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
+              <div className="flex flex-col items-center justify-center p-12 bg-(--white) rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--main-color) mb-4"></div>
                 Loading available vehicles...
               </div>
@@ -841,6 +886,7 @@ const WidgetBookingInformation = ({
                 currencyCode={currencyCode}
                 selectedCarId={selectedCarId}
                 formData={formData}
+                savedExtraHelpPrice={extraHelpPrice}
                 onSelect={(id) => {
                   setSelectedCarId(id);
                   const selectedCar = carList.find(car => car._id === id);
@@ -864,7 +910,7 @@ const WidgetBookingInformation = ({
                 isHourlyMode={isHourlyMode}
               />
             ) : (
-              <div className="p-12 bg-white rounded-2xl border-2 border-dashed border-gray-100 text-center italic text-gray-400">
+              <div className="p-12 bg-(--white) rounded-2xl border-2 border-dashed border-gray-100 text-center italic text-gray-400">
                 No vehicles found. Please add vehicles from the dashboard.
               </div>
             )}

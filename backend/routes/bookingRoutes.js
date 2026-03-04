@@ -1,5 +1,6 @@
 import express from "express";
-import { createBooking, getAllBookings, updateBooking, deleteBooking, getBookingById } from "../controllers/bookingController.js";
+import { createBooking, getAllBookings, updateBooking, deleteBooking, getBookingById, sendBookingDetailsEmail } from "../controllers/bookingController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -8,5 +9,6 @@ router.get("/get-all-bookings", getAllBookings);
 router.get("/:id", getBookingById);
 router.patch("/:id", updateBooking);
 router.delete("/:id", deleteBooking);
+router.post("/send-booking-email", protect, sendBookingDetailsEmail);
 
 export default router;
