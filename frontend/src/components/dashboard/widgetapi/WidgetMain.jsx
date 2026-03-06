@@ -201,7 +201,8 @@ const WidgetMain = () => {
         }
       }
 
-      const addedMinutes = Math.max(0, ((inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0)) - (inventoryData.initialGoogleMinutes || 0));
+      const rawAddedMinutes = Math.max(0, ((inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0)) - (inventoryData.initialGoogleMinutes || 0));
+      const billableAddedMinutes = Math.ceil(rawAddedMinutes / 30) * 30;
 
       const normalizedPayload = {
         ...finalPayload,
@@ -209,7 +210,7 @@ const WidgetMain = () => {
         totalPrice: totalPrice,
         extras: {
           ...finalPayload.extras,
-          extraTime: addedMinutes.toString(),
+          extraTime: billableAddedMinutes.toString(),
           rideAlong: finalPayload.ridingAlong ? "Yes" : "No"
         },
         pickupFloorNo: inventoryData.pickupFloor || 0,
@@ -237,7 +238,7 @@ const WidgetMain = () => {
         ridingAlong: inventoryData.ridingAlong || false,
         distanceText,
         durationText,
-        extraTime: addedMinutes.toString(),
+        extraTime: billableAddedMinutes.toString(),
       };
 
       let response;

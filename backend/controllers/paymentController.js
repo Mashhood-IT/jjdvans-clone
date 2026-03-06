@@ -44,3 +44,113 @@ export const createPaymentIntent = async (req, res) => {
         });
     }
 };
+
+// PayPal Helper: Get Access Token
+const getPayPalAccessToken = async (clientId, clientSecret) => {
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    const response = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+        method: "POST",
+        body: "grant_type=client_credentials",
+        headers: {
+            Authorization: `Basic ${auth}`,
+        },
+    });
+
+    const data = await response.json();
+    return data.access_token;
+};
+
+export const getPayPalConfig = async (req, res) => {
+    try {
+        const { companyId } = req.query;
+        if (!companyId) {
+            return res.status(400).json({ success: false, message: "Company ID is required" });
+        }
+
+        const settings = await BookingSetting.findOne({ companyId });
+        if (!settings || !settings.paypalKeys || !settings.paypalKeys.clientId) {
+            return res.status(404).json({ success: false, message: "PayPal is not configured" });
+        }
+
+        res.status(200).json({
+            success: true,
+            clientId: settings.paypalKeys.clientId,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const createPayPalOrder = async (req, res) => {
+    try {
+        const { amount, currency, companyId } = req.body;
+
+        const settings = await BookingSetting.findOne({ companyId });
+        if (!settings || !settings.paypalKeys || !settings.paypalKeys.clientId) {
+            return res.status(404).json({ success: false, message: "PayPal is not configured" });
+        }
+
+        const accessToken = await getPayPalAccessToken(
+            settings.paypalKeys.clientId,
+            settings.paypalKeys.clientSecret
+        );
+
+        const response = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+                intent: "CAPTURE",
+                purchase_units: [
+                    {
+                        amount: {
+                            currency_code: currency.toUpperCase(),
+                            value: amount.toString(),
+                        },
+                    },
+                ],
+            }),
+        });
+
+        const data = await response.json();
+        res.status(200).json(data);
+    } catch (error) {
+        console.error("PayPal Create Order Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const capturePayPalOrder = async (req, res) => {
+    try {
+        const { orderID, companyId } = req.body;
+
+        const settings = await BookingSetting.findOne({ companyId });
+        if (!settings || !settings.paypalKeys || !settings.paypalKeys.clientId) {
+            return res.status(404).json({ success: false, message: "PayPal is not configured" });
+        }
+
+        const accessToken = await getPayPalAccessToken(
+            settings.paypalKeys.clientId,
+            settings.paypalKeys.clientSecret
+        );
+
+        const response = await fetch(
+            `https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            }
+        );
+
+        const data = await response.json();
+        res.status(200).json(data);
+    } catch (error) {
+        console.error("PayPal Capture Order Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

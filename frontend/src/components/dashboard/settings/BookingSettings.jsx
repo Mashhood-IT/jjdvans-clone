@@ -34,6 +34,10 @@ const BookingSettings = () => {
     publishableKey: "",
     secretKey: "",
   });
+  const [paypalKeys, setPaypalKeys] = useState({
+    clientId: "",
+    clientSecret: "",
+  });
   const [advanceBookingMin, setAdvanceBookingMin] = useState({
     value: 12,
     unit: "Hours",
@@ -72,6 +76,10 @@ const BookingSettings = () => {
       publishableKey: setting.stripeKeys?.publishableKey || "",
       secretKey: setting.stripeKeys?.secretKey || "",
     });
+    setPaypalKeys({
+      clientId: setting.paypalKeys?.clientId || "",
+      clientSecret: setting.paypalKeys?.clientSecret || "",
+    });
 
     if (setting.advanceBookingMin)
       setAdvanceBookingMin(setting.advanceBookingMin);
@@ -100,6 +108,7 @@ const BookingSettings = () => {
 
         googleApiKeys,
         stripeKeys,
+        paypalKeys,
 
         advanceBookingMin: {
           value: Number(advanceBookingMin.value ?? 12),
@@ -162,6 +171,34 @@ const BookingSettings = () => {
                 setStripeKeys((p) => ({ ...p, publishableKey: e.target.value }))
               }
               placeholder="pk_test_..."
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-sm font-medium mb-1">
+              PayPal Client ID
+            </label>
+            <input
+              type="text"
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
+              value={paypalKeys.clientId}
+              onChange={(e) =>
+                setPaypalKeys((p) => ({ ...p, clientId: e.target.value }))
+              }
+              placeholder="PayPal Client ID"
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-sm font-medium mb-1">
+              PayPal Client Secret
+            </label>
+            <input
+              type="password"
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
+              value={paypalKeys.clientSecret}
+              onChange={(e) =>
+                setPaypalKeys((p) => ({ ...p, clientSecret: e.target.value }))
+              }
+              placeholder="PayPal Client Secret"
             />
           </div>
           <div>

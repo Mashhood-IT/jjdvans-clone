@@ -52,6 +52,7 @@ export const updateBookingSetting = async (req, res) => {
             currencyApplication,
             googleApiKeys,
             stripeKeys,
+            paypalKeys,
             advanceBookingMin,
         } = req.body;
 
@@ -79,6 +80,7 @@ export const updateBookingSetting = async (req, res) => {
                 currencyApplication,
                 googleApiKeys,
                 stripeKeys,
+                paypalKeys,
                 advanceBookingMin,
             },
             { new: true, upsert: true, runValidators: true }

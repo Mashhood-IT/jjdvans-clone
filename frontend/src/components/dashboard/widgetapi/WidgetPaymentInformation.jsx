@@ -2,97 +2,14 @@ import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import "react-phone-input-2/lib/style.css";
 import PhoneInput from "react-phone-input-2";
-import Icons from "../../../assets/icons";
 import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 import SelectOption from "../../constants/constantcomponents/SelectOption";
 import { useCreatePaymentIntentMutation } from "../../../redux/api/paymentApi";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
 } from "@stripe/react-stripe-js";
-
-const StripeCheckoutForm = ({ clientSecret, onPaymentSuccess, onPaymentError, totalPrice, currencySymbol, isProcessing }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [localProcessing, setLocalProcessing] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!stripe || !elements || localProcessing) return;
-
-    setLocalProcessing(true);
-    onPaymentError(null);
-
-    try {
-      const { error: submitError } = await elements.submit();
-      if (submitError) {
-        onPaymentError(submitError.message);
-        setLocalProcessing(false);
-        return;
-      }
-
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        clientSecret,
-        confirmParams: {
-          return_url: window.location.origin + window.location.pathname,
-        },
-        redirect: "if_required",
-      });
-
-      if (error) {
-        onPaymentError(error.message);
-        setLocalProcessing(false);
-        return;
-      }
-
-      if (paymentIntent && paymentIntent.status === "succeeded") {
-        await onPaymentSuccess();
-      } else {
-        onPaymentError("Payment was not successful. Please try again.");
-      }
-    } catch (err) {
-      console.error("Stripe Checkout Error:", err);
-      onPaymentError("An unexpected error occurred during payment.");
-    } finally {
-      setLocalProcessing(false);
-    }
-  };
-
-  return (
-    <form id="payment-form" onSubmit={handleSubmit} className="mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          Secure Card Payment
-        </h3>
-
-        <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
-
-        <div className="mt-6 pt-6 border-t border-gray-100">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-gray-500 text-sm">Amount to Pay</span>
-            <span className="text-xl font-bold text-gray-900">{currencySymbol}{totalPrice}</span>
-          </div>
-
-          <button
-            type="submit"
-            disabled={localProcessing || !stripe}
-            className={`btn w-full ${localProcessing || !stripe
-              ? "btn-edit"
-              : "btn-success"
-              }`}
-          >
-            {localProcessing ? "Processing Payment..." : "Pay & Book Now"}
-          </button>
-
-        </div>
-      </div>
-    </form>
-  );
-};
+import StripeCheckout from "../../../paymentMethod/StripeCheckout";
 
 const WidgetPaymentInformation = ({
   companyId,
@@ -105,7 +22,6 @@ const WidgetPaymentInformation = ({
     email: "",
     phone: "",
   });
-  // const companyId = new URLSearchParams(window.location.search).get("company") || ""; // Removed as companyId is now a prop
   const { data: bookingSettingData } = useGetPublicBookingSettingQuery(companyId, {
     skip: !companyId
   });
@@ -300,7 +216,7 @@ const WidgetPaymentInformation = ({
       const initStripe = async () => {
         try {
           const res = await createPaymentIntent({
-            amount: finalFare, // Use finalFare for amount
+            amount: finalFare,
             currency: currencySetting.value || "GBP",
             companyId,
           }).unwrap();
@@ -320,8 +236,7 @@ const WidgetPaymentInformation = ({
     }
   }, [formData.paymentMethod, finalFare, companyId, currencySetting.value, clientSecret, createPaymentIntent]); // Added clientSecret and createPaymentIntent to dependencies
 
-  const onBookNowClick = async (paymentData) => { // Renamed from onBookNowClick to handleBookNow
-    // This is the original booking logic, now called by handleBookNow
+  const onBookNowClick = async (paymentData) => {
     if (!paymentData.paymentMethod) {
       toast.error("Please select a payment method.");
       return;
@@ -350,7 +265,7 @@ const WidgetPaymentInformation = ({
       }
     };
 
-    await onBookNow?.(bookingData); // Ensure onBookNow is awaited
+    await onBookNow?.(bookingData);
 
     localStorage.removeItem("selectedVehicle");
     localStorage.removeItem("widgetPricing");
@@ -365,7 +280,6 @@ const WidgetPaymentInformation = ({
       return;
     }
 
-    // Stripe is handled by StripeCheckoutForm internally
     if (formData.paymentMethod !== "Stripe") {
       await onBookNowClick(formData);
     }
@@ -413,7 +327,7 @@ const WidgetPaymentInformation = ({
                     })
                   }
                   placeholder="John"
-                  className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="custom_input"
                 />
               </div>
 
@@ -431,7 +345,7 @@ const WidgetPaymentInformation = ({
                     })
                   }
                   placeholder="john.doe@corporate.com"
-                  className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="custom_input"
                 />
               </div>
               <div>
@@ -448,7 +362,7 @@ const WidgetPaymentInformation = ({
                       phone: phone,
                     })
                   }
-                  inputClass="!w-full !py-1.5 !bg-(--lighter-gray) !border !border-gray-200 !rounded-lg"
+                  inputClass="custom_input"
                   containerClass="w-full"
                 />
               </div>
@@ -468,7 +382,7 @@ const WidgetPaymentInformation = ({
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   Moving Date
                 </label>
-                <div className="relative">
+                <div>
                   <input
                     type="text"
                     value={
@@ -481,9 +395,8 @@ const WidgetPaymentInformation = ({
                         : ""
                     }
                     readOnly
-                    className="w-full pl-10 pr-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none"
+                    className="custom_input cursor-not-allowed"
                   />
-                  <Icons.Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 </div>
               </div>
 
@@ -491,7 +404,7 @@ const WidgetPaymentInformation = ({
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   Moving Time
                 </label>
-                <div className="relative">
+                <div>
                   <input
                     type="text"
                     value={
@@ -500,9 +413,8 @@ const WidgetPaymentInformation = ({
                         : ""
                     }
                     readOnly
-                    className="w-full pl-10 pr-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none"
+                    className="custom_input cursor-not-allowed"
                   />
-                  <Icons.Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 </div>
               </div>
 
@@ -510,15 +422,14 @@ const WidgetPaymentInformation = ({
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   Pickup Address
                 </label>
-                <div className="relative">
+                <div>
                   <input
                     type="text"
                     value={booking?.pickup || ""}
                     placeholder="Pickup Address"
                     readOnly
-                    className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
+                    className="custom_input cursor-not-allowed"
                   />
-                  <Icons.MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 </div>
               </div>
 
@@ -535,15 +446,14 @@ const WidgetPaymentInformation = ({
                     <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                       {idx === 0 ? "DROPOFF ADDRESS" : `Additional Drop-off ${idx}`}
                     </label>
-                    <div className="relative">
+                    <div>
                       <input
                         type="text"
                         value={dropoff}
                         placeholder="Drop-off Address"
                         readOnly
-                        className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
+                        className="custom_input cursor-not-allowed"
                       />
-                      <Icons.Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     </div>
                   </div>
                 ))}
@@ -626,7 +536,7 @@ const WidgetPaymentInformation = ({
                     },
                   }}
                 >
-                  <StripeCheckoutForm
+                  <StripeCheckout
                     clientSecret={clientSecret}
                     totalPrice={finalFare}
                     currencySymbol={currencySymbol}

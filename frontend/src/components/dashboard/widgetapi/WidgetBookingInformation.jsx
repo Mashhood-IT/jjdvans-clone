@@ -409,9 +409,11 @@ const WidgetBookingInformation = ({
 
       const totalSeconds = data.segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
       if (totalSeconds > 0) {
-        const hours = Math.floor(totalSeconds / 3600);
-        const mins = Math.round((totalSeconds % 3600) / 60);
-        setDurationText(hours > 0 ? `${hours} hours ${mins} mins` : `${mins} mins`);
+        // Minimum time frame is always 2 hours (120 minutes)
+        const totalMinutes = Math.max(120, Math.round(totalSeconds / 60));
+        const hours = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        setDurationText(`${hours} hours ${mins} mins`);
       } else {
         setDurationText(data.segments.map((s) => s.durationText).join(" + "));
       }
@@ -489,9 +491,10 @@ const WidgetBookingInformation = ({
           setDistanceText(`${totalMiles.toFixed(2)} mi`);
 
           const totalSeconds = segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
-          const hours = Math.floor(totalSeconds / 3600);
-          const mins = Math.round((totalSeconds % 3600) / 60);
-          setDurationText(hours > 0 ? `${hours} hours ${mins} mins` : `${mins} mins`);
+          const totalMinutes = Math.max(120, Math.round(totalSeconds / 60));
+          const hours = Math.floor(totalMinutes / 60);
+          const mins = totalMinutes % 60;
+          setDurationText(`${hours} hours ${mins} mins`);
 
           const updatedData = { ...data, segments };
           localStorage.setItem("bookingForm", JSON.stringify(updatedData));
@@ -517,7 +520,10 @@ const WidgetBookingInformation = ({
             setActualMiles(totalMiles);
           }
 
-          setDurationText(res?.durationText || null);
+          const totalMinutes = Math.max(120, Math.round((res?.durationValue || 0) / 60));
+          const hours = Math.floor(totalMinutes / 60);
+          const mins = totalMinutes % 60;
+          setDurationText(`${hours} hours ${mins} mins`);
 
           const singleSegment = [{
             segmentNumber: 1,

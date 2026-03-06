@@ -40,6 +40,17 @@ const StripeKeysSchema = new mongoose.Schema({
     },
 }, { _id: false });
 
+const PaypalKeysSchema = new mongoose.Schema({
+    clientId: {
+        type: String,
+        default: ""
+    },
+    clientSecret: {
+        type: String,
+        default: ""
+    },
+}, { _id: false });
+
 const AdvanceBookingMinSchema = new mongoose.Schema({
     value: {
         type: Number,
@@ -83,6 +94,10 @@ const BookingSettingSchema = new mongoose.Schema({
 
     stripeKeys: {
         type: StripeKeysSchema,
+        default: () => ({})
+    },
+    paypalKeys: {
+        type: PaypalKeysSchema,
         default: () => ({})
     },
 

@@ -114,7 +114,7 @@ const SecondaryForm = ({
 
     const handlePickupChangeLocal = (e) => {
         const val = e.target.value;
-        handleChange(e); // This updates formData.pickup
+        handleChange(e);
 
         if (!val.trim()) {
             setPickupCoords(null);

@@ -9,8 +9,30 @@ export const paymentApi = apiSlice.injectEndpoints({
                 body: data,
             }),
         }),
+        getPayPalConfig: builder.query({
+            query: (companyId) => `/payment/paypal-config?companyId=${companyId}`,
+        }),
+        createPayPalOrder: builder.mutation({
+            query: (data) => ({
+                url: "/payment/paypal-create-order",
+                method: "POST",
+                body: data,
+            }),
+        }),
+        capturePayPalOrder: builder.mutation({
+            query: (data) => ({
+                url: "/payment/paypal-capture-order",
+                method: "POST",
+                body: data,
+            }),
+        }),
     }),
     overrideExisting: false,
 });
 
-export const { useCreatePaymentIntentMutation } = paymentApi;
+export const {
+    useCreatePaymentIntentMutation,
+    useGetPayPalConfigQuery,
+    useCreatePayPalOrderMutation,
+    useCapturePayPalOrderMutation
+} = paymentApi;

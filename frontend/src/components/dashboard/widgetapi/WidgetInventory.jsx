@@ -100,10 +100,15 @@ const WidgetInventory = ({ onContinue, onBack }) => {
         }
 
         if (totalMinutes > 0) {
-          totalMinutes = Math.ceil(totalMinutes / 30) * 30;
+          const rawGoogleMinutes = totalMinutes;
+          setInitialGoogleMinutes(rawGoogleMinutes);
+
+          // Minimum time frame is always 2 hours (120 minutes)
+          // We round up Google minutes to nearest 30, then ensure it's at least 120
+          totalMinutes = Math.max(120, Math.ceil(totalMinutes / 30) * 30);
+
           setEstimatedHours(Math.floor(totalMinutes / 60));
           setEstimatedMinutes(totalMinutes % 60);
-          setInitialGoogleMinutes(totalMinutes);
         }
 
         const ad = [
@@ -126,14 +131,17 @@ const WidgetInventory = ({ onContinue, onBack }) => {
   }, [totalSeats]);
   useEffect(() => {
     const currentTotalMinutes = estimatedHours * 60 + estimatedMinutes;
-    const addedMinutes = Math.max(
-      0,
-      currentTotalMinutes - initialGoogleMinutes,
-    );
-    const halfHourIncrements = Math.floor(addedMinutes / 30);
-    const calculatedFare =
-      halfHourIncrements * (selectedVehicle.halfHourPrice || 0);
-    setAdditionalFare(calculatedFare);
+    const addedMinutes = currentTotalMinutes - initialGoogleMinutes;
+
+    if (addedMinutes > 0) {
+      // Use Math.ceil so that even 1 minute extra counts as a full 30-min increment
+      const halfHourIncrements = Math.ceil(addedMinutes / 30);
+      const calculatedFare =
+        halfHourIncrements * (selectedVehicle.halfHourPrice || 0);
+      setAdditionalFare(calculatedFare);
+    } else {
+      setAdditionalFare(0);
+    }
   }, [
     estimatedHours,
     estimatedMinutes,
@@ -157,7 +165,12 @@ const WidgetInventory = ({ onContinue, onBack }) => {
   const adjustDuration = (increment) => {
     let totalMinutes = estimatedHours * 60 + estimatedMinutes;
     totalMinutes += increment ? 30 : -30;
-    if (totalMinutes < 0) totalMinutes = 0;
+
+    // Minimum time frame will always be 2 hours (120 minutes)
+    // Also shouldn't go below what Google estimated (rounded up)
+    const googleMin = Math.max(120, Math.ceil(initialGoogleMinutes / 30) * 30);
+    if (totalMinutes < googleMin) totalMinutes = googleMin;
+
     setEstimatedHours(Math.floor(totalMinutes / 60));
     setEstimatedMinutes(totalMinutes % 60);
   };
@@ -252,7 +265,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
               />
               <button
                 onClick={handleAddItem}
-                className="px-4 py-2 cursor-pointer bg-gray-900 text-(--white) rounded-lg hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 cursor-pointer bg-(--light-gray) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
               >
                 Add
               </button>
@@ -261,7 +274,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                   setShowItemInput(false);
                   setCurrentItem("");
                 }}
-                className="px-4 cursor-pointer py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 cursor-pointer py-2 bg-(--light-gray) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
               >
                 Cancel
               </button>
@@ -274,7 +287,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between px-4 py-3 bg-(--lighter-gray) border border-gray-200 rounded-lg"
+                className="flex items-center justify-between px-4 py-3 bg-(--lightest-gray) border border-gray-200 rounded-lg"
               >
                 <span className="text-gray-900 font-medium">{item.name}</span>
                 <button
