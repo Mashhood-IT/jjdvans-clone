@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import SecondaryForm from "./widgetcomponents/SecondaryForm";
+import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 
 const WidgetBookingDetails = ({
     onSubmitSuccess,
@@ -12,6 +13,10 @@ const WidgetBookingDetails = ({
         parentCompanyId ||
         new URLSearchParams(window.location.search).get("company") ||
         "";
+
+    const { data: settingsData } = useGetPublicBookingSettingQuery(companyId, {
+        skip: !companyId
+    });
 
     const generalPricing = { minAdditionalDropOff: 5 };
 
@@ -143,6 +148,30 @@ const WidgetBookingDetails = ({
             return;
         }
 
+        if (settingsData?.setting?.advanceBookingMin) {
+            const { value, unit } = settingsData.setting.advanceBookingMin;
+            const bookingDateTime = new Date(formData.date);
+            bookingDateTime.setHours(Number(formData.hour));
+            bookingDateTime.setMinutes(Number(formData.minute));
+            bookingDateTime.setSeconds(0);
+            bookingDateTime.setMilliseconds(0);
+
+            const now = new Date();
+            const diffInMs = bookingDateTime.getTime() - now.getTime();
+            const diffInMinutes = diffInMs / (1000 * 60);
+            let minRequiredMinutes = value;
+            if (unit === "Hours") {
+                minRequiredMinutes = value * 60;
+            } else if (unit === "Days") {
+                minRequiredMinutes = value * 24 * 60;
+            }
+
+            if (diffInMinutes < minRequiredMinutes) {
+                toast.error(`Bookings must be made at least ${value} ${unit.toLowerCase()} in advance.`);
+                return;
+            }
+        }
+
         const pickupPostcode = extractPostcode(formData.pickup);
         const dropoffPostcode = extractPostcode(dropOffs[0]);
 
@@ -198,6 +227,7 @@ const WidgetBookingDetails = ({
             mode={mode}
             setFormData={setFormData}
             onBack={onBack}
+            companyId={companyId}
         />
     );
 };

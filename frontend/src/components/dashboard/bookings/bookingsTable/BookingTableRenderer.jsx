@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import DeleteModal from "../../../constants/constantcomponents/DeleteModal";
 import CustomTable from "../../../constants/constantcomponents/CustomTable";
 import { useDeleteBookingMutation } from "../../../../redux/api/bookingApi";
+import { useGetBookingSettingQuery } from "../../../../redux/api/bookingSettingsApi";
 
 const BookingTableRenderer = ({
   emptyMessage,
@@ -26,22 +27,21 @@ const BookingTableRenderer = ({
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   const [deleteBooking] = useDeleteBookingMutation();
+  const { data: settingsData } = useGetBookingSettingQuery();
+  const defaultCurrencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
+  const currencyPolicy = settingsData?.setting?.currencyApplication || "New Bookings Only";
+
   const formatCurrency = (value, booking) => {
     if (value === undefined || value === null || value === "-") return "-";
 
-    const currencyApplication = {
-      symbol: "£",
-      label: "British Pound",
-      value: "GBP",
-    };
-
-    if (currencyApplication === "All Bookings") {
-      return `${currencyApplication.symbol}${Number(value).toFixed(2)}`;
+    if (currencyPolicy === "All Bookings") {
+      return `${defaultCurrencySymbol}${Number(value).toFixed(2)}`;
     }
+
     if (booking?.currency?.symbol) {
       return `${booking.currency.symbol}${Number(value).toFixed(2)}`;
     }
-    return `${currencyApplication.symbol}${Number(value).toFixed(2)}`;
+    return `£${Number(value).toFixed(2)}`;
   };
 
 
@@ -61,11 +61,14 @@ const BookingTableRenderer = ({
           case "bookingId":
             row[key] = item.bookingId || "";
             break;
-          case "bookingType":
-            row[key] = item?.returnJourney ? "Return" : "Primary";
-            break;
           case "passenger":
             row[key] = formatPassenger(item.passenger);
+            break;
+          case "pickup":
+            row[key] = item?.pickup || "";
+            break;
+          case "dropoff":
+            row[key] = item?.dropoff || "";
             break;
           case "date": {
             const rawDate = item.date;
@@ -161,9 +164,6 @@ const BookingTableRenderer = ({
             break;
 
           case "actions":
-            const journeyNotes =
-              item?.primaryJourney?.internalNotes ||
-              item?.returnJourney?.internalNotes;
 
             row[key] = (
               <div className="flex items-start  gap-2">
@@ -197,18 +197,7 @@ const BookingTableRenderer = ({
                                 if (action === "View") {
                                   openViewModal(item);
                                 } else if (action === "Edit") {
-
                                   const editedData = { ...item };
-                                  editedData.__editReturn =
-                                    !!item.returnJourney;
-                                  if (item.primaryJourney?.flightArrival) {
-                                    editedData.primaryJourney = {
-                                      ...editedData.primaryJourney,
-                                      flightArrival: {
-                                        ...item.primaryJourney.flightArrival,
-                                      },
-                                    };
-                                  }
                                   setEditBookingData(editedData);
                                   setShowEditModal(true);
                                 } else if (action === "Delete") {

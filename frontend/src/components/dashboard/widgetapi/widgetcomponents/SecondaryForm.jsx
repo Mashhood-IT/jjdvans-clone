@@ -24,7 +24,7 @@ const SecondaryForm = ({
     handleChange,
     handleSubmit,
     onBack,
-    setFormData,
+    companyId,
 }) => {
     const [triggerSearchAutocomplete] = useLazySearchGooglePlacesQuery();
     const [triggerGeocode] = useLazyGeocodeQuery();
@@ -37,7 +37,7 @@ const SecondaryForm = ({
         const restoreMarkers = async () => {
             if (formData?.pickup && !pickupCoords) {
                 try {
-                    const res = await triggerGeocode(formData.pickup).unwrap();
+                    const res = await triggerGeocode({ address: formData.pickup, companyId }).unwrap();
                     if (res?.location) {
                         setPickupCoords({
                             lat: Number(res.location.lat),
@@ -52,7 +52,7 @@ const SecondaryForm = ({
                     if (addr && !dropoffCoords[idx]) {
                         (async () => {
                             try {
-                                const res = await triggerGeocode(addr).unwrap();
+                                const res = await triggerGeocode({ address: addr, companyId }).unwrap();
                                 if (res?.location) {
                                     setDropoffCoords((prev) => ({
                                         ...prev,
@@ -75,7 +75,7 @@ const SecondaryForm = ({
     const fetchSuggestions = async (query, setter) => {
         if (!query) return setter([]);
         try {
-            const res = await triggerSearchAutocomplete(query).unwrap();
+            const res = await triggerSearchAutocomplete({ input: query, companyId }).unwrap();
             const results = res.predictions.map((r) => ({
                 place_id: r.place_id,
                 name: r.name || r.structured_formatting?.main_text,
@@ -128,7 +128,7 @@ const SecondaryForm = ({
             }));
         } else {
             try {
-                const g = await triggerGeocode(full).unwrap();
+                const g = await triggerGeocode({ address: full, companyId }).unwrap();
                 if (g?.location) {
                     const coords = {
                         lat: Number(g.location.lat),
@@ -147,9 +147,9 @@ const SecondaryForm = ({
         <div className="grid grid-cols-12 p-7 gap-6">
             <form
                 onSubmit={handleSubmit}
-                className="2xl:col-span-4 md:col-span-6 col-span-12 2xl:col-start-3 col-start-1 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 pt-3 pb-6 text-base text-(--dark-grey) transition duration-300 hover:shadow-xl"
+                className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 pt-3 pb-6 text-base text-(--dark-grey) transition duration-300 hover:shadow-xl"
             >
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                <div>
                     <div className="mb-6 flex items-center justify-between">
                         <div>
                             <h2 className="text-xl font-bold text-(--dark-gray) mb-2">Booking Details</h2>
@@ -166,7 +166,7 @@ const SecondaryForm = ({
 
                     <div className="space-y-4 mb-6">
                         {dropOffs.map((val, idx) => {
-                            if (idx === 0) return null; // Step 1 handles first dropoff
+                            if (idx === 0) return null;
                             return (
                                 <div key={idx} className="relative group">
                                     <div className="flex items-center justify-between mb-1">
@@ -221,7 +221,7 @@ const SecondaryForm = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                         <div className="relative">
-                            <label className="block text-[10px] font-bold text-(--dark-gray) uppercase tracking-wider mb-1">Date</label>
+                            <label className="block text-[10px] font-medium text-(--dark-gray) tracking-wider mb-1">Date</label>
                             <div className="relative">
                                 <input
                                     type="date"
@@ -233,7 +233,7 @@ const SecondaryForm = ({
                             </div>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-(--dark-gray) uppercase tracking-wider mb-1">Hour</label>
+                            <label className="block text-[10px] font-medium text-(--dark-gray)  tracking-wider mb-1">Hour</label>
                             <select
                                 name="hour"
                                 value={formData.hour}
@@ -249,7 +249,7 @@ const SecondaryForm = ({
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-(--dark-gray) uppercase tracking-wider mb-1">Minute</label>
+                            <label className="block text-[10px] font-medium text-(--dark-gray) tracking-wider mb-1">Minute</label>
                             <select
                                 name="minute"
                                 value={formData.minute}
@@ -289,12 +289,13 @@ const SecondaryForm = ({
                 </div>
             </form>
 
-            <div className="2xl:col-span-4 md:col-span-6 col-span-12">
+            <div className="md:col-span-6 col-span-12">
                 <LocationMap
                     pickup={formData.pickup}
                     dropoffs={dropOffs}
                     pickupCoords={pickupCoords}
                     dropoffCoords={dropoffCoords}
+                    companyId={companyId}
                 />
             </div>
         </div>

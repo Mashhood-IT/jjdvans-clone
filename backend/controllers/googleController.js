@@ -1,15 +1,25 @@
 import fetch from "node-fetch";
 import { google } from "googleapis";
-import { v4 as uuidv4 } from "uuid";
-import User from "../models/User.js";
-import sendEmail from "../sendEmail.js"
+import BookingSetting from "../models/settings/bookingSettings.js";
 
-// HELPERS
-const oAuth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
-);
+const getGoogleKeys = async (companyId) => {
+  let serverKey = process.env.GOOGLE_API_KEY || "";
+  let browserKey = process.env.GOOGLE_API_KEY || "";
+
+  if (companyId) {
+    try {
+      const settings = await BookingSetting.findOne({ companyId });
+      if (settings && settings.googleApiKeys) {
+        if (settings.googleApiKeys.server) serverKey = settings.googleApiKeys.server;
+        if (settings.googleApiKeys.browser) browserKey = settings.googleApiKeys.browser;
+      }
+    } catch (err) {
+      console.error("Error fetching Google keys from DB:", err);
+    }
+  }
+
+  return { server: serverKey, browser: browserKey };
+};
 
 const airportTerminals = {
   heathrow: [
@@ -315,11 +325,14 @@ export const AutoComplete = async (req, res) => {
         };
       });
     }
+    const companyId = req.query.companyId;
+    const keys = await getGoogleKeys(companyId);
+
     const autocompleteUrl =
       `https://maps.googleapis.com/maps/api/place/autocomplete/json` +
       `?input=${encodeURIComponent(queryRaw)}` +
       `&components=country:gb` +
-      `&key=${process.env.GOOGLE_API_KEY}`;
+      `&key=${keys.server}`;
     const autocompleteResponse = await fetch(autocompleteUrl);
     const autocompleteData = await autocompleteResponse.json();
     const predictions = Array.isArray(autocompleteData?.predictions)
@@ -333,7 +346,7 @@ export const AutoComplete = async (req, res) => {
             `https://maps.googleapis.com/maps/api/place/details/json` +
             `?place_id=${placeId}` +
             `&fields=name,formatted_address,geometry,types` +
-            `&key=${process.env.GOOGLE_API_KEY}`;
+            `&key=${keys.server}`;
           const detailsResponse = await fetch(detailsUrl);
           const detailsData = await detailsResponse.json();
           const result =
@@ -390,9 +403,12 @@ export const Distance = async (req, res) => {
       avoidQuery = `&avoid=${encodeURIComponent(avoid)}`;
     }
 
+    const companyId = req.query.companyId;
+    const keys = await getGoogleKeys(companyId);
+
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodeURIComponent(
       origin
-    )}&destinations=${encodeURIComponent(destination)}${avoidQuery}&key=${process.env.GOOGLE_API_KEY
+    )}&destinations=${encodeURIComponent(destination)}${avoidQuery}&key=${keys.server
       }`;
 
     const response = await fetch(url);
@@ -429,13 +445,13 @@ export const Distance = async (req, res) => {
 
 export const MapKey = async (req, res) => {
   try {
-    const safePublicKey = process.env.GOOGLE_API_KEY;
-    return res.json({ mapKey: safePublicKey });
+    const companyId = req.query.companyId;
+    const keys = await getGoogleKeys(companyId);
+    return res.json({ mapKey: keys.browser });
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve map key" });
   }
 }
-
 
 export const Geocode = async (req, res) => {
   try {
@@ -445,9 +461,12 @@ export const Geocode = async (req, res) => {
       return res.status(400).json({ error: "Address is required" });
     }
 
+    const companyId = req.query.companyId;
+    const keys = await getGoogleKeys(companyId);
+
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
       address
-    )}&key=${process.env.GOOGLE_API_KEY}`;
+    )}&key=${keys.server}`;
     const response = await fetch(url);
     const data = await response.json();
 

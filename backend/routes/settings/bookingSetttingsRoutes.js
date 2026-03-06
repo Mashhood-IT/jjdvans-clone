@@ -1,17 +1,15 @@
 import express from "express";
-import {
-    getBookingSetting,
-    updateBookingSetting,
-    getAdvanceBookingMinutes
-} from "../controllers/settings/bookingSettingsController.js";
 import { protect } from "../../middleware/authMiddleware.js";
+import { getAdvanceBookingMinutes, getBookingSetting, updateBookingSetting, getPublicBookingSetting } from "../../controllers/settings/bookingSettingsController.js";
 
 const router = express.Router();
 
 router.get("/get-booking-setting", protect, getBookingSetting);
 
-router.put("/update-booking-setting", protect, updateBookingSetting);
+router.post("/update-booking-setting", protect, updateBookingSetting);
 
-router.get("/advance-booking-minutes", protect, getAdvanceBookingMinutes);
+router.post("/advance-booking-minutes", protect, getAdvanceBookingMinutes);
+
+router.get("/public/:companyId", getPublicBookingSetting);
 
 export default router;

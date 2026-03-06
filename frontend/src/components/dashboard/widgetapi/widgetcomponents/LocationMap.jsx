@@ -1,20 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useGetMapKeyQuery } from '../../../../redux/api/googleApi';
 
-const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords }) => {
+const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords, companyId }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const markersRef = useRef([]);
     const polylineRef = useRef(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
+    // Fetch key even if companyId is missing (backend handles fallback)
+    const { data: keyData, isLoading: isKeyLoading } = useGetMapKeyQuery(companyId || "");
+
     useEffect(() => {
+        // If google maps is already available, just set as loaded
         if (window.google?.maps) {
             setIsLoaded(true);
             return;
         }
 
+        // Wait for key if not available yet
+        if (isKeyLoading || !keyData?.mapKey) return;
+
+        const scriptId = 'google-maps-script';
+        if (document.getElementById(scriptId)) {
+            // Script already exists but maybe not loaded yet?
+            // Onload should handle it if we are the first one, 
+            // but if we are second component we should just wait for window.google
+            const checkGoogle = setInterval(() => {
+                if (window.google?.maps) {
+                    setIsLoaded(true);
+                    clearInterval(checkGoogle);
+                }
+            }, 100);
+            return () => clearInterval(checkGoogle);
+        }
+
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyAQ4siuqzd_H19BQfpUPAxYndkqFAn-Irc`;
+        script.id = scriptId;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${keyData.mapKey}`;
         script.async = true;
         script.defer = true;
         script.onload = () => {
@@ -25,12 +48,7 @@ const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords }) => 
         };
         document.head.appendChild(script);
 
-        return () => {
-            if (script.parentNode) {
-                script.parentNode.removeChild(script);
-            }
-        };
-    }, []);
+    }, [keyData, isKeyLoading]);
 
     useEffect(() => {
         if (!isLoaded || !mapRef.current || mapInstanceRef.current) return;
@@ -133,7 +151,7 @@ const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords }) => 
     }, [isLoaded, pickupCoords, dropoffCoords, pickup, dropoffs]);
 
     return (
-        <div className="relative w-full h-full rounded-lg overflow-hidden border border-gray-300 shadow-md bg-(--lighter-gray)">
+        <div className="relative w-full h-[400px] sm:h-full min-h-[400px] rounded-lg overflow-hidden border border-gray-300 shadow-md">
             {!isLoaded ? (
                 <div className="flex items-center justify-center h-full bg-gray-100">
                     <div className="text-center">
@@ -146,7 +164,7 @@ const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords }) => 
             )}
 
             {isLoaded && (pickupCoords || Object.keys(dropoffCoords).length > 0) && (
-                <div className="absolute bottom-4 left-4 bg-(--white) p-3 rounded-lg shadow-lg text-xs z-10">
+                <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg text-xs z-10 border border-gray-100">
                     {pickupCoords && (
                         <div className="flex items-center gap-2 mb-1">
                             <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>

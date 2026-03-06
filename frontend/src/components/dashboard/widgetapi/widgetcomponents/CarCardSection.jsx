@@ -12,16 +12,11 @@ const CarCardSection = ({
 }) => {
   const [selectedOptions, setSelectedOptions] = useState({});
 
-  // Initialize default helper options per vehicle, but allow a saved
-  // extra help price (from an existing booking) to override for the
-  // currently selected vehicle.
   useEffect(() => {
     const defaults = { ...selectedOptions };
     let changed = false;
 
     carList.forEach((car) => {
-      // For the pre-selected car in edit mode, we'll choose the helper
-      // based on savedExtraHelpPrice later in render, so skip default.
       if (
         car._id === selectedCarId &&
         savedExtraHelpPrice !== null &&
@@ -95,11 +90,7 @@ const CarCardSection = ({
             { id: `help-${_id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
-        // Determine which helper option should appear selected.
         let activeOption = selectedOptions[_id];
-
-        // In edit mode, always prefer the helper option that matches the
-        // price restored from the database for the selected vehicle.
         if (
           _id === selectedCarId &&
           savedExtraHelpPrice !== null &&
@@ -113,7 +104,6 @@ const CarCardSection = ({
           }
         }
 
-        // Fallback to first helper option if nothing matched
         if (!activeOption) {
           activeOption =
             helpOptions[0] || {
@@ -138,7 +128,7 @@ const CarCardSection = ({
               <img
                 src={validImage}
                 alt={vehicleName}
-                className="w-full h-full object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
+                className="object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => (e.currentTarget.src = "/placeholder-car.png")}
               />
               <div className="absolute top-4 right-4">

@@ -10,6 +10,7 @@ import {
   useGetAllVehiclesQuery,
   useUpdateVehicleMutation,
 } from "../../../redux/api/vehicleApi";
+import { useGetBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 import Icons from "../../../assets/icons";
 
 const DistanceSlab = () => {
@@ -25,6 +26,8 @@ const DistanceSlab = () => {
       skip: !companyId,
     },
   );
+  const { data: settingsData } = useGetBookingSettingQuery();
+  const currencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
   useEffect(() => {
     if (isLoading) {
       showLoading();
@@ -169,7 +172,7 @@ const DistanceSlab = () => {
   const tableHeaders = [
     { label: "Distance (miles)", key: "distance" },
     {
-      label: `Price Per Mile ($/${"mile"})`,
+      label: `Price Per Mile (${currencySymbol}/${"mile"})`,
       key: "pricePerMile",
     },
     ...vehicleList.map((v) => ({
@@ -240,7 +243,7 @@ const DistanceSlab = () => {
       row[`${v.vehicleName}_total`] = (
         <div className="text-xs sm:text-sm">
           <div className="text-(--main-color) font-semibold">
-            $ {perMile.toFixed(2)}
+            {currencySymbol} {perMile.toFixed(2)}
           </div>
           <div className="text-(--medium-color) flex items-center gap-0.5 text-xs">
             <span>
@@ -260,7 +263,7 @@ const DistanceSlab = () => {
 
     const exportRow = {
       distance: `${item.from} - ${item.to} miles (${slabDistance} miles)`,
-      pricePerMile: `$ ${item.pricePerMile}`,
+      pricePerMile: `${currencySymbol} ${item.pricePerMile}`,
     };
     vehicleList.forEach((v) => {
       const percent = v.percentageIncrease || 0;
@@ -268,7 +271,7 @@ const DistanceSlab = () => {
       const total = perMile * slabDistance;
 
       exportRow[`${v.vehicleName}_total`] =
-        `$ ${total.toFixed(2)}`;
+        `${currencySymbol} ${total.toFixed(2)}`;
     });
 
     return exportRow;

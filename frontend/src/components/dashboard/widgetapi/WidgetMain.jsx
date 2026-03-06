@@ -9,6 +9,7 @@ import WidgetBookingInformation from "./WidgetBookingInformation";
 import WidgetInventory from "./WidgetInventory";
 import WidgetBookingDetails from "./WidgetBookingDetails";
 import { Link, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Breadcrumbs = () => {
   const location = useLocation();
@@ -256,7 +257,6 @@ const WidgetMain = () => {
       localStorage.setItem("isWidgetFormFilled", "true");
       toast.success(response.message || (formData.isEdit ? "Booking Updated Successfully" : "Booking Request Received"));
 
-      // Notify parent if inside an iframe
       window.parent.postMessage({ type: "bookingSuccess" }, "*");
 
       navigate("/widget-form/widget-success");
@@ -269,10 +269,10 @@ const WidgetMain = () => {
   };
 
   useEffect(() => {
-    const company = "68c957910b4cb85264e6ef87";
+    const queryParam = new URLSearchParams(window.location.search);
+    const company = queryParam.get("company");
     if (company) setCompanyId(company);
   }, []);
-
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
@@ -328,7 +328,7 @@ const WidgetMain = () => {
   }
   return (
     <div className={`w-full bg-transparent py-4 md:py-8`}>
-      <div className="w-full mx-auto">
+      <div>
         <Breadcrumbs />
         <Routes>
           <Route
@@ -476,6 +476,7 @@ const WidgetMain = () => {
                     fareBreakdown: fareBreakdown,
                     source: formData.source,
                     ...formData.booking,
+                    currency: bookingData.currency,
                   };
 
                   handleDataChange("vehicle", selectedVehicle);
@@ -543,6 +544,7 @@ const WidgetMain = () => {
                     voucherApplied: !!voucher,
                     source: formData.source,
                     ...formData.booking,
+                    currency: bookingData.currency,
                   };
 
                   handleDataChange("vehicle", selectedVehicle);

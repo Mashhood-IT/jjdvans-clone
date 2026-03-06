@@ -8,6 +8,7 @@ import moment from "moment-timezone";
 import SelectOption from "../../constants/constantcomponents/SelectOption";
 import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
 import { useSendBookingEmailMutation } from "../../../redux/api/bookingApi";
+import { useGetBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 import { toast } from "react-toastify";
 
 const JourneyDetailsModal = ({ viewData = {} }) => {
@@ -27,6 +28,21 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
   const loggedInUser = useSelector((state) => state.auth?.user);
 
   const [sendBookingEmail] = useSendBookingEmailMutation();
+  const { data: settingsData } = useGetBookingSettingQuery();
+  const defaultCurrencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
+  const defaultCurrencyLabel = settingsData?.setting?.currency?.[0]?.label || "British Pound";
+  const currencyPolicy = settingsData?.setting?.currencyApplication || "New Bookings Only";
+
+  const currencySymbol =
+    currencyPolicy === "All Bookings"
+      ? defaultCurrencySymbol
+      : viewData?.currency?.symbol || "£";
+
+  const currencyLabel =
+    currencyPolicy === "All Bookings"
+      ? defaultCurrencyLabel
+      : viewData?.currency?.label || "British Pound";
+
   useEffect(() => {
     if (selectedType === "Send Customer") {
       setEmail(viewData?.passenger?.email || "");
@@ -431,18 +447,18 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                 <div className="space-y-1 border-b border-gray-200 pb-2 mb-2">
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>Base Fare:</span>
-                    <span>${Number(viewData?.fare || 0).toFixed(2)}</span>
+                    <span>{currencySymbol}{Number(viewData?.fare || 0).toFixed(2)}</span>
                   </div>
                   {viewData?.additionalTimeFare > 0 && (
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>Additional Time Charges:</span>
-                      <span>+${Number(viewData?.additionalTimeFare).toFixed(2)}</span>
+                      <span>+{currencySymbol}{Number(viewData?.additionalTimeFare).toFixed(2)}</span>
                     </div>
                   )}
                   {viewData?.workersCharges > 0 && (
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>Extra Men Charges:</span>
-                      <span>+${Number(viewData?.workersCharges).toFixed(2)}</span>
+                      <span>+{currencySymbol}{Number(viewData?.workersCharges).toFixed(2)}</span>
                     </div>
                   )}
                 </div>
@@ -450,9 +466,9 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium flex items-center justify-center">
                 <span className="text-(--dark-gray)">Total Fare:</span>
                 <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
-                  $
+                  {currencySymbol}
                   {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(2)}
-                  &nbsp;Dollar
+                  &nbsp;{currencyLabel}
                 </span>
               </div>
             </div>

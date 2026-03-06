@@ -1,5 +1,5 @@
 import BookingSetting from "../../models/settings/bookingSettings.js";
-import Booking from "../../models/Booking.js";
+import Booking from "../../models/bookings.js";
 
 
 export const getBookingSetting = async (req, res) => {
@@ -51,6 +51,7 @@ export const updateBookingSetting = async (req, res) => {
             currency,
             currencyApplication,
             googleApiKeys,
+            stripeKeys,
             advanceBookingMin,
         } = req.body;
 
@@ -77,8 +78,8 @@ export const updateBookingSetting = async (req, res) => {
                 currency,
                 currencyApplication,
                 googleApiKeys,
+                stripeKeys,
                 advanceBookingMin,
-                cancelBookingTerms
             },
             { new: true, upsert: true, runValidators: true }
         );
@@ -90,8 +91,10 @@ export const updateBookingSetting = async (req, res) => {
                 { companyId },
                 {
                     $set: {
-                        currency: newCurrency.value,
-                        currencySymbol: newCurrency.symbol
+                        currency: {
+                            value: newCurrency.value,
+                            symbol: newCurrency.symbol
+                        }
                     }
                 }
             );
@@ -135,6 +138,27 @@ export const getAdvanceBookingMinutes = async (req, res) => {
         res.status(200).json({ minutes, setting: setting.advanceBookingMin });
     } catch (error) {
         console.error("Error fetching advance booking minutes:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+export const getPublicBookingSetting = async (req, res) => {
+    try {
+        const { companyId } = req.params;
+
+        if (!companyId) {
+            return res.status(400).json({ message: "Company ID not found" });
+        }
+
+        const setting = await BookingSetting.findOne({ companyId });
+
+        if (!setting) {
+            return res.status(404).json({ message: "Booking settings not found" });
+        }
+
+        res.status(200).json({ setting });
+    } catch (error) {
+        console.error("Error fetching public booking settings:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };

@@ -15,6 +15,7 @@ import {
   useGetAllVehiclesQuery,
   useUpdateVehicleMutation,
 } from "../../../redux/api/vehicleApi";
+import { useGetBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 
 const VehiclePricing = () => {
   const { showLoading, hideLoading } = useLoading();
@@ -38,6 +39,8 @@ const VehiclePricing = () => {
     refetch,
     isLoading,
   } = useGetAllVehiclesQuery();
+  const { data: settingsData } = useGetBookingSettingQuery();
+  const currencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
 
   useEffect(() => {
     if (isLoading) {
@@ -301,7 +304,7 @@ const VehiclePricing = () => {
                   />
                 </div>
                 <div className="w-full sm:w-24">
-                  <label className="block text-[10px] uppercase text-gray-400 mb-1">Price (£)</label>
+                  <label className="block text-[10px] uppercase text-gray-400 mb-1">Price ({currencySymbol})</label>
                   <input
                     type="number"
                     placeholder="0"

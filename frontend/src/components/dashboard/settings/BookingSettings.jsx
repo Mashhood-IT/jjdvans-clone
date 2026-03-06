@@ -15,7 +15,7 @@ import currencyOptions from "../../constants/constantcomponents/currencyOptions"
 
 const CURRENCY_APPLICATION = ["All Bookings", "New Bookings Only"];
 
-const TIME_UNITS_MIN = ["Hours"];
+const TIME_UNITS_MIN = ["Hours", "Days"];
 
 const BookingSettings = () => {
   const dispatch = useDispatch();
@@ -29,6 +29,10 @@ const BookingSettings = () => {
     server: "",
     android: "",
     ios: "",
+  });
+  const [stripeKeys, setStripeKeys] = useState({
+    publishableKey: "",
+    secretKey: "",
   });
   const [advanceBookingMin, setAdvanceBookingMin] = useState({
     value: 12,
@@ -64,6 +68,11 @@ const BookingSettings = () => {
       browser: setting.googleApiKeys?.browser || "",
     });
 
+    setStripeKeys({
+      publishableKey: setting.stripeKeys?.publishableKey || "",
+      secretKey: setting.stripeKeys?.secretKey || "",
+    });
+
     if (setting.advanceBookingMin)
       setAdvanceBookingMin(setting.advanceBookingMin);
 
@@ -90,6 +99,7 @@ const BookingSettings = () => {
         currencyApplication: currencyApplication || "New Bookings Only",
 
         googleApiKeys,
+        stripeKeys,
 
         advanceBookingMin: {
           value: Number(advanceBookingMin.value ?? 12),
@@ -97,16 +107,14 @@ const BookingSettings = () => {
             ? advanceBookingMin.unit
             : "Hours",
         },
-
-        cancelBookingTerms,
       };
 
       await updateBookingSetting(payload).unwrap();
-      dispatch(setTimezone(timezone));
       dispatch(setCurrency(currency));
       toast.success("Settings updated successfully!");
     } catch (err) {
-      toast.error("Failed to update settings");
+      console.log(err)
+      toast.error("Failed to update settings", err);
     }
   };
 
@@ -140,6 +148,34 @@ const BookingSettings = () => {
               onChange={(e) =>
                 setGoogleApiKeys((p) => ({ ...p, browser: e.target.value }))
               }
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-sm font-medium mb-1">
+              Stripe Publishable Key
+            </label>
+            <input
+              type="text"
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
+              value={stripeKeys.publishableKey}
+              onChange={(e) =>
+                setStripeKeys((p) => ({ ...p, publishableKey: e.target.value }))
+              }
+              placeholder="pk_test_..."
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-sm font-medium mb-1">
+              Stripe Secret Key
+            </label>
+            <input
+              type="password"
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
+              value={stripeKeys.secretKey}
+              onChange={(e) =>
+                setStripeKeys((p) => ({ ...p, secretKey: e.target.value }))
+              }
+              placeholder="sk_test_..."
             />
           </div>
           <div>

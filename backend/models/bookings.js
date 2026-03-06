@@ -18,6 +18,11 @@ const PassengerSchema = new mongoose.Schema({
     phone: String,
 }, { _id: false })
 
+const CurrencySchema = new mongoose.Schema({
+    symbol: String,
+    value: String
+}, { _id: false })
+
 const BookingSchema = new mongoose.Schema({
     bookingId: {
         type: String,
@@ -97,6 +102,7 @@ const BookingSchema = new mongoose.Schema({
     estimatedDuration: Number,
 
     vehicle: VehicleSchema,
+    currency: CurrencySchema,
     extraTime: String,
     source: {
         type: String,

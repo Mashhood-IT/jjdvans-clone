@@ -65,6 +65,7 @@ export const userApi = apiSlice.injectEndpoints({
     }),
   }),
 });
+
 export const {
   useLoginUserMutation,
   useSendForgotPasswordOtpMutation,

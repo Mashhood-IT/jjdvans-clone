@@ -9,6 +9,8 @@ import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
+import bookingSettingsRoutes from "./routes/settings/bookingSetttingsRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 import createSuperAdmin from "./createSuperAdmin.js";
 
 dotenv.config();
@@ -16,12 +18,13 @@ dotenv.config();
 await connectDB();
 
 const allowedOriginsRaw = process.env.BASE_URL_FRONTEND || "";
-const origins = allowedOriginsRaw.split(",").map(o => o.trim().replace(/\/$/, ""));
+const origins = allowedOriginsRaw
+  .split(",")
+  .map((o) => o.trim().replace(/\/$/, ""));
 const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 process.env.CRON_TIMEZONE = systemTZ;
 
 const app = express();
-app.set("trust proxy", 1);
 
 app.use(
   cors({
@@ -30,20 +33,25 @@ app.use(
 
       const normalizedOrigin = origin.replace(/\/$/, "");
 
-      const isAllowed = origins.some(o => {
+      const isAllowed = origins.some((o) => {
         const normalizedO = o.replace(/\/$/, "");
-        return normalizedOrigin === normalizedO || normalizedOrigin.startsWith(normalizedO);
+        return (
+          normalizedOrigin === normalizedO ||
+          normalizedOrigin.startsWith(normalizedO)
+        );
       });
 
       if (isAllowed) {
         return callback(null, true);
       }
 
-      console.error(`[CORS-Blocked] Allowed: "${allowedOriginsRaw}", Received: "${origin}"`);
+      console.error(
+        `[CORS-Blocked] Allowed: "${allowedOriginsRaw}", Received: "${origin}"`,
+      );
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
-  })
+  }),
 );
 
 app.use(cookieParser());
@@ -57,6 +65,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/google", googleRoutes);
 app.use("/api/pricing", vehicleRoutes);
+app.use("/api/settings", bookingSettingsRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.use(errorHandler);
 
@@ -67,7 +77,6 @@ app.listen(PORT, async () => {
   try {
     await createSuperAdmin();
     console.log("Superadmin created/verified");
-
   } catch (err) {
     console.error("Error initializing services:", err);
   }

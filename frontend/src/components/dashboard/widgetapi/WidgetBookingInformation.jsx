@@ -8,6 +8,7 @@ import IMAGES from '../../../assets/images';
 import { useLazyGeocodeQuery, useLazyGetDistanceQuery } from '../../../redux/api/googleApi';
 
 import { useGetAllVehiclesQuery } from '../../../redux/api/vehicleApi';
+import { useGetPublicBookingSettingQuery } from '../../../redux/api/bookingSettingsApi';
 
 const WidgetBookingInformation = ({
   onNext,
@@ -15,6 +16,11 @@ const WidgetBookingInformation = ({
 }) => {
   const { data: vehicleResponse, isLoading: isVehiclesLoading } = useGetAllVehiclesQuery();
   const carList = vehicleResponse?.data || vehicleResponse || [];
+
+  const companyId = new URLSearchParams(window.location.search).get("company") || "";
+  const { data: bookingSettingData } = useGetPublicBookingSettingQuery(companyId, {
+    skip: !companyId
+  });
 
   const [actualMiles, setActualMiles] = useState(null);
   const [selectedCarId, setSelectedCarId] = useState(null);
@@ -46,11 +52,6 @@ const WidgetBookingInformation = ({
   };
   const fixedPrices = [];
   const discounts = [];
-  const bookingSettingData = {
-    setting: {
-      currency: [{ symbol: "$", value: "USD" }]
-    }
-  };
 
   const currencySetting = bookingSettingData?.setting?.currency?.[0] || null;
   const currencySymbol = currencySetting?.symbol || '£';
@@ -384,7 +385,7 @@ const WidgetBookingInformation = ({
   }, []);
 
   const getLatLng = async (address) => {
-    const res = await triggerGeocode(address).unwrap();
+    const res = await triggerGeocode({ address, companyId }).unwrap();
     return res?.location || null;
   };
 
@@ -452,7 +453,7 @@ const WidgetBookingInformation = ({
             const destinationAddress = allDropoffs[i];
             const destination = destinationAddress.replace("Custom Input - ", "").split(" - ").pop()?.trim();
 
-            const res = await triggerDistance({ origin: currentOrigin, destination }).unwrap();
+            const res = await triggerDistance({ origin: currentOrigin, destination, companyId }).unwrap();
 
             if (!res?.distanceText) {
               console.error(`Failed to get distance for segment ${i + 1}`);
@@ -503,7 +504,7 @@ const WidgetBookingInformation = ({
             return;
           }
 
-          const res = await triggerDistance({ origin, destination }).unwrap();
+          const res = await triggerDistance({ origin, destination, companyId }).unwrap();
 
           if (res?.distanceText?.includes("km")) {
             const km = parseFloat(res.distanceText.replace("km", "").trim());
@@ -834,8 +835,8 @@ const WidgetBookingInformation = ({
   ]);
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="2xl:col-span-8 col-span-12 col-start-1 2xl:col-start-3 w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-8">
+        <div className="2xl:col-span-12 col-span-12 col-start-1 w-full">
           <JourneySummaryCard
             formData={formData}
             matchedSurcharge={matchedSurcharge}
@@ -847,12 +848,6 @@ const WidgetBookingInformation = ({
           />
 
           <div className='mt-6'>
-            {hourlyError && (
-              <div className="mt-4 mb-6 p-3 bg-(--light-yellow) text-(--dark-yellow) text-sm rounded-md border border-(--medium-yellow)">
-                {hourlyError}
-              </div>
-            )}
-
             {isVehiclesLoading ? (
               <div className="flex flex-col items-center justify-center p-12 bg-(--white) rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--main-color) mb-4"></div>
@@ -865,9 +860,7 @@ const WidgetBookingInformation = ({
                   const raw = car.percentageIncrease ?? 0;
                   const percentage = isNaN(parseFloat(raw)) ? 0 : parseFloat(raw);
 
-                  if (formData?.mode === 'Hourly') {
-                    base = matchedHourlyRate?.[car.vehicleName] || 0;
-                  } else if (fixedZonePrice !== null) {
+                  if (fixedZonePrice !== null) {
                     base = fixedZonePrice + (fixedZonePrice * (percentage / 100));
                   } else if (matchedZoneToZonePrice !== null) {
                     base = matchedZoneToZonePrice + (matchedZoneToZonePrice * (percentage / 100));

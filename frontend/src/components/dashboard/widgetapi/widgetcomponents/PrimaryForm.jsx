@@ -22,6 +22,7 @@ const PrimaryForm = ({
   handleChange,
   handleSubmit,
   setFormData,
+  companyId,
 }) => {
   const [triggerSearchAutocomplete] = useLazySearchGooglePlacesQuery();
   const [triggerGeocode] = useLazyGeocodeQuery();
@@ -39,7 +40,7 @@ const PrimaryForm = ({
   const fetchSuggestions = async (query, setter) => {
     if (!query) return setter([]);
     try {
-      const res = await triggerSearchAutocomplete(query).unwrap();
+      const res = await triggerSearchAutocomplete({ input: query, companyId }).unwrap();
       const results = res.predictions.map((r) => ({
         place_id: r.place_id,
         name: r.name || r.structured_formatting?.main_text,
@@ -73,14 +74,17 @@ const PrimaryForm = ({
       });
     } else {
       try {
-        const g = await triggerGeocode(full).unwrap();
+        const g = await triggerGeocode({ address: full, companyId }).unwrap();
         if (g?.location) {
           setPickupCoords({
             lat: Number(g.location.lat),
             lng: Number(g.location.lng),
           });
         }
-      } catch { }
+      } catch (err) {
+        toast.error("Error fetching pickup suggestions", err);
+
+      }
     }
   };
 
@@ -119,7 +123,7 @@ const PrimaryForm = ({
       }));
     } else {
       try {
-        const g = await triggerGeocode(full).unwrap();
+        const g = await triggerGeocode({ address: full, companyId }).unwrap();
         if (g?.location) {
           setDropoffCoords((prev) => ({
             ...prev,
@@ -131,10 +135,10 @@ const PrimaryForm = ({
   };
 
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center lg:p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-6xl bg-(--white) rounded-2xl shadow-lg pt-5 px-3 pb-3"
+        className="bg-(--white) rounded-2xl shadow-lg pt-5 px-3 pb-3"
       >
         <div className="grid grid-cols-12 gap-4 items-end">
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:pr-4">
@@ -156,13 +160,11 @@ const PrimaryForm = ({
               </select>
             </div>
           </div>
-          {/* Pickup Address */}
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:px-4">
-            <div className="relative">
-              <div className="flex items-center gap-x-1 text-gray-400">
-                <Icons.MapPin size={15} />
-                <span className="text-xs text-(--dark-grey)">Pickup Address</span>
-              </div>
+            <div>              <div className="flex items-center gap-x-1 text-gray-400">
+              <Icons.MapPin size={15} />
+              <span className="text-xs text-(--dark-grey)">Pickup Address</span>
+            </div>
               <input
                 type="text"
                 name="pickup"
@@ -172,17 +174,16 @@ const PrimaryForm = ({
                 className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent text-(--dark-gray)"
               />
               {pickupSuggestions.length > 0 && (
-                <ul className="absolute z-50 bg-(--white) rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2">
-                  <li
-                    onClick={() => {
-                      const val = (formData.pickup || "").trim();
-                      setFormData((prev) => ({ ...prev, pickup: val }));
-                      setPickupSuggestions([]);
-                    }}
-                    className="p-3 text-sm bg-blue-50 hover:bg-blue-100 cursor-pointer border-b transition-colors font-medium"
-                  >
-                    ➕ Use: "{formData.pickup}"
-                  </li>
+                <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2 left-0 right-0">               <li
+                  onClick={() => {
+                    const val = (formData.pickup || "").trim();
+                    setFormData((prev) => ({ ...prev, pickup: val }));
+                    setPickupSuggestions([]);
+                  }}
+                  className="p-3 text-sm bg-blue-50 hover:bg-blue-100 cursor-pointer border-b transition-colors font-medium"
+                >
+                  ➕ Use: "{formData.pickup}"
+                </li>
                   {pickupSuggestions.map((sug, idx) => (
                     <li
                       key={idx}
@@ -197,7 +198,6 @@ const PrimaryForm = ({
             </div>
           </div>
 
-          {/* Drop Off Address */}
           <div className="col-span-12 md:col-span-3 relative md:pl-4">
             <div>
               <div className="flex items-center gap-x-1 text-gray-400">
@@ -220,7 +220,7 @@ const PrimaryForm = ({
                       setDropOffs([val, ...dropOffs.slice(1)]);
                       setDropOffSuggestions([]);
                       try {
-                        const g = await triggerGeocode(val).unwrap();
+                        const g = await triggerGeocode({ address: val, companyId }).unwrap();
                         if (g?.location) {
                           setDropoffCoords(prev => ({ ...prev, 0: { lat: Number(g.location.lat), lng: Number(g.location.lng) } }));
                         }
@@ -244,7 +244,6 @@ const PrimaryForm = ({
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="col-span-12 md:col-span-3">
             <button
               type="submit"

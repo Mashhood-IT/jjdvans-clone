@@ -3,10 +3,10 @@ import { apiSlice } from "../slice/apiSlice";
 export const googleApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     searchGooglePlaces: builder.query({
-      query: (input) => ({
+      query: (params) => ({
         url: "/google/autocomplete",
         method: "GET",
-        params: { input },
+        params: typeof params === 'string' ? { input: params } : params,
       }),
     }),
     getDistance: builder.query({
@@ -17,23 +17,24 @@ export const googleApi = apiSlice.injectEndpoints({
       },
     }),
     getMapKey: builder.query({
-      query: () => ({
+      query: (companyId) => ({
         url: "/google/map-key",
         method: "GET",
+        params: { companyId },
       }),
     }),
     searchPostcodeSuggestions: builder.query({
-      query: (input) => ({
+      query: (params) => ({
         url: "/google/postcode-suggestions",
         method: "GET",
-        params: { input },
+        params: typeof params === 'string' ? { input: params } : params,
       }),
     }),
     geocode: builder.query({
-      query: (address) => ({
+      query: (params) => ({
         url: "/google/geocode",
         method: "GET",
-        params: { address },
+        params: typeof params === 'string' ? { address: params } : params,
       }),
     }),
     sendGoogleAuthLink: builder.mutation({

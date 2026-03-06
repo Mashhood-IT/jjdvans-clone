@@ -4,7 +4,15 @@ export const bookingSettingsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getBookingSetting: builder.query({
       query: () => ({
-        url: `/booking-settings/get-booking-setting`,
+        url: `/settings/get-booking-setting`,
+        method: "GET",
+      }),
+      providesTags: ['BookingSetting'],
+    }),
+
+    getPublicBookingSetting: builder.query({
+      query: (companyId) => ({
+        url: `/settings/public/${companyId}`,
         method: "GET",
       }),
       providesTags: ['BookingSetting'],
@@ -12,7 +20,15 @@ export const bookingSettingsApi = apiSlice.injectEndpoints({
 
     updateBookingSetting: builder.mutation({
       query: (formData) => ({
-        url: `/booking-settings/update-booking-setting`,
+        url: `/settings/update-booking-setting`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ['BookingSetting'],
+    }),
+    getAdvanceBookingMinutes: builder.mutation({
+      query: (formData) => ({
+        url: `/settings/advance-booking-minutes`,
         method: "POST",
         body: formData,
       }),
@@ -23,5 +39,6 @@ export const bookingSettingsApi = apiSlice.injectEndpoints({
 
 export const {
   useGetBookingSettingQuery,
+  useGetPublicBookingSettingQuery,
   useUpdateBookingSettingMutation,
 } = bookingSettingsApi;

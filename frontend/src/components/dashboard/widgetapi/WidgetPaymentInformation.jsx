@@ -2,26 +2,135 @@ import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import "react-phone-input-2/lib/style.css";
 import Icons from "../../../assets/icons";
+import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
+import SelectOption from "../../constants/constantcomponents/SelectOption";
+import { useCreatePaymentIntentMutation } from "../../../redux/api/paymentApi";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+
+const StripeCheckoutForm = ({ clientSecret, onPaymentSuccess, onPaymentError, totalPrice, currencySymbol, isProcessing }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [localProcessing, setLocalProcessing] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements || localProcessing) return;
+
+    setLocalProcessing(true);
+    onPaymentError(null);
+
+    try {
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        onPaymentError(submitError.message);
+        setLocalProcessing(false);
+        return;
+      }
+
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        clientSecret,
+        confirmParams: {
+          return_url: window.location.origin + window.location.pathname,
+        },
+        redirect: "if_required",
+      });
+
+      if (error) {
+        onPaymentError(error.message);
+        setLocalProcessing(false);
+        return;
+      }
+
+      if (paymentIntent && paymentIntent.status === "succeeded") {
+        await onPaymentSuccess();
+      } else {
+        onPaymentError("Payment was not successful. Please try again.");
+      }
+    } catch (err) {
+      console.error("Stripe Checkout Error:", err);
+      onPaymentError("An unexpected error occurred during payment.");
+    } finally {
+      setLocalProcessing(false);
+    }
+  };
+
+  return (
+    <form id="payment-form" onSubmit={handleSubmit} className="mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <span className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+              <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+            </svg>
+          </span>
+          Secure Card Payment
+        </h3>
+
+        <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
+
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-gray-500 text-sm">Amount to Pay</span>
+            <span className="text-xl font-bold text-gray-900">{currencySymbol}{totalPrice}</span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={localProcessing || !stripe}
+            className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${localProcessing || !stripe
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100"
+              }`}
+          >
+            {localProcessing ? "Processing Payment..." : "Pay & Book Now"}
+          </button>
+
+          <p className="text-xs text-center text-gray-400 mt-4">
+            Payments are secure and encrypted by Stripe
+          </p>
+        </div>
+      </div>
+    </form>
+  );
+};
 
 const WidgetPaymentInformation = ({
-  fare,
+  companyId,
   onBookNow,
   vehicle = {},
   booking = {},
   loading = false,
 }) => {
   const [passengerDetails, setPassengerDetails] = useState({
-    name: "",
     email: "",
     phone: "",
   });
+  // const companyId = new URLSearchParams(window.location.search).get("company") || ""; // Removed as companyId is now a prop
+  const { data: bookingSettingData } = useGetPublicBookingSettingQuery(companyId, {
+    skip: !companyId
+  });
+
+  const [createPaymentIntent] = useCreatePaymentIntentMutation();
+  const [stripePromise, setStripePromise] = useState(null);
+  const [clientSecret, setClientSecret] = useState("");
+  const [isProcessingStripe, setIsProcessingStripe] = useState(false);
+  const [stripeError, setStripeError] = useState(null);
+
   const [formData, setFormData] = useState({
     passenger: "",
     childSeat: "",
     babySeat: "",
     carSeat: "",
     boosterSeat: "",
-    paymentMethod: "",
+    paymentMethod: "Cash", // Default to Cash
   });
 
   const [localVehicle, setLocalVehicle] = useState(vehicle);
@@ -32,49 +141,6 @@ const WidgetPaymentInformation = ({
     paymentMethodSurcharges: [],
     cardPaymentAmount: 5
   };
-
-  const bookingSettingData = {
-    setting: {
-      currency: [{ symbol: "£", value: "GBP" }]
-    }
-  };
-
-  const paymentOptionsResp = {
-    data: {
-      paymentOptions: [
-        { paymentMethod: "cash", isLive: true, customName: "Cash" },
-        { paymentMethod: "stripe", isLive: true, customName: "Stripe, Card" }
-      ]
-    }
-  };
-
-  const enabledPaymentOptions = useMemo(() => {
-    return (
-      paymentOptionsResp?.data?.paymentOptions?.filter((po) => po.isLive) ?? []
-    );
-  }, [paymentOptionsResp]);
-
-  const PAYMENT_METHOD_UI_MAP = {
-    cash: { label: "Cash", value: "Cash" },
-    invoice: { label: "Invoice", value: "Invoice" },
-    stripe: { label: "Stripe, Card", value: "Stripe, Card" },
-    banktransfer: { label: "Bank Transfer", value: "Bank Transfer" },
-    paypal: { label: "Paypal", value: "Paypal" },
-    paymentlink: { label: "Payment Link", value: "Payment Link" },
-  };
-
-  const enabledOptions = useMemo(() => {
-    return enabledPaymentOptions.map((po) => {
-      const key = po.paymentMethod.toLowerCase();
-      const customName = po.customName;
-
-      return {
-        label:
-          customName || PAYMENT_METHOD_UI_MAP[key]?.label || po.paymentMethod,
-        value: PAYMENT_METHOD_UI_MAP[key]?.value || po.paymentMethod,
-      };
-    });
-  }, [enabledPaymentOptions]);
 
   const childSeatUnitPrice = useMemo(() => {
     return generalPricing?.childSeatPrice || 10.0;
@@ -143,23 +209,6 @@ const WidgetPaymentInformation = ({
     loadInitialData();
   }, [vehicle]);
 
-  useEffect(() => {
-    if (!enabledOptions || enabledOptions.length === 0) return;
-
-    const currentMethodExists = enabledOptions.some(
-      (opt) => opt.value === formData.paymentMethod,
-    );
-
-    if (!formData.paymentMethod || !currentMethodExists) {
-      const autoSelect = enabledOptions[0]?.value;
-      if (autoSelect) {
-        setFormData((prev) => ({
-          ...prev,
-          paymentMethod: autoSelect,
-        }));
-      }
-    }
-  }, [enabledOptions, formData.paymentMethod]);
 
 
   const currencySetting = bookingSettingData?.setting?.currency?.[0] || {};
@@ -249,25 +298,50 @@ const WidgetPaymentInformation = ({
       extraTimeCharges,
       childSeatTotal,
       total,
-      currencySymbol: pricingData.currencySymbol || "£"
+      currencySymbol: pricingData.currencySymbol || currencySymbol
     };
   }, [formData.childSeat, childSeatUnitPrice]);
 
   const finalFare = pricingInfo.total;
 
-  const onBookNowClick = () => {
-    if (!formData.paymentMethod) {
+  useEffect(() => {
+    if (formData.paymentMethod === "Stripe" && !clientSecret) {
+      const initStripe = async () => {
+        try {
+          const res = await createPaymentIntent({
+            amount: finalFare, // Use finalFare for amount
+            currency: currencySetting.value || "GBP",
+            companyId,
+          }).unwrap();
+
+          if (res.publishableKey) {
+            setStripePromise(loadStripe(res.publishableKey));
+          }
+          if (res.clientSecret) {
+            setClientSecret(res.clientSecret);
+          }
+        } catch (err) {
+          console.error("Failed to init Stripe", err);
+          setStripeError("Could not initialize Stripe payment. Please try another method.");
+        }
+      };
+      initStripe();
+    }
+  }, [formData.paymentMethod, finalFare, companyId, currencySetting.value, clientSecret, createPaymentIntent]); // Added clientSecret and createPaymentIntent to dependencies
+
+  const onBookNowClick = async (paymentData) => { // Renamed from onBookNowClick to handleBookNow
+    // This is the original booking logic, now called by handleBookNow
+    if (!paymentData.paymentMethod) {
       toast.error("Please select a payment method.");
       return;
     }
-
 
     const bookingData = {
       passengerDetails: passengerDetails,
       passenger: passengerDetails,
       fare: finalFare,
       childSeats: Number(formData.childSeat) || 0,
-      paymentMethod: formData.paymentMethod,
+      paymentMethod: paymentData.paymentMethod,
       selectedVehicle: {
         vehicleName: vehicle.vehicleName || localVehicle.vehicleName,
         passenger: Number(formData.passenger) || 0,
@@ -279,9 +353,13 @@ const WidgetPaymentInformation = ({
         childSeatCharges: pricingInfo.childSeatTotal,
         total: pricingInfo.total,
       },
+      currency: {
+        symbol: currencySymbol,
+        value: currencySetting?.value || "GBP"
+      }
     };
 
-    onBookNow?.(bookingData);
+    await onBookNow?.(bookingData); // Ensure onBookNow is awaited
 
     localStorage.removeItem("selectedVehicle");
     localStorage.removeItem("widgetPricing");
@@ -290,242 +368,279 @@ const WidgetPaymentInformation = ({
     localStorage.removeItem("isWidgetFormFilled");
   };
 
+  const handleBookNow = async () => {
+    if (!formData.paymentMethod) {
+      toast.error("Please select a payment method.");
+      return;
+    }
+
+    // Stripe is handled by StripeCheckoutForm internally
+    if (formData.paymentMethod !== "Stripe") {
+      await onBookNowClick(formData);
+    }
+  };
+
   return (
-    <div className="bg-(--lighter-gray) py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-            <span>BOOKING</span>
-            <span>/</span>
-            <span className="font-medium">PASSENGER & FARE DETAILS</span>
+    <div className="md:px-12 px-4">
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+          <span>BOOKING</span>
+          <span>/</span>
+          <span className="font-medium">PASSENGER & FARE DETAILS</span>
+        </div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          Complete Your Booking
+        </h1>
+        <p className="text-gray-600">
+          Verify your relocation details and passenger requirements to finalize your
+          professional service estimate.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-(--white) rounded-lg shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
+                01
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Client Profile</h2>
+            </div>
+
+            <div className="grid grid-cols-12 gap-4">
+              <div className="col-span-6">
+                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  value={passengerDetails.name}
+                  onChange={(e) =>
+                    setPassengerDetails({
+                      ...passengerDetails,
+                      name: e.target.value,
+                    })
+                  }
+                  placeholder="John"
+                  className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </div>
+
+
+              <div className="col-span-6">
+                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={passengerDetails.email}
+                  onChange={(e) =>
+                    setPassengerDetails({
+                      ...passengerDetails,
+                      email: e.target.value,
+                    })
+                  }
+                  placeholder="john.doe@corporate.com"
+                  className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </div>
+              <div className="mt-4 col-span-6">
+                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                  Phone
+                </label>
+                <input
+                  type="number"
+                  value={passengerDetails.phone}
+                  onChange={(e) =>
+                    setPassengerDetails({
+                      ...passengerDetails,
+                      phone: e.target.value,
+                    })
+                  }
+                  placeholder="john.doe@corporate.com"
+                  className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+              </div>
+            </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Complete Your Booking
-          </h1>
-          <p className="text-gray-600">
-            Verify your relocation details and passenger requirements to finalize your
-            professional service estimate.
-          </p>
+
+          <div className="bg-(--white) rounded-lg shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
+                02
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Service Requirements</h2>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                  Moving Date
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={
+                      booking?.date
+                        ? new Date(booking.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                        : ""
+                    }
+                    readOnly
+                    className="w-full pl-10 pr-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none"
+                  />
+                  <Icons.Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                  Pickup Address
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={booking?.pickup || ""}
+                    placeholder="Pickup Address"
+                    readOnly
+                    className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
+                  />
+                  <Icons.MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+
+              {[
+                booking?.dropoff,
+                booking?.additionalDropoff1,
+                booking?.additionalDropoff2,
+                booking?.additionalDropoff3,
+                booking?.additionalDropoff4,
+              ]
+                .filter(Boolean)
+                .map((dropoff, idx) => (
+                  <div key={idx}>
+                    <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                      {idx === 0 ? "Destination Address" : `Additional Drop-off ${idx}`}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={dropoff}
+                        placeholder="Drop-off Address"
+                        readOnly
+                        className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
+                      />
+                      <Icons.Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-(--white) rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
-                  01
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Client Profile</h2>
+        <div className="lg:col-span-1">
+          <div className="bg-(--white) rounded-lg shadow-sm p-6 sticky top-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">Price Estimate</h3>
+
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Base Fare</span>
+                <span className="font-medium text-gray-900">
+                  {pricingInfo.currencySymbol}
+                  {pricingInfo.baseFare.toFixed(2)}
+                </span>
               </div>
-
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-6">
-                  <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    value={passengerDetails.name}
-                    onChange={(e) =>
-                      setPassengerDetails({
-                        ...passengerDetails,
-                        name: e.target.value,
-                      })
-                    }
-                    placeholder="John"
-                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  />
-                </div>
-                <div className="col-span-6">
-                  <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Doe"
-                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  />
-                </div>
-
-                <div className="mt-4 col-span-6">
-                  <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={passengerDetails.email}
-                    onChange={(e) =>
-                      setPassengerDetails({
-                        ...passengerDetails,
-                        email: e.target.value,
-                      })
-                    }
-                    placeholder="john.doe@corporate.com"
-                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  />
-                </div>
-                <div className="mt-4 col-span-6">
-                  <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                    Phone
-                  </label>
-                  <input
-                    type="number"
-                    value={passengerDetails.phone}
-                    onChange={(e) =>
-                      setPassengerDetails({
-                        ...passengerDetails,
-                        phone: e.target.value,
-                      })
-                    }
-                    placeholder="john.doe@corporate.com"
-                    className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-(--white) rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
-                  02
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Service Requirements</h2>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                    Moving Date
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={
-                        booking?.date
-                          ? new Date(booking.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                          : ""
-                      }
-                      readOnly
-                      className="w-full pl-10 pr-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none"
-                    />
-                    <Icons.Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                    Pickup Address
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={booking?.pickup || ""}
-                      placeholder="Pickup Address"
-                      readOnly
-                      className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
-                    />
-                    <Icons.MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  </div>
-                </div>
-
-                {[
-                  booking?.dropoff,
-                  booking?.additionalDropoff1,
-                  booking?.additionalDropoff2,
-                  booking?.additionalDropoff3,
-                  booking?.additionalDropoff4,
-                ]
-                  .filter(Boolean)
-                  .map((dropoff, idx) => (
-                    <div key={idx}>
-                      <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                        {idx === 0 ? "Destination Address" : `Additional Drop-off ${idx}`}
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={dropoff}
-                          placeholder="Drop-off Address"
-                          readOnly
-                          className="w-full pl-10 pr-4 py-1.5 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed text-gray-500"
-                        />
-                        <Icons.Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-1">
-            <div className="bg-(--white) rounded-lg shadow-sm p-6 sticky top-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Price Estimate</h3>
-
-              <div className="space-y-3 mb-6">
+              {pricingInfo.workersCharges > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Base Fare</span>
+                  <span className="text-gray-600">Extra Workers</span>
                   <span className="font-medium text-gray-900">
-                    {pricingInfo.currencySymbol}
-                    {pricingInfo.baseFare.toFixed(2)}
+                    +{pricingInfo.currencySymbol}
+                    {pricingInfo.workersCharges.toFixed(2)}
                   </span>
                 </div>
-                {pricingInfo.workersCharges > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Extra Workers</span>
-                    <span className="font-medium text-gray-900">
-                      +{pricingInfo.currencySymbol}
-                      {pricingInfo.workersCharges.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                {pricingInfo.extraTimeCharges > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Extra Time</span>
-                    <span className="font-medium text-gray-900">
-                      +{pricingInfo.currencySymbol}
-                      {pricingInfo.extraTimeCharges.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                {pricingInfo.childSeatTotal > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Child Seats</span>
-                    <span className="font-medium text-gray-900">
-                      +{pricingInfo.currencySymbol}
-                      {pricingInfo.childSeatTotal.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="border-t border-gray-200 pt-4 mb-6">
-                <div className="text-3xl font-bold text-gray-900">
-                  {currencySymbol}
-                  {finalFare?.toFixed(2)}
+              )}
+              {pricingInfo.extraTimeCharges > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Extra Time</span>
+                  <span className="font-medium text-gray-900">
+                    +{pricingInfo.currencySymbol}
+                    {pricingInfo.extraTimeCharges.toFixed(2)}
+                  </span>
                 </div>
+              )}
+              {pricingInfo.childSeatTotal > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Child Seats</span>
+                  <span className="font-medium text-gray-900">
+                    +{pricingInfo.currencySymbol}
+                    {pricingInfo.childSeatTotal.toFixed(2)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-gray-200 pt-4 mb-6">
+              <div className="text-3xl font-bold text-gray-900">
+                {pricingInfo.currencySymbol}
+                {finalFare?.toFixed(2)}
               </div>
-              <div className="flex items-center justify-center">
-                <button
-                  onClick={onBookNowClick}
-                  disabled={loading}
-                  className={`btn btn-back mb-4 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            </div>
+            <div className="mt-8 space-y-4">
+              <SelectOption
+                label="Choose Payment Option"
+                value={formData.paymentMethod}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, paymentMethod: e.target.value }))
+                }
+                options={[
+                  { label: "Cash", value: "Cash" },
+                  { label: "Stripe", value: "Stripe" },
+                  { label: "Paypal", value: "Paypal" },
+                ]}
+              />
+
+              {formData.paymentMethod === "Stripe" && stripePromise && clientSecret && (
+                <Elements
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret,
+                    appearance: {
+                      theme: "stripe",
+                      variables: {
+                        colorPrimary: "#1f2937",
+                        borderRadius: "12px",
+                      },
+                    },
+                  }}
                 >
-                  {loading ? "PROCESSING..." : "SECURE BOOKING"}
-                  {!loading && <Icons.ArrowRight className="w-5 h-5" />}
-                </button>
-              </div>
+                  <StripeCheckoutForm
+                    clientSecret={clientSecret}
+                    totalPrice={finalFare}
+                    currencySymbol={currencySymbol}
+                    isProcessing={isProcessingStripe}
+                    onPaymentError={(msg) => setStripeError(msg)}
+                    onPaymentSuccess={() => onBookNowClick(formData)}
+                  />
+                </Elements>
+              )}
 
-
-              <div className="mt-6 rounded-lg overflow-hidden">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2482.1317876843673!2d-0.2659298230151974!3d51.529142609114196!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e6ca0a23249c9f9%3A0xff8c140d933157ec!2sRegent%20Business%20Strategies%20Limited!5e0!3m2!1sen!2s!4v1772031383444!5m2!1sen!2s" width="600" height="200" style={{ border: 0 }} loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
-                <div className="bg-gray-900 text-(--white) px-4 py-2 text-center text-sm font-medium">
-                  • LIVE ROUTE PREVIEW
+              {stripeError && (
+                <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl animate-in fade-in duration-300">
+                  {stripeError}
                 </div>
-              </div>
+              )}
+
+              {formData.paymentMethod !== "Stripe" && (
+                <button
+                  onClick={handleBookNow}
+                  className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold text-lg hover:bg-gray-800 transition-all transform active:scale-[0.98] shadow-lg hover:shadow-gray-200"
+                >
+                  Book Now
+                </button>
+              )}
             </div>
           </div>
         </div>

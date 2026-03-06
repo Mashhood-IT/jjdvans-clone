@@ -29,6 +29,17 @@ const GoogleApiKeysSchema = new mongoose.Schema({
     },
 }, { _id: false });
 
+const StripeKeysSchema = new mongoose.Schema({
+    publishableKey: {
+        type: String,
+        default: ""
+    },
+    secretKey: {
+        type: String,
+        default: ""
+    },
+}, { _id: false });
+
 const AdvanceBookingMinSchema = new mongoose.Schema({
     value: {
         type: Number,
@@ -67,6 +78,11 @@ const BookingSettingSchema = new mongoose.Schema({
 
     googleApiKeys: {
         type: GoogleApiKeysSchema,
+        default: () => ({})
+    },
+
+    stripeKeys: {
+        type: StripeKeysSchema,
         default: () => ({})
     },
 
