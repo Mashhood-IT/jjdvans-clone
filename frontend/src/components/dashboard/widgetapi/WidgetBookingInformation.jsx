@@ -519,7 +519,6 @@ const WidgetBookingInformation = ({
 
           setDurationText(res?.durationText || null);
 
-          // Save single segment to localStorage (same format as multi-dropoff)
           const singleSegment = [{
             segmentNumber: 1,
             from: data.pickup,
@@ -836,7 +835,7 @@ const WidgetBookingInformation = ({
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-8">
-        <div className="2xl:col-span-12 col-span-12 col-start-1 w-full">
+        <div className="2xl:col-span-8 col-span-12 2xl:col-start-3 col-start-1 w-full">
           <JourneySummaryCard
             formData={formData}
             matchedSurcharge={matchedSurcharge}

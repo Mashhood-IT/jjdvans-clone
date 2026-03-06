@@ -138,7 +138,7 @@ const PrimaryForm = ({
     <div className="flex items-center justify-center lg:p-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-(--white) rounded-2xl shadow-lg pt-5 px-3 pb-3"
+        className="bg-(--white) rounded-2xl shadow-lg pt-5 px-3 pb-3 border border-gray-200"
       >
         <div className="grid grid-cols-12 gap-4 items-end">
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:pr-4">

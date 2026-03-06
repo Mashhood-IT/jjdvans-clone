@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import "react-phone-input-2/lib/style.css";
+import PhoneInput from "react-phone-input-2";
 import Icons from "../../../assets/icons";
 import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 import SelectOption from "../../constants/constantcomponents/SelectOption";
@@ -65,12 +66,6 @@ const StripeCheckoutForm = ({ clientSecret, onPaymentSuccess, onPaymentError, to
     <form id="payment-form" onSubmit={handleSubmit} className="mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
         <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-              <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
-            </svg>
-          </span>
           Secure Card Payment
         </h3>
 
@@ -85,17 +80,14 @@ const StripeCheckoutForm = ({ clientSecret, onPaymentSuccess, onPaymentError, to
           <button
             type="submit"
             disabled={localProcessing || !stripe}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${localProcessing || !stripe
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100"
+            className={`btn w-full ${localProcessing || !stripe
+              ? "btn-edit"
+              : "btn-success"
               }`}
           >
             {localProcessing ? "Processing Payment..." : "Pay & Book Now"}
           </button>
 
-          <p className="text-xs text-center text-gray-400 mt-4">
-            Payments are secure and encrypted by Stripe
-          </p>
         </div>
       </div>
     </form>
@@ -407,8 +399,8 @@ const WidgetPaymentInformation = ({
               <h2 className="text-xl font-bold text-gray-900">Client Profile</h2>
             </div>
 
-            <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   First Name
                 </label>
@@ -426,8 +418,7 @@ const WidgetPaymentInformation = ({
                 />
               </div>
 
-
-              <div className="col-span-6">
+              <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   Email Address
                 </label>
@@ -444,21 +435,22 @@ const WidgetPaymentInformation = ({
                   className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
               </div>
-              <div className="mt-4 col-span-6">
+              <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   Phone
                 </label>
-                <input
-                  type="number"
+
+                <PhoneInput
+                  country={"gb"}
                   value={passengerDetails.phone}
-                  onChange={(e) =>
+                  onChange={(phone) =>
                     setPassengerDetails({
                       ...passengerDetails,
-                      phone: e.target.value,
+                      phone: phone,
                     })
                   }
-                  placeholder="john.doe@corporate.com"
-                  className="w-full px-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  inputClass="!w-full !py-1.5 !bg-(--lighter-gray) !border !border-gray-200 !rounded-lg"
+                  containerClass="w-full"
                 />
               </div>
             </div>
@@ -472,7 +464,7 @@ const WidgetPaymentInformation = ({
               <h2 className="text-xl font-bold text-gray-900">Service Requirements</h2>
             </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   Moving Date
@@ -482,7 +474,7 @@ const WidgetPaymentInformation = ({
                     type="text"
                     value={
                       booking?.date
-                        ? new Date(booking.date).toLocaleDateString("en-US", {
+                        ? new Date(booking.date).toLocaleDateString("en-GB", {
                           month: "short",
                           day: "numeric",
                           year: "numeric",
@@ -497,6 +489,25 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                  Moving Time
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={
+                      booking?.hour !== undefined && booking?.minute !== undefined
+                        ? `${String(booking.hour).padStart(2, "0")} : ${String(booking.minute).padStart(2, "0")}`
+                        : ""
+                    }
+                    readOnly
+                    className="w-full pl-10 pr-4 py-1.5 bg-(--lighter-gray) border border-gray-200 rounded-lg focus:outline-none"
+                  />
+                  <Icons.Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+
+              <div className="md:col-span-1">
                 <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
                   Pickup Address
                 </label>
@@ -521,9 +532,9 @@ const WidgetPaymentInformation = ({
               ]
                 .filter(Boolean)
                 .map((dropoff, idx) => (
-                  <div key={idx}>
+                  <div key={idx} className="md:col-span-1">
                     <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
-                      {idx === 0 ? "Destination Address" : `Additional Drop-off ${idx}`}
+                      {idx === 0 ? "DROPOFF ADDRESS" : `Additional Drop-off ${idx}`}
                     </label>
                     <div className="relative">
                       <input
@@ -636,7 +647,7 @@ const WidgetPaymentInformation = ({
               {formData.paymentMethod !== "Stripe" && (
                 <button
                   onClick={handleBookNow}
-                  className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold text-lg hover:bg-gray-800 transition-all transform active:scale-[0.98] shadow-lg hover:shadow-gray-200"
+                  className="btn btn-back w-full mt-4"
                 >
                   Book Now
                 </button>

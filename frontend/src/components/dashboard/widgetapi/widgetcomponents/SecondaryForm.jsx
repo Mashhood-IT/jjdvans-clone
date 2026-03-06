@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import Icons from "../../../../assets/icons";
 import {
     useLazyGeocodeQuery,
     useLazySearchGooglePlacesQuery,
@@ -233,7 +232,7 @@ const SecondaryForm = ({
                             </div>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-medium text-(--dark-gray)  tracking-wider mb-1">Hour</label>
+                            <label className="block text-[10px] font-medium text-(--dark-gray)  tracking-wider mb-1">Time</label>
                             <select
                                 name="hour"
                                 value={formData.hour}

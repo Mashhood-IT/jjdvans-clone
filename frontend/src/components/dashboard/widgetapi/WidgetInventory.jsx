@@ -203,7 +203,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
   };
 
   return (
-    <div className="px-4 md:px-8">
+    <div className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
       <div className="mb-4 mt-4">
         <button
           onClick={onBack}

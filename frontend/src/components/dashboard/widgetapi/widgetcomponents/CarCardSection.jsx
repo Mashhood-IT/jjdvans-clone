@@ -160,8 +160,8 @@ const CarCardSection = ({
                 </div>
               </div>
 
-              <div className="mb-3 min-h-[44px]">
-                <p className="text-[11px] leading-relaxed text-(--dark-grey) bg-(--lighter-gray)/50 p-2 rounded-xl border border-gray-100/50">
+              <div className="my-2">
+                <p className="text-sm text-(--dark-grey)">
                   {description || "Great for small apartments, studio moves, or picking up large furniture items."}
                 </p>
               </div>
@@ -174,7 +174,7 @@ const CarCardSection = ({
                   {helpOptions.map((option) => (
                     <label
                       key={option.id}
-                      className={`flex flex-col items-center justify-center p-1.5 rounded-xl border-2 transition-all cursor-pointer text-center min-h-[50px] ${activeOption.id === option.id
+                      className={`flex flex-col items-center justify-center p-1.5 rounded-lg border-2 transition-all cursor-pointer text-center ${activeOption.id === option.id
                         ? "border-(--main-color) bg-(--main-color)/5 text-(--main-color)"
                         : "border-gray-100 hover:border-gray-200 bg-(--white)"
                         }`}
@@ -187,11 +187,6 @@ const CarCardSection = ({
                         onChange={() => handleHelpChange(_id, option)}
                       />
                       <span className="text-xs flex items-center justify-center">{option.label}</span>
-                      {option.price > 0 && (
-                        <span className="text-[9px] font-black text-(--main-color) mt-0.5 flex items-center">
-                          +{currencySymbol}{option.price}
-                        </span>
-                      )}
                     </label>
                   ))}
                 </div>
