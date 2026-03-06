@@ -158,7 +158,22 @@ export const getPublicBookingSetting = async (req, res) => {
             return res.status(404).json({ message: "Booking settings not found" });
         }
 
-        res.status(200).json({ setting });
+        // Sanitize sensitive info
+        const publicSetting = {
+            currency: setting.currency,
+            currencyApplication: setting.currencyApplication,
+            advanceBookingMin: setting.advanceBookingMin,
+            stripeKeys: setting.stripeKeys ? {
+                publishableKey: setting.stripeKeys.publishableKey,
+                enabled: !!setting.stripeKeys.publishableKey
+            } : null,
+            paypalKeys: setting.paypalKeys ? {
+                clientId: setting.paypalKeys.clientId,
+                enabled: !!setting.paypalKeys.clientId
+            } : null,
+        };
+
+        res.status(200).json({ setting: publicSetting });
     } catch (error) {
         console.error("Error fetching public booking settings:", error);
         res.status(500).json({ message: "Server error", error: error.message });

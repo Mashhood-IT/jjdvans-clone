@@ -10,6 +10,8 @@ import {
   Elements,
 } from "@stripe/react-stripe-js";
 import StripeCheckout from "../../../paymentMethod/StripeCheckout";
+import PayPalCheckout from "../../../paymentMethod/PayPalCheckout";
+import WidgetStepHeader from './widgetcomponents/WidgetStepHeader';
 
 const WidgetPaymentInformation = ({
   companyId,
@@ -286,21 +288,13 @@ const WidgetPaymentInformation = ({
   };
 
   return (
-    <div className="md:px-12 px-4">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-          <span>BOOKING</span>
-          <span>/</span>
-          <span className="font-medium">PASSENGER & FARE DETAILS</span>
-        </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Complete Your Booking
-        </h1>
-        <p className="text-gray-600">
-          Verify your relocation details and passenger requirements to finalize your
-          professional service estimate.
-        </p>
-      </div>
+    <div className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
+      <WidgetStepHeader
+        step="4"
+        title="Complete Your Booking"
+        description="Verify your relocation details and passenger requirements to finalize your professional service estimate."
+      />
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
@@ -509,18 +503,26 @@ const WidgetPaymentInformation = ({
               </div>
             </div>
             <div className="mt-8 space-y-4">
-              <SelectOption
-                label="Choose Payment Option"
-                value={formData.paymentMethod}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, paymentMethod: e.target.value }))
+              {(() => {
+                const options = [{ label: "Cash", value: "Cash" }];
+                if (bookingSettingData?.setting?.stripeKeys?.enabled) {
+                  options.push({ label: "Stripe", value: "Stripe" });
                 }
-                options={[
-                  { label: "Cash", value: "Cash" },
-                  { label: "Stripe", value: "Stripe" },
-                  { label: "Paypal", value: "Paypal" },
-                ]}
-              />
+                if (bookingSettingData?.setting?.paypalKeys?.enabled) {
+                  options.push({ label: "Paypal", value: "Paypal" });
+                }
+
+                return (
+                  <SelectOption
+                    label="Choose Payment Option"
+                    value={formData.paymentMethod}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, paymentMethod: e.target.value }))
+                    }
+                    options={options}
+                  />
+                );
+              })()}
 
               {formData.paymentMethod === "Stripe" && stripePromise && clientSecret && (
                 <Elements
@@ -547,13 +549,28 @@ const WidgetPaymentInformation = ({
                 </Elements>
               )}
 
+              {formData.paymentMethod === "Paypal" && (
+                <div className="mt-4">
+                  <PayPalCheckout
+                    companyId={companyId}
+                    amount={finalFare}
+                    bookingId={booking?._id || "new-booking"}
+                    onSuccess={() => onBookNowClick(formData)}
+                    onError={(err) => {
+                      console.error("PayPal Error:", err);
+                      toast.error("PayPal payment failed. Please try again.");
+                    }}
+                  />
+                </div>
+              )}
+
               {stripeError && (
                 <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl animate-in fade-in duration-300">
                   {stripeError}
                 </div>
               )}
 
-              {formData.paymentMethod !== "Stripe" && (
+              {formData.paymentMethod !== "Stripe" && formData.paymentMethod !== "Paypal" && (
                 <button
                   onClick={handleBookNow}
                   className="btn btn-back w-full mt-4"

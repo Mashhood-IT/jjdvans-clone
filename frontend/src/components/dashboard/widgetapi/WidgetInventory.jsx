@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 import Icons from "../../../assets/icons";
 
 const WidgetInventory = ({ onContinue, onBack }) => {
@@ -217,6 +219,11 @@ const WidgetInventory = ({ onContinue, onBack }) => {
 
   return (
     <div className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
+      <WidgetStepHeader
+        step="3"
+        title="Inventory & Requirements"
+        description="Survey your moving scope and our availability"
+      />
       <div className="mb-4 mt-4">
         <button
           onClick={onBack}
@@ -226,16 +233,6 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           <span className="font-medium">Back to Vehicle Selection</span>
         </button>
       </div>
-
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Inventory & Requirements
-        </h1>
-      </div>
-
-      <p className="text-gray-600 mb-8">
-        Step 3: Survey your moving scope and our availability
-      </p>
 
       <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -357,8 +354,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 <button
                   onClick={() => setPickupAccess("LIFT")}
                   className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "LIFT"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "bg-gray-900 text-(--white)"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   LIFT
@@ -366,8 +363,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 <button
                   onClick={() => setPickupAccess("STAIRS")}
                   className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "STAIRS"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "bg-gray-900 text-(--white)"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   STAIRS
@@ -415,9 +412,9 @@ const WidgetInventory = ({ onContinue, onBack }) => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setDropoffAccess("LIFT")}
-                  className={`flex-1 cursor-pointer  px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "LIFT"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "LIFT"
+                      ? "bg-gray-900 text-(--white)"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   LIFT
@@ -425,8 +422,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 <button
                   onClick={() => setDropoffAccess("STAIRS")}
                   className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "STAIRS"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "bg-gray-900 text-(--white)"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   STAIRS
@@ -459,9 +456,9 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                     onClick={() =>
                       setFloorAccess((prev) => ({
                         ...prev,
-                        [`additionalDropoff${ad.id}Floor`]: Math.max(
+                        [`additionalDropoff${ad.id} Floor`]: Math.max(
                           0,
-                          prev[`additionalDropoff${ad.id}Floor`] - 1,
+                          prev[`additionalDropoff${ad.id} Floor`] - 1,
                         ),
                       }))
                     }
@@ -471,15 +468,15 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                   </button>
                   <div className="flex-1 text-center">
                     <span className="text-2xl font-bold text-gray-900">
-                      {floorAccess[`additionalDropoff${ad.id}Floor`]}
+                      {floorAccess[`additionalDropoff${ad.id} Floor`]}
                     </span>
                   </div>
                   <button
                     onClick={() =>
                       setFloorAccess((prev) => ({
                         ...prev,
-                        [`additionalDropoff${ad.id}Floor`]:
-                          prev[`additionalDropoff${ad.id}Floor`] + 1,
+                        [`additionalDropoff${ad.id} Floor`]:
+                          prev[`additionalDropoff${ad.id} Floor`] + 1,
                       }))
                     }
                     className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
@@ -498,12 +495,12 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                     onClick={() =>
                       setFloorAccess((prev) => ({
                         ...prev,
-                        [`additionalDropoff${ad.id}Access`]: "LIFT",
+                        [`additionalDropoff${ad.id} Access`]: "LIFT",
                       }))
                     }
                     className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] === "LIFT"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-gray-900 text-(--white)"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                   >
                     LIFT
@@ -512,13 +509,13 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                     onClick={() =>
                       setFloorAccess((prev) => ({
                         ...prev,
-                        [`additionalDropoff${ad.id}Access`]: "STAIRS",
+                        [`additionalDropoff${ad.id} Access`]: "STAIRS",
                       }))
                     }
                     className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
-                      "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        "STAIRS"
+                        ? "bg-gray-900 text-(--white)"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                   >
                     STAIRS
@@ -614,28 +611,12 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           </div>
           <button
             onClick={() => setRidingAlong(!ridingAlong)}
-            className={`
-    relative
-    w-14 h-7
-     md:h-8
-    rounded-full
-    transition-colors duration-300
-    ${ridingAlong ? "bg-gray-900" : "bg-gray-300"}
-  `}
+            className={`relative w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${ridingAlong ? "bg-gray-900" : "bg-gray-300"
+              }`}
           >
             <span
-              className={`
-      absolute
-      top-1
-      left-1
-      w-5 h-5
-      md:w-6 md:h-6
-      bg-(--white)
-      rounded-full
-      shadow
-      transition-transform duration-300
-      ${ridingAlong ? "translate-x-4 md:translate-x-6" : "translate-x-0"}
-    `}
+              className={`absolute top-1 left-1 w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${ridingAlong ? "translate-x-4 md:translate-x-6" : "translate-x-0"
+                }`}
             />
           </button>
         </div>
@@ -661,7 +642,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                   onClick={() =>
                     setPassengerCount(Math.max(0, passengerCount - 1))
                   }
-                  className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+                  className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
                 >
                   <Icons.Minus className="w-4 h-4 text-gray-600" />
                 </button>
@@ -673,7 +654,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                   onClick={() =>
                     setPassengerCount(Math.min(totalSeats, passengerCount + 1))
                   }
-                  className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+                  className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
                 >
                   <Icons.Plus className="w-4 h-4 text-gray-600" />
                 </button>

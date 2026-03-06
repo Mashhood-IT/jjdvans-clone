@@ -75,6 +75,7 @@ export const getPayPalConfig = async (req, res) => {
         res.status(200).json({
             success: true,
             clientId: settings.paypalKeys.clientId,
+            currency: settings.currency?.[0]?.value || "GBP",
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -115,6 +116,16 @@ export const createPayPalOrder = async (req, res) => {
         });
 
         const data = await response.json();
+
+        if (!response.ok) {
+            console.error("PayPal API Error:", data);
+            return res.status(response.status).json({
+                success: false,
+                message: data.message || "PayPal order creation failed",
+                details: data
+            });
+        }
+
         res.status(200).json(data);
     } catch (error) {
         console.error("PayPal Create Order Error:", error);
@@ -148,6 +159,16 @@ export const capturePayPalOrder = async (req, res) => {
         );
 
         const data = await response.json();
+
+        if (!response.ok) {
+            console.error("PayPal Capture API Error:", data);
+            return res.status(response.status).json({
+                success: false,
+                message: data.message || "PayPal order capture failed",
+                details: data
+            });
+        }
+
         res.status(200).json(data);
     } catch (error) {
         console.error("PayPal Capture Order Error:", error);

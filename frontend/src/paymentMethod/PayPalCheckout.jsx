@@ -117,15 +117,25 @@ const PayPalCheckout = ({
             forceReRender={[bookingId, ccy, display]}
             createOrder={async () => {
               try {
+                console.log("Creating PayPal Order for amount:", amountNum);
                 const res = await createOrder({
                   companyId,
                   amount: amountNum,
                   currency: cfg.currency || "GBP",
                 }).unwrap();
-                if (!res?.orderId)
+
+                console.log("PayPal Order Response:", res);
+
+                // PayPal API returns 'id' for the order ID
+                const orderId = res?.id || res?.orderId;
+
+                if (!orderId) {
+                  console.error("No Order ID in response:", res);
                   throw new Error("Server did not return orderId");
-                return res.orderId;
+                }
+                return orderId;
               } catch (error) {
+                console.error("createOrder error:", error);
                 onError(error);
                 throw error;
               }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import PrimaryForm from "./widgetcomponents/PrimaryForm";
+import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 
 const WidgetBooking = ({
   onSubmitSuccess,
@@ -84,25 +85,27 @@ const WidgetBooking = ({
   };
 
   return (
-    <PrimaryForm
-      pickupCoords={pickupCoords}
-      setPickupCoords={setPickupCoords}
-      dropoffCoords={dropoffCoords}
-      setDropoffCoords={setDropoffCoords}
-      companyId={companyId}
-      formData={formData}
-      handleSubmit={handleSubmit}
-      pickupSuggestions={pickupSuggestions}
-      setPickupSuggestions={setPickupSuggestions}
-      dropOffs={dropOffs}
-      setDropOffs={setDropOffs}
-      dropOffSuggestions={dropOffSuggestions}
-      setDropOffSuggestions={setDropOffSuggestions}
-      activeDropIndex={activeDropIndex}
-      setActiveDropIndex={setActiveDropIndex}
-      handleChange={handleChange}
-      setFormData={setFormData}
-    />
+    <>
+      <PrimaryForm
+        pickupCoords={pickupCoords}
+        setPickupCoords={setPickupCoords}
+        dropoffCoords={dropoffCoords}
+        setDropoffCoords={setDropoffCoords}
+        companyId={companyId}
+        formData={formData}
+        handleSubmit={handleSubmit}
+        pickupSuggestions={pickupSuggestions}
+        setPickupSuggestions={setPickupSuggestions}
+        dropOffs={dropOffs}
+        setDropOffs={setDropOffs}
+        dropOffSuggestions={dropOffSuggestions}
+        setDropOffSuggestions={setDropOffSuggestions}
+        activeDropIndex={activeDropIndex}
+        setActiveDropIndex={setActiveDropIndex}
+        handleChange={handleChange}
+        setFormData={setFormData}
+      />
+    </>
   );
 };
 

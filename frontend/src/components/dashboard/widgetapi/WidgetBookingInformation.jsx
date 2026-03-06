@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import CarCardSection from './widgetcomponents/CarCardSection';
 import JourneySummaryCard from './widgetcomponents/JourneySummaryCard';
+import WidgetStepHeader from './widgetcomponents/WidgetStepHeader';
 
 import { toast } from 'react-toastify';
 import IMAGES from '../../../assets/images';
@@ -842,11 +843,16 @@ const WidgetBookingInformation = ({
     <>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-8">
         <div className="2xl:col-span-8 col-span-12 2xl:col-start-3 col-start-1 w-full">
+          <WidgetStepHeader
+            step="2"
+            title="Vehicle Selection"
+            description="Select the vehicle that best fits your requirements and budget for a seamless moving experience."
+          />
           <JourneySummaryCard
             formData={formData}
-            matchedSurcharge={matchedSurcharge}
-            durationText={durationText}
+            actualMiles={actualMiles}
             distanceText={distanceText}
+            durationText={durationText}
             currencySymbol={currencySymbol}
             currencyCode={currencyCode}
             segmentBreakdown={segmentBreakdown}
