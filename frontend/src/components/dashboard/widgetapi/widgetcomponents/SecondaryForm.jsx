@@ -24,6 +24,9 @@ const SecondaryForm = ({
     handleSubmit,
     onBack,
     companyId,
+    pickupSuggestions,
+    setPickupSuggestions,
+    handlePickupSelect,
 }) => {
     const [triggerSearchAutocomplete] = useLazySearchGooglePlacesQuery();
     const [triggerGeocode] = useLazyGeocodeQuery();
@@ -109,6 +112,21 @@ const SecondaryForm = ({
         }
     };
 
+    const handlePickupChangeLocal = (e) => {
+        const val = e.target.value;
+        handleChange(e); // This updates formData.pickup
+
+        if (!val.trim()) {
+            setPickupCoords(null);
+        }
+
+        if (val.length >= 3) {
+            fetchSuggestions(val, setPickupSuggestions);
+        } else {
+            setPickupSuggestions([]);
+        }
+    };
+
     const handleDropOffSelect = async (idx, sug) => {
         const full = `${sug.name} - ${sug.formatted_address}`;
         const updated = [...dropOffs];
@@ -157,13 +175,73 @@ const SecondaryForm = ({
                         <button
                             type="button"
                             onClick={onBack}
-                            className="text-xs cursor-pointer font-semibold text-(--widgetBtnBg) hover:underline flex items-center gap-1"
+                            className="btn btn-back"
                         >
-                            ← Change Pickup/Initial Dropoff
+                            ← Go Back
                         </button>
                     </div>
 
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-4 mb-6 transition-all duration-300">
+                        <div className="flex gap-6 items-center justify-center" >
+                            <div className="relative group w-full">
+                                <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                                    Pickup Address
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        name="pickup"
+                                        value={formData.pickup}
+                                        placeholder="Pickup Address"
+                                        onChange={handlePickupChangeLocal}
+                                        className="custom_input w-full"
+                                    />
+                                    {pickupSuggestions.length > 0 && (
+                                        <ul className="absolute z-60 bg-(--white) border rounded-xl shadow-2xl max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
+                                            {pickupSuggestions.map((sug, i) => (
+                                                <li
+                                                    key={i}
+                                                    onClick={() => handlePickupSelect(sug)}
+                                                    className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer border-b last:border-0"
+                                                >
+                                                    {sug.name} - {sug.formatted_address}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="relative group w-full">
+                                <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                                    Dropoff Address
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={dropOffs[0]}
+                                        placeholder="Dropoff Address"
+                                        onChange={(e) => handleDropOffChange(0, e.target.value)}
+                                        className="custom_input w-full"
+                                    />
+                                    {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
+                                        <ul className="absolute z-60 bg-(--white) border rounded-xl shadow-2xl max-h-40 overflow-y-auto w-full top-full left-0 mt-1">
+                                            {dropOffSuggestions.map((sug, i) => (
+                                                <li
+                                                    key={i}
+                                                    onClick={() => handleDropOffSelect(0, sug)}
+                                                    className="p-2 text-xs hover:bg-(--lightest-gray) cursor-pointer border-b last:border-0"
+                                                >
+                                                    {sug.name} - {sug.formatted_address}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Additional Drop Offs */}
                         {dropOffs.map((val, idx) => {
                             if (idx === 0) return null;
                             return (
@@ -277,7 +355,7 @@ const SecondaryForm = ({
                         />
                     </div>
 
-                    <div className="flex items-center justify-end pt-2">
+                    <div className="flex items-center pt-2">
                         <button
                             type="submit"
                             className="btn btn-primary"

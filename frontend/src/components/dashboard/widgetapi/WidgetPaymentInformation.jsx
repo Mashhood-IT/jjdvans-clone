@@ -122,7 +122,7 @@ const WidgetPaymentInformation = ({
     babySeat: "",
     carSeat: "",
     boosterSeat: "",
-    paymentMethod: "Cash", // Default to Cash
+    paymentMethod: "Cash",
   });
 
   const [localVehicle, setLocalVehicle] = useState(vehicle);
@@ -138,7 +138,6 @@ const WidgetPaymentInformation = ({
     return generalPricing?.childSeatPrice || 10.0;
   }, [generalPricing]);
 
-  // Always scroll to the top when landing on the Payment step
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     document.documentElement.scrollTop = 0;

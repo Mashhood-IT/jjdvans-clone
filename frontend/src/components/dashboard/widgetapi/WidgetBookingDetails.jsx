@@ -27,6 +27,7 @@ const WidgetBookingDetails = ({
     const [minAdditionalDropOff, setminAdditionalDropOff] = useState(0);
     const [totalPrice, setTotalPrice] = useState(0);
     const [pickupCoords, setPickupCoords] = useState(null);
+    const [pickupSuggestions, setPickupSuggestions] = useState([]);
     const [dropoffCoords, setDropoffCoords] = useState({});
 
     const [formData, setFormData] = useState({
@@ -97,6 +98,15 @@ const WidgetBookingDetails = ({
         updated[idx] = full;
         setDropOffs(updated);
         setDropOffSuggestions([]);
+    };
+
+    const handlePickupSelect = (sug) => {
+        const full = `${sug.name} - ${sug.formatted_address}`;
+        setFormData((prev) => ({
+            ...prev,
+            pickup: full,
+        }));
+        setPickupSuggestions([]);
     };
 
     const addDropOff = () => {
@@ -220,6 +230,9 @@ const WidgetBookingDetails = ({
             setActiveDropIndex={setActiveDropIndex}
             handleDropOffChange={handleDropOffChange}
             handleDropOffSelect={handleDropOffSelect}
+            pickupSuggestions={pickupSuggestions}
+            setPickupSuggestions={setPickupSuggestions}
+            handlePickupSelect={handlePickupSelect}
             removeDropOff={removeDropOff}
             addDropOff={addDropOff}
             handleChange={handleChange}
@@ -227,7 +240,6 @@ const WidgetBookingDetails = ({
             mode={mode}
             setFormData={setFormData}
             onBack={onBack}
-            companyId={companyId}
         />
     );
 };
