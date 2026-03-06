@@ -145,7 +145,7 @@ const PrimaryForm = ({
             <div className="relative">
               <div className="flex items-center gap-x-1 text-gray-400">
                 <Icons.Map size={15} />
-                <span className="text-xs text-(--dark-grey)">Service Type</span>
+                <span className="widget-label-text text-(--dark-grey)">Service Type</span>
               </div>
               <select
                 name="bookingType"
@@ -161,10 +161,11 @@ const PrimaryForm = ({
             </div>
           </div>
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:px-4">
-            <div>              <div className="flex items-center gap-x-1 text-gray-400">
-              <Icons.MapPin size={15} />
-              <span className="text-xs text-(--dark-grey)">Pickup Address</span>
-            </div>
+            <div>
+              <div className="flex items-center gap-x-1 text-gray-400">
+                <Icons.MapPin size={15} />
+                <span className="widget-label-text text-(--dark-grey)">Pickup Address</span>
+              </div>
               <input
                 type="text"
                 name="pickup"
@@ -202,7 +203,7 @@ const PrimaryForm = ({
             <div>
               <div className="flex items-center gap-x-1 text-gray-400">
                 <Icons.MapPin size={15} />
-                <span className="text-xs text-(--dark-grey)">Drop-off Address</span>
+                <span className="widget-label-text text-(--dark-grey)">Drop-off Address</span>
               </div>
               <input
                 type="text"

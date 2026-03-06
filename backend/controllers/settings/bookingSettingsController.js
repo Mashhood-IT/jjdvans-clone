@@ -165,11 +165,11 @@ export const getPublicBookingSetting = async (req, res) => {
             advanceBookingMin: setting.advanceBookingMin,
             stripeKeys: setting.stripeKeys ? {
                 publishableKey: setting.stripeKeys.publishableKey,
-                enabled: !!setting.stripeKeys.publishableKey
+                enabled: !!(setting.stripeKeys.publishableKey && setting.stripeKeys.secretKey)
             } : null,
             paypalKeys: setting.paypalKeys ? {
                 clientId: setting.paypalKeys.clientId,
-                enabled: !!setting.paypalKeys.clientId
+                enabled: !!(setting.paypalKeys.clientId && setting.paypalKeys.clientSecret)
             } : null,
         };
 

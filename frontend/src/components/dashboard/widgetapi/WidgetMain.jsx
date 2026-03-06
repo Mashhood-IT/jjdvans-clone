@@ -55,7 +55,7 @@ const Breadcrumbs = () => {
               {isAvailable && !isActive ? (
                 <Link
                   to={`${step.path}?company=${companyId}`}
-                  className="flex items-center text-sm font-medium text-gray-900 hover:text-(--main-color) transition-colors"
+                  className="flex items-center widget-label-text text-gray-900 hover:text-(--main-color) transition-colors"
                 >
                   <span
                     className={`flex items-center justify-center w-6 h-6 rounded-full text-[10px] mr-2 ${isCompleted ? "bg-(--main-color) text-(--white)" : "border-2 border-gray-900 bg-(--white) text-gray-900"
@@ -67,7 +67,7 @@ const Breadcrumbs = () => {
                 </Link>
               ) : (
                 <div
-                  className={`flex items-center text-sm font-medium ${isActive ? "text-gray-900" : "text-gray-400"
+                  className={`flex items-center widget-label-text ${isActive ? "text-gray-900" : "text-gray-400"
                     }`}
                 >
                   <span
@@ -297,10 +297,10 @@ const WidgetMain = () => {
             </div>
           </div>
 
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
+          <h2 className="widget-title text-gray-800 mb-2">
             Something went wrong
           </h2>
-          <p className="text-gray-500 text-sm mb-6">{error}</p>
+          <p className="widget-text-sm text-gray-500 mb-6">{error}</p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
@@ -312,13 +312,13 @@ const WidgetMain = () => {
                 localStorage.removeItem("widgetPaymentData");
                 navigate("/widget-form");
               }}
-              className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-(--white) rounded-full font-medium text-sm transition"
+              className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-(--white) rounded-full widget-button-text transition"
             >
               Start Again
             </button>
             <button
               onClick={() => navigate(-1)}
-              className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium text-sm transition"
+              className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full widget-button-text transition"
             >
               Go Back
             </button>

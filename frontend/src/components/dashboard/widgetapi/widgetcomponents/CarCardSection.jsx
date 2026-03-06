@@ -142,10 +142,10 @@ const CarCardSection = ({
             <div className="p-4 flex flex-col flex-grow">
               <div className="flex justify-between items-start mb-2 min-h-[50px]">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 tracking-tight leading-tight">
+                  <h3 className="widget-title text-gray-900">
                     {vehicleName}
                   </h3>
-                  <div className="flex gap-3 mt-1.5 text-xs text-gray-500 font-medium">
+                  <div className="flex gap-3 mt-1.5 widget-meta-text text-gray-500">
                     <span className="flex items-center gap-1">
                       <div className="w-1 h-1 rounded-full bg-gray-300" /> {passengerSeats} Seats
                     </span>
@@ -153,21 +153,21 @@ const CarCardSection = ({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-black text-(--main-color)">
+                  <div className="widget-price-large">
                     {currencySymbol}{currentTotalPrice.toFixed(2)}
                   </div>
-                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Total Fare</p>
+                  <p className="widget-label-tiny mt-0.5">Total Fare</p>
                 </div>
               </div>
 
               <div className="my-2">
-                <p className="text-sm text-(--dark-grey)">
+                <p className="widget-description">
                   {description || "Great for small apartments, studio moves, or picking up large furniture items."}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                <h4 className="widget-label-tiny flex items-center gap-2">
                   <span className="w-4 h-px bg-gray-200" /> Who's helping with the move?
                 </h4>
                 <div className={`grid gap-2 ${helpOptions.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" : "grid-cols-2"}`} onClick={(e) => e.stopPropagation()}>
@@ -186,7 +186,7 @@ const CarCardSection = ({
                         checked={activeOption.id === option.id}
                         onChange={() => handleHelpChange(_id, option)}
                       />
-                      <span className="text-xs flex items-center justify-center">{option.label}</span>
+                      <span className="widget-option-text flex items-center justify-center">{option.label}</span>
                     </label>
                   ))}
                 </div>

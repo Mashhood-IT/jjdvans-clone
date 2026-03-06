@@ -164,7 +164,7 @@ const SecondaryForm = ({
         <div className="grid grid-cols-12 p-7 gap-6">
             <form
                 onSubmit={handleSubmit}
-                className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 pt-3 pb-6 text-base text-(--dark-grey) transition duration-300 hover:shadow-xl"
+                className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 pt-3 pb-6 widget-base-text text-(--dark-grey) transition duration-300 hover:shadow-xl"
             >
                 <div>
                     <div className="mb-6 flex items-center justify-between">
@@ -184,7 +184,7 @@ const SecondaryForm = ({
                     <div className="space-y-4 mb-6 transition-all duration-300">
                         <div className="flex gap-6 items-center justify-center" >
                             <div className="relative group w-full">
-                                <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                                <label className="block widget-label-text text-(--dark-gray) mb-1">
                                     Pickup Address
                                 </label>
                                 <div className="relative">
@@ -213,7 +213,7 @@ const SecondaryForm = ({
                             </div>
 
                             <div className="relative group w-full">
-                                <label className="block text-xs font-medium text-(--dark-gray) mb-1">
+                                <label className="block widget-label-text text-(--dark-gray) mb-1">
                                     Dropoff Address
                                 </label>
                                 <div className="relative">
@@ -247,7 +247,7 @@ const SecondaryForm = ({
                             return (
                                 <div key={idx} className="relative group">
                                     <div className="flex items-center justify-between mb-1">
-                                        <label className="block text-xs font-medium text-(--dark-gray)">
+                                        <label className="block widget-label-text text-(--dark-gray)">
                                             Additional Drop Off {idx}
                                         </label>
                                         <button
@@ -298,7 +298,7 @@ const SecondaryForm = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                         <div className="relative">
-                            <label className="block text-[10px] font-medium text-(--dark-gray) tracking-wider mb-1">Date</label>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Date</label>
                             <div className="relative">
                                 <input
                                     type="date"
@@ -310,7 +310,7 @@ const SecondaryForm = ({
                             </div>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-medium text-(--dark-gray)  tracking-wider mb-1">Time</label>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Time</label>
                             <select
                                 name="hour"
                                 value={formData.hour}
@@ -326,7 +326,7 @@ const SecondaryForm = ({
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-medium text-(--dark-gray) tracking-wider mb-1">Minute</label>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Minute</label>
                             <select
                                 name="minute"
                                 value={formData.minute}
@@ -344,7 +344,7 @@ const SecondaryForm = ({
                     </div>
 
                     <div className="mb-6">
-                        <label className="block text-xs font-medium text-(--dark-gray) mb-1">Additional Notes</label>
+                        <label className="block widget-label-text text-(--dark-gray) mb-1">Additional Notes</label>
                         <textarea
                             name="notes"
                             placeholder="Any special instructions for the driver?"

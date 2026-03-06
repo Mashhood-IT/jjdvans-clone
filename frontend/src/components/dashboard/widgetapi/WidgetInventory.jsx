@@ -236,7 +236,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
 
       <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-(--dark-gray)">
+          <h2 className="widget-section-title text-(--dark-gray)">
             Item Inventory
           </h2>
           <button
@@ -244,7 +244,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             className="flex cursor-pointer items-center gap-2 px-3 py-1.5 bg-(--dark-gray) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
           >
             <Icons.Plus className="w-4 h-4" />
-            <span className="text-sm font-medium">Add Item</span>
+            <span className="widget-value-text-sm">Add Item</span>
           </button>
         </div>
 
@@ -286,7 +286,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 key={item.id}
                 className="flex items-center justify-between px-4 py-3 bg-(--lightest-gray) border border-gray-200 rounded-lg"
               >
-                <span className="text-gray-900 font-medium">{item.name}</span>
+                <span className="widget-value-text-sm text-gray-900">{item.name}</span>
                 <button
                   onClick={() => handleRemoveItem(item.id)}
                   className="text-red-600 cursor-pointer hover:text-red-800 transition-colors"
@@ -300,7 +300,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
 
         {items.length === 0 && !showItemInput && (
           <div className="text-center py-8 text-gray-500">
-            <p className="text-sm">
+            <p className="widget-description">
               No items added yet. Click "Add Item" to get started.
             </p>
           </div>
@@ -308,7 +308,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
       </div>
 
       <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-6">
+        <h2 className="widget-section-title text-gray-900 mb-6">
           Floor & Accessibility
         </h2>
 
@@ -316,13 +316,13 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           <div className=" border-r pr-6 border-(--light-gray)">
             <div className="flex items-center gap-2 mb-4">
               <Icons.MapPin className="w-4 h-4 text-gray-600" />
-              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              <span className="widget-label-small text-gray-700">
                 Pickup Location
               </span>
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm text-gray-600 mb-2">
+              <label className="block widget-label-text text-gray-600 mb-2">
                 Floor Level
               </label>
               <div className="flex items-center gap-3">
@@ -333,7 +333,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                   <Icons.Minus className="w-4 h-4 text-gray-600" />
                 </button>
                 <div className="flex-1 text-center">
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="widget-price-large text-gray-900">
                     {pickupFloor}
                   </span>
                 </div>
@@ -347,15 +347,15 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 mb-2">
+              <label className="block widget-label-text text-gray-600 mb-2">
                 Access Type
               </label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPickupAccess("LIFT")}
                   className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "LIFT"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-gray-900 text-(--white)"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   LIFT
@@ -363,8 +363,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 <button
                   onClick={() => setPickupAccess("STAIRS")}
                   className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-gray-900 text-(--white)"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   STAIRS
@@ -375,7 +375,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Icons.MapPin className="w-4 h-4 text-gray-600" />
-              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              <span className="widget-label-small text-gray-700">
                 Drop-off Location
               </span>
             </div>
@@ -413,8 +413,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 <button
                   onClick={() => setDropoffAccess("LIFT")}
                   className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "LIFT"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-gray-900 text-(--white)"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   LIFT
@@ -422,8 +422,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 <button
                   onClick={() => setDropoffAccess("STAIRS")}
                   className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-gray-900 text-(--white)"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                 >
                   STAIRS
@@ -437,18 +437,18 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           <div key={ad.id} className="mt-8 pt-8 border-t border-gray-100">
             <div className="flex items-center gap-2 mb-4">
               <Icons.MapPin className="w-4 h-4 text-gray-600" />
-              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              <span className="widget-label-small text-gray-700">
                 Additional Drop-off {ad.id}
               </span>
             </div>
 
-            <p className="text-sm text-gray-500 mb-4 wrap-break-word">
+            <p className="widget-description text-gray-500 mb-4 wrap-break-word">
               {ad.address}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm text-gray-600 mb-2">
+                <label className="block widget-label-text text-gray-600 mb-2">
                   Floor Level
                 </label>
                 <div className="flex items-center gap-3">
@@ -467,7 +467,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                     <Icons.Minus className="w-4 h-4 text-gray-600" />
                   </button>
                   <div className="flex-1 text-center">
-                    <span className="text-2xl font-bold text-gray-900">
+                    <span className="widget-price-large text-gray-900">
                       {floorAccess[`additionalDropoff${ad.id} Floor`]}
                     </span>
                   </div>
@@ -487,7 +487,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-600 mb-2">
+                <label className="block widget-label-text text-gray-600 mb-2">
                   Access Type
                 </label>
                 <div className="flex gap-2">
@@ -499,8 +499,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                       }))
                     }
                     className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] === "LIFT"
-                        ? "bg-gray-900 text-(--white)"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "bg-gray-900 text-(--white)"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                   >
                     LIFT
@@ -513,9 +513,9 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                       }))
                     }
                     className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
-                        "STAIRS"
-                        ? "bg-gray-900 text-(--white)"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      "STAIRS"
+                      ? "bg-gray-900 text-(--white)"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                   >
                     STAIRS
@@ -531,13 +531,13 @@ const WidgetInventory = ({ onContinue, onBack }) => {
         {(googleDurationText || googleDistanceText) && (
           <div className="flex items-center justify-center gap-4 mb-4">
             {googleDistanceText && (
-              <span className="text-gray-400 text-xs font-medium flex items-center gap-1.5">
+              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
                 <Icons.MapPin className="w-3 h-3" />
                 Route: {googleDistanceText}
               </span>
             )}
             {googleDurationText && (
-              <span className="text-gray-400 text-xs font-medium flex items-center gap-1.5">
+              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
                 <Icons.Clock className="w-3 h-3" />
                 Drive time: {googleDurationText}
               </span>
@@ -546,7 +546,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
         )}
 
         <div className="text-center mb-4">
-          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-6">
+          <p className="widget-label-small text-gray-400 mb-6">
             Estimated Duration
           </p>
 
@@ -559,11 +559,11 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             </button>
 
             <div className="flex items-center gap-2">
-              <span className="text-6xl font-bold text-(--white) tabular-nums">
+              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
                 {String(estimatedHours).padStart(2, "0")}
               </span>
-              <span className="text-6xl font-bold text-(--white)">:</span>
-              <span className="text-6xl font-bold text-(--white) tabular-nums">
+              <span className="widget-value-large text-6xl text-(--white)">:</span>
+              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
                 {String(estimatedMinutes).padStart(2, "0")}
               </span>
             </div>
@@ -576,36 +576,36 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             </button>
           </div>
 
-          <p className="text-gray-500 text-xs uppercase tracking-wide mb-4">
+          <p className="widget-label-small text-gray-500 mb-4">
             Hours : Minutes
           </p>
         </div>
 
-        <p className="text-center text-gray-400 text-xs">
+        <p className="widget-option-text text-center text-gray-400">
           Adjustments vary ±30-minute increments
         </p>
 
         <div className="mt-4 pt-4 border-t border-gray-700">
-          <p className="text-sm text-gray-400 text-center">
+          <p className="widget-description text-gray-400 text-center">
             Additional time charges
           </p>
-          <p className="text-2xl font-bold text-(--white) text-center">
+          <p className="widget-price-large text-(--white) text-center">
             £{additionalFare.toFixed(2)}
           </p>
         </div>
       </div>
 
       <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-6">
+        <h2 className="widget-section-title text-gray-900 mb-6">
           Travel Preference
         </h2>
 
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="font-semibold text-gray-900 mb-1">
+            <p className="widget-value-text text-gray-900 mb-1">
               Riding along with the vehicle?
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="widget-description text-gray-600">
               Update passenger seating availability for truck cabin
             </p>
           </div>
@@ -627,10 +627,10 @@ const WidgetInventory = ({ onContinue, onBack }) => {
               <div className="flex items-center gap-3">
                 <Icons.User className="w-5 h-5 text-gray-600" />
                 <div>
-                  <span className="font-medium text-gray-900">
+                  <span className="widget-value-text-sm text-gray-900">
                     Passenger Count
                   </span>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">
+                  <p className="widget-label-tiny leading-none mt-1">
                     Max {totalSeats} seats available
                   </p>
                 </div>
@@ -646,7 +646,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                 >
                   <Icons.Minus className="w-4 h-4 text-gray-600" />
                 </button>
-                <span className="text-xl font-bold text-gray-900 w-8 text-center">
+                <span className="widget-title text-gray-900 w-8 text-center">
                   {passengerCount}
                 </span>
                 <button
@@ -661,7 +661,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
               </div>
             </div>
             {totalSeats === 0 && (
-              <p className="text-[10px] text-rose-500 font-bold italic mt-2">
+              <p className="widget-label-tiny italic text-rose-500 mt-2">
                 * This vehicle does not support passenger ride-along.
               </p>
             )}

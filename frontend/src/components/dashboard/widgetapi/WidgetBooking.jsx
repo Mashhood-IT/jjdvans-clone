@@ -61,9 +61,16 @@ const WidgetBooking = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const requiredFields = ["bookingType", "pickup", "dropoff"];
+    for (const field of requiredFields) {
+      if (!formData[field]?.toString().trim()) {
+        toast.error(`${field} is required`)
+        return
+      }
+    }
 
-    if (!formData.pickup || !dropOffs[0]?.trim()) {
-      toast.error("Pickup and Drop Off are required.");
+    if (!dropOffs[0]?.trim()) {
+      toast.error("Drop off is required.");
       return;
     }
 

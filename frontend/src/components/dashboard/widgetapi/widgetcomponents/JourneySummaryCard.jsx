@@ -55,14 +55,14 @@ const JourneySummaryCard = ({
       <div className="flex flex-col lg:flex-row">
         <div className="flex-1 p-6 space-y-5">
           <div>
-            <p className="text-(--medium-grey) text-xs uppercase tracking-wider mb-2 font-semibold">
+            <p className="widget-label-small text-(--medium-grey) mb-2">
               PICKUP LOCATION
             </p>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-7 h-7 bg-(--light-green) rounded-full shrink-0">
                 <Icons.MapPin className="w-4 h-4 text-(--success-color)" />
               </div>
-              <p className="text-(--white) font-semibold text-base">
+              <p className="widget-value-text text-(--white)">
                 {formData?.pickup || "Pickup Location"}
               </p>
             </div>
@@ -71,14 +71,14 @@ const JourneySummaryCard = ({
           {/* Primary Drop-off */}
           {dropList.filter(Boolean).length > 0 && (
             <div>
-              <p className="text-(--medium-grey) text-xs uppercase tracking-wider mb-2 font-semibold">
+              <p className="widget-label-small text-(--medium-grey) mb-2">
                 DROP-OFF 1 (PRIMARY)
               </p>
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
                   <Icons.MapPin className="w-4 h-4 text-(--primary-dark-red)" />
                 </div>
-                <p className="text-(--white) font-semibold text-base">
+                <p className="widget-value-text text-(--white)">
                   {dropList.filter(Boolean)[0]}
                 </p>
               </div>
@@ -88,7 +88,7 @@ const JourneySummaryCard = ({
           {/* Additional Drop-offs */}
           {dropList.filter(Boolean).length > 1 && (
             <div className="space-y-4">
-              <p className="text-(--medium-grey) text-xs uppercase tracking-wider mb-2 font-semibold flex items-center gap-1">
+              <p className="widget-label-small text-(--medium-grey) mb-2 flex items-center gap-1">
                 ADDITIONAL DROP-OFFS (2ND - 5TH)
                 <Icons.ChevronDown className="w-4 h-4" />
               </p>
@@ -97,7 +97,7 @@ const JourneySummaryCard = ({
                   <div className="flex items-center justify-center w-6 h-6 bg-(--light-red) rounded-full shrink-0">
                     <Icons.MapPin className="w-3 h-3 text-(--primary-dark-red)" />
                   </div>
-                  <p className="text-(--white) font-medium text-sm">
+                  <p className="widget-value-text-sm text-(--white)">
                     {dropoff}
                   </p>
                 </div>
@@ -109,25 +109,25 @@ const JourneySummaryCard = ({
         <div className="flex flex-col items-start justify-between lg:min-w-95 bg-(--dark-gray) p-6">
           <div className="space-y-5 text-start w-full">
             <div>
-              <p className="text-(--white) text-xs uppercase tracking-widest mb-2">
+              <p className="widget-label-small text-(--white) mb-2">
                 TOTAL DISTANCE
               </p>
               <div className="flex items-center justify-start gap-2">
                 <Icons.MapPin className="w-6 h-6 text-(--primary-dark-red)" />
-                <p className="text-(--white) font-semibold text-4xl">
+                <p className="widget-value-large text-(--white)">
                   {primaryDistanceMiles.replace(" mi", "")}
-                  <span className="text-base font-semibold ml-1">miles</span>
+                  <span className="widget-value-text ml-1">miles</span>
                 </p>
               </div>
             </div>
 
             <div>
-              <p className="text-(--white) text-xs uppercase tracking-widest mb-2">
+              <p className="widget-label-small text-(--white) mb-2">
                 ESTIMATED TIME
               </p>
               <div className="flex items-center justify-start gap-2">
                 <Icons.Clock className="w-6 h-6 text-(--white)" />
-                <p className="text-(--white) font-semibold text-4xl">
+                <p className="widget-value-large text-(--white)">
                   {totalPrimaryDuration}
                 </p>
               </div>
@@ -142,7 +142,7 @@ const JourneySummaryCard = ({
       <div className="flex flex-wrap items-center gap-6 px-6 py-4 border-t border-(--dark-grey)">
         <div className="flex items-center gap-2">
           <Icons.Calendar className="w-5 h-5 text-(--main-color)" />
-          <span className="text-(--light-gray) text-sm font-medium">
+          <span className="widget-value-text-sm text-(--light-gray)">
             {formData?.date
               ? new Date(formData.date).toLocaleDateString("en-UK", {
                 weekday: "long",
@@ -156,7 +156,7 @@ const JourneySummaryCard = ({
 
         <div className="flex items-center gap-2">
           <Icons.Clock className="w-5 h-5 text-(--white)" />
-          <span className="text-(--light-gray) text-sm font-medium">
+          <span className="widget-value-text-sm text-(--light-gray)">
             {formData?.hour && formData?.minute
               ? `${String(formData.hour).padStart(2, "0")}:${String(
                 formData.minute,

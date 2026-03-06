@@ -516,3 +516,80 @@ input[type="date"]::-webkit-datetime-edit-text {
     justify-content: flex-end !important;
   }
 }
+
+.widget-label-text {
+  @apply text-sm font-semibold;
+}
+
+/* Widget Typography Standard Classes */
+.widget-page-title {
+  @apply text-2xl md:text-4xl font-bold text-gray-900 leading-tight;
+}
+
+.widget-page-meta {
+  @apply text-sm font-medium tracking-wide uppercase text-gray-500;
+}
+
+.widget-title {
+  @apply text-xl font-bold tracking-tight leading-tight;
+}
+
+.widget-section-title {
+  @apply text-lg font-bold;
+}
+
+.widget-error-text {
+  @apply text-sm text-red-600;
+}
+
+.widget-success-title {
+  @apply text-3xl font-extrabold;
+}
+
+.widget-base-text {
+  @apply text-base;
+}
+
+.widget-button-text {
+  @apply font-medium text-sm;
+}
+
+.widget-text-sm {
+  @apply text-sm;
+}
+
+.widget-description {
+  @apply text-sm text-(--dark-grey);
+}
+
+.widget-price-large {
+  @apply text-2xl font-black text-(--main-color);
+}
+
+.widget-label-tiny {
+  @apply text-[10px] font-bold uppercase tracking-widest text-gray-400;
+}
+
+.widget-label-small {
+  @apply text-xs uppercase tracking-wider font-semibold;
+}
+
+.widget-value-text {
+  @apply text-base font-semibold;
+}
+
+.widget-value-text-sm {
+  @apply text-sm font-medium;
+}
+
+.widget-meta-text {
+  @apply text-xs font-medium;
+}
+
+.widget-option-text {
+  @apply text-xs;
+}
+
+.widget-value-large {
+  @apply text-4xl font-semibold;
+}

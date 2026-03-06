@@ -234,9 +234,25 @@ const WidgetPaymentInformation = ({
           setStripeError("Could not initialize Stripe payment. Please try another method.");
         }
       };
-      initStripe();
+      // Only attempt to init Stripe if it is actually enabled
+      if (bookingSettingData?.setting?.stripeKeys?.enabled) {
+        initStripe();
+      }
     }
-  }, [formData.paymentMethod, finalFare, companyId, currencySetting.value, clientSecret, createPaymentIntent]); // Added clientSecret and createPaymentIntent to dependencies
+  }, [formData.paymentMethod, finalFare, companyId, currencySetting.value, clientSecret, createPaymentIntent, bookingSettingData?.setting?.stripeKeys?.enabled]);
+
+  // Safety check to ensure the chosen payment method is valid according to current settings
+  useEffect(() => {
+    if (bookingSettingData?.setting) {
+      const allowedMethods = ["Cash"];
+      if (bookingSettingData.setting.stripeKeys?.enabled) allowedMethods.push("Stripe");
+      if (bookingSettingData.setting.paypalKeys?.enabled) allowedMethods.push("Paypal");
+
+      if (!allowedMethods.includes(formData.paymentMethod)) {
+        setFormData(prev => ({ ...prev, paymentMethod: "Cash" }));
+      }
+    }
+  }, [bookingSettingData, formData.paymentMethod]);
 
   const onBookNowClick = async (paymentData) => {
     if (!paymentData.paymentMethod) {
@@ -300,15 +316,15 @@ const WidgetPaymentInformation = ({
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-(--white) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) widget-value-text-sm">
                 01
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Client Profile</h2>
+              <h2 className="widget-title text-gray-900">Client Profile</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                <label className="block widget-label-small text-gray-700 mb-2">
                   First Name
                 </label>
                 <input
@@ -326,7 +342,7 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                <label className="block widget-label-small text-gray-700 mb-2">
                   Email Address
                 </label>
                 <input
@@ -343,7 +359,7 @@ const WidgetPaymentInformation = ({
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                <label className="block widget-label-small text-gray-700 mb-2">
                   Phone
                 </label>
 
@@ -365,15 +381,15 @@ const WidgetPaymentInformation = ({
 
           <div className="bg-(--white) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) text-sm font-semibold">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) widget-value-text-sm">
                 02
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Service Requirements</h2>
+              <h2 className="widget-title text-gray-900">Service Requirements</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                <label className="block widget-label-small text-gray-700 mb-2">
                   Moving Date
                 </label>
                 <div>
@@ -395,7 +411,7 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                <label className="block widget-label-small text-gray-700 mb-2">
                   Moving Time
                 </label>
                 <div>
@@ -413,7 +429,7 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div className="md:col-span-1">
-                <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                <label className="block widget-label-small text-gray-700 mb-2">
                   Pickup Address
                 </label>
                 <div>
@@ -437,7 +453,7 @@ const WidgetPaymentInformation = ({
                 .filter(Boolean)
                 .map((dropoff, idx) => (
                   <div key={idx} className="md:col-span-1">
-                    <label className="block text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+                    <label className="block widget-label-small text-gray-700 mb-2">
                       {idx === 0 ? "DROPOFF ADDRESS" : `Additional Drop-off ${idx}`}
                     </label>
                     <div>
@@ -457,38 +473,38 @@ const WidgetPaymentInformation = ({
 
         <div className="lg:col-span-1">
           <div className="bg-(--white) rounded-lg shadow-sm p-6 sticky top-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Price Estimate</h3>
+            <h3 className="widget-title text-gray-900 mb-6">Price Estimate</h3>
 
             <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between widget-description">
                 <span className="text-gray-600">Base Fare</span>
-                <span className="font-medium text-gray-900">
+                <span className="widget-value-text text-gray-900">
                   {pricingInfo.currencySymbol}
                   {pricingInfo.baseFare.toFixed(2)}
                 </span>
               </div>
               {pricingInfo.workersCharges > 0 && (
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between widget-description">
                   <span className="text-gray-600">Extra Workers</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="widget-value-text text-gray-900">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.workersCharges.toFixed(2)}
                   </span>
                 </div>
               )}
               {pricingInfo.extraTimeCharges > 0 && (
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between widget-description">
                   <span className="text-gray-600">Extra Time</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="widget-value-text text-gray-900">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.extraTimeCharges.toFixed(2)}
                   </span>
                 </div>
               )}
               {pricingInfo.childSeatTotal > 0 && (
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between widget-description">
                   <span className="text-gray-600">Child Seats</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="widget-value-text text-gray-900">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.childSeatTotal.toFixed(2)}
                   </span>
@@ -497,7 +513,7 @@ const WidgetPaymentInformation = ({
             </div>
 
             <div className="border-t border-gray-200 pt-4 mb-6">
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="widget-price-large text-3xl text-gray-900">
                 {pricingInfo.currencySymbol}
                 {finalFare?.toFixed(2)}
               </div>
@@ -565,7 +581,7 @@ const WidgetPaymentInformation = ({
               )}
 
               {stripeError && (
-                <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl animate-in fade-in duration-300">
+                <div className="p-4 bg-red-50 border border-red-100 widget-error-text rounded-xl animate-in fade-in duration-300">
                   {stripeError}
                 </div>
               )}
