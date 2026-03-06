@@ -1,5 +1,6 @@
 import React from "react";
 import Icons from "../../../../assets/icons";
+import { Link } from "react-router-dom";
 
 const JourneySummaryCard = ({
   formData,
@@ -132,8 +133,9 @@ const JourneySummaryCard = ({
               </div>
             </div>
           </div>
-
-          <button className="btn btn-primary mt-3">EDIT FULL ROUTE</button>
+          <Link to="/">
+            <button className="btn btn-primary mt-3">EDIT FULL ROUTE</button>
+          </Link>
         </div>
       </div>
 

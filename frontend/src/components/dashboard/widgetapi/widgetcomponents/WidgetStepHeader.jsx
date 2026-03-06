@@ -8,10 +8,10 @@ const WidgetStepHeader = ({ title, step, description }) => {
                 <span className="text-gray-400">/</span>
                 <span>04</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
                 {title}
             </h1>
-            <p className="text-gray-600 max-w-2xl">
+            <p className="text-(--dark-grey) text-sm max-w-2xl">
                 {description}
             </p>
         </div>

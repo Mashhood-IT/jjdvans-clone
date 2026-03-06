@@ -151,7 +151,7 @@ const PrimaryForm = ({
                 name="bookingType"
                 value={formData.bookingType || ""}
                 onChange={handleChange}
-                className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent appearance-none bg-(--white) text-gray-800 font-medium"
+                className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent appearance-none bg-(--white) text-(--medium-grey)"
               >
                 <option value="">Select service</option>
                 {REMOVAL_BOOKING_TYPES.map(opt => (

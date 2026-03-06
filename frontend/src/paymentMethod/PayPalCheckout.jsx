@@ -100,11 +100,6 @@ const PayPalCheckout = ({
           flexWrap: "wrap",
         }}
       >
-        <h4 style={{ margin: 0 }}>
-          Pay {ccySymbol}
-          {display} {ccySymbol ? "" : ccy}
-        </h4>
-
         <div style={{ width: 260, minWidth: 220 }}>
           <PayPalButtons
             style={{
@@ -117,16 +112,12 @@ const PayPalCheckout = ({
             forceReRender={[bookingId, ccy, display]}
             createOrder={async () => {
               try {
-                console.log("Creating PayPal Order for amount:", amountNum);
                 const res = await createOrder({
                   companyId,
                   amount: amountNum,
                   currency: cfg.currency || "GBP",
                 }).unwrap();
 
-                console.log("PayPal Order Response:", res);
-
-                // PayPal API returns 'id' for the order ID
                 const orderId = res?.id || res?.orderId;
 
                 if (!orderId) {
