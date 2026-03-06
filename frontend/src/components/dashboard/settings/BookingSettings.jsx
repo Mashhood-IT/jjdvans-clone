@@ -175,6 +175,20 @@ const BookingSettings = () => {
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1">
+              Stripe Secret Key
+            </label>
+            <input
+              type="password"
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
+              value={stripeKeys.secretKey}
+              onChange={(e) =>
+                setStripeKeys((p) => ({ ...p, secretKey: e.target.value }))
+              }
+              placeholder="sk_test_..."
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-sm font-medium mb-1">
               PayPal Client ID
             </label>
             <input
@@ -199,20 +213,6 @@ const BookingSettings = () => {
                 setPaypalKeys((p) => ({ ...p, clientSecret: e.target.value }))
               }
               placeholder="PayPal Client Secret"
-            />
-          </div>
-          <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1">
-              Stripe Secret Key
-            </label>
-            <input
-              type="password"
-              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-              value={stripeKeys.secretKey}
-              onChange={(e) =>
-                setStripeKeys((p) => ({ ...p, secretKey: e.target.value }))
-              }
-              placeholder="sk_test_..."
             />
           </div>
           <div>
