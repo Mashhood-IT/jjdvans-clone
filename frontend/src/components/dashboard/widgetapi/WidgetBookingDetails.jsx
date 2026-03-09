@@ -20,7 +20,6 @@ const WidgetBookingDetails = ({
 
     const generalPricing = { minAdditionalDropOff: 5 };
 
-    const [mode, setMode] = useState("Transfer");
     const [dropOffs, setDropOffs] = useState([""]);
     const [dropOffSuggestions, setDropOffSuggestions] = useState([]);
     const [activeDropIndex, setActiveDropIndex] = useState(null);
@@ -33,12 +32,9 @@ const WidgetBookingDetails = ({
     const [formData, setFormData] = useState({
         pickup: "",
         notes: "",
-        internalNotes: "",
         date: "",
         hour: "",
         minute: "",
-        hourlyOption: { value: { distance: 0, hours: 0 } },
-        originalHourlyOption: { value: { distance: 0, hours: 0 } },
     });
 
     const extractPostcode = (text) => {
@@ -75,7 +71,6 @@ const WidgetBookingDetails = ({
             } else {
                 setDropOffs([""]);
             }
-            if (parsed.mode) setMode(parsed.mode);
         }
     }, []);
 
@@ -192,9 +187,6 @@ const WidgetBookingDetails = ({
             additionalDropoff2: dropOffs[2] || null,
             additionalDropoff3: dropOffs[3] || null,
             additionalDropoff4: dropOffs[4] || null,
-            direction: formData.direction || "One Way",
-            mode,
-            returnJourney: false,
             companyId,
             referrer: document.referrer,
             pickupPostcode,
@@ -207,7 +199,6 @@ const WidgetBookingDetails = ({
         if (onSubmitSuccess) {
             onSubmitSuccess({
                 ...payload,
-                mode,
                 dropOffPrice: totalPrice,
             });
         }
@@ -236,8 +227,6 @@ const WidgetBookingDetails = ({
             removeDropOff={removeDropOff}
             addDropOff={addDropOff}
             handleChange={handleChange}
-            setMode={setMode}
-            mode={mode}
             setFormData={setFormData}
             onBack={onBack}
         />

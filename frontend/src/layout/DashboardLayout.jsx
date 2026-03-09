@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/navbar/Navbar";
 import Sidebar from "../components/sidebar/Sidebar";
+import MobileSidebar from "../components/sidebar/MobileSidebar";
 
 const DashboardLayout = () => {
   const [activeSubTabs, setActiveSubTabs] = useState({});
@@ -11,6 +12,12 @@ const DashboardLayout = () => {
 
   return (
     <>
+      <MobileSidebar
+      toggleSidebar={toggleSidebar}
+      isOpen={isSidebarOpen}
+        activeSubTabs={activeSubTabs}
+        setActiveSubTabs={setActiveSubTabs}
+      />
       <div className="h-screen flex flex-col overflow-hidden bg-(--lightest-gray)">
         <div className="shrink-0 md:px-4 md:py-4">
           <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />

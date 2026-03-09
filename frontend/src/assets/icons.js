@@ -119,6 +119,7 @@ import {
 
 const Icons = {
   CalendarPlus,
+  AlertCircle,
   ArrowLeft,
   CalendarCheck,
   ListCheck,

@@ -26,7 +26,7 @@ const App = () => {
   return (
     <div>
       <LoadingProvider>
-        <ToastContainer />
+        <ToastContainer position="top-right" />
         <Routes>
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>

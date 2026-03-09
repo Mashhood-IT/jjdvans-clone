@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
+import FloorAccessibility from "./widgetcomponents/FloorAccessibility";
 import Icons from "../../../assets/icons";
 
-const WidgetInventory = ({ onContinue, onBack }) => {
+const WidgetInventory = ({ onContinue }) => {
   const selectedVehicle = JSON.parse(
     localStorage.getItem("selectedVehicle") || "{}",
   );
@@ -37,6 +38,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
   const [googleDistanceText, setGoogleDistanceText] = useState(null);
   const [initialGoogleMinutes, setInitialGoogleMinutes] = useState(0);
   const [additionalFare, setAdditionalFare] = useState(0);
+  const [primaryPickupAddress, setPrimaryPickupAddress] = useState("");
+  const [primaryDropoffAddress, setPrimaryDropoffAddress] = useState("");
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -75,6 +78,8 @@ const WidgetInventory = ({ onContinue, onBack }) => {
     if (bookingForm) {
       try {
         const data = JSON.parse(bookingForm);
+        if (data.pickup) setPrimaryPickupAddress(data.pickup);
+        if (data.dropoff) setPrimaryDropoffAddress(data.dropoff);
         let totalMinutes = 0;
 
         if (
@@ -105,8 +110,6 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           const rawGoogleMinutes = totalMinutes;
           setInitialGoogleMinutes(rawGoogleMinutes);
 
-          // Minimum time frame is always 2 hours (120 minutes)
-          // We round up Google minutes to nearest 30, then ensure it's at least 120
           totalMinutes = Math.max(120, Math.ceil(totalMinutes / 30) * 30);
 
           setEstimatedHours(Math.floor(totalMinutes / 60));
@@ -136,7 +139,6 @@ const WidgetInventory = ({ onContinue, onBack }) => {
     const addedMinutes = currentTotalMinutes - initialGoogleMinutes;
 
     if (addedMinutes > 0) {
-      // Use Math.ceil so that even 1 minute extra counts as a full 30-min increment
       const halfHourIncrements = Math.ceil(addedMinutes / 30);
       const calculatedFare =
         halfHourIncrements * (selectedVehicle.halfHourPrice || 0);
@@ -178,6 +180,11 @@ const WidgetInventory = ({ onContinue, onBack }) => {
   };
 
   const handleContinue = () => {
+    if (items.length === 0) {
+      toast.error("Please add at least one item to your inventory before continuing.");
+      return;
+    }
+
     const inventoryData = {
       pickupFloor,
       dropoffFloor,
@@ -219,20 +226,12 @@ const WidgetInventory = ({ onContinue, onBack }) => {
 
   return (
     <div className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
+
       <WidgetStepHeader
         step="3"
         title="Inventory & Requirements"
         description="Survey your moving scope and our availability"
       />
-      <div className="mb-4 mt-4">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 btn btn-edit"
-        >
-          <Icons.ArrowLeft className="w-4 h-4" />
-          <span className="font-medium">Back to Vehicle Selection</span>
-        </button>
-      </div>
 
       <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -241,10 +240,10 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           </h2>
           <button
             onClick={() => setShowItemInput(!showItemInput)}
-            className="flex cursor-pointer items-center gap-2 px-3 py-1.5 bg-(--dark-gray) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
+            className="flex cursor-pointer items-center gap-2 px-3 py-1.5 bg-(--mate-color) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
           >
             <Icons.Plus className="w-4 h-4" />
-            <span className="widget-value-text-sm">Add Item</span>
+            <span>Add Item</span>
           </button>
         </div>
 
@@ -307,225 +306,21 @@ const WidgetInventory = ({ onContinue, onBack }) => {
         )}
       </div>
 
-      <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="widget-section-title text-gray-900 mb-6">
-          Floor & Accessibility
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className=" border-r pr-6 border-(--light-gray)">
-            <div className="flex items-center gap-2 mb-4">
-              <Icons.MapPin className="w-4 h-4 text-gray-600" />
-              <span className="widget-label-small text-gray-700">
-                Pickup Location
-              </span>
-            </div>
-
-            <div className="mb-4">
-              <label className="block widget-label-text text-gray-600 mb-2">
-                Floor Level
-              </label>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setPickupFloor(Math.max(0, pickupFloor - 1))}
-                  className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
-                >
-                  <Icons.Minus className="w-4 h-4 text-gray-600" />
-                </button>
-                <div className="flex-1 text-center">
-                  <span className="widget-price-large text-gray-900">
-                    {pickupFloor}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setPickupFloor(pickupFloor + 1)}
-                  className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
-                >
-                  <Icons.Plus className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block widget-label-text text-gray-600 mb-2">
-                Access Type
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setPickupAccess("LIFT")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "LIFT"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                >
-                  LIFT
-                </button>
-                <button
-                  onClick={() => setPickupAccess("STAIRS")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "STAIRS"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                >
-                  STAIRS
-                </button>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Icons.MapPin className="w-4 h-4 text-gray-600" />
-              <span className="widget-label-small text-gray-700">
-                Drop-off Location
-              </span>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm text-gray-600 mb-2">
-                Floor Level
-              </label>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setDropoffFloor(Math.max(0, dropoffFloor - 1))}
-                  className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
-                >
-                  <Icons.Minus className="w-4 h-4 text-gray-600" />
-                </button>
-                <div className="flex-1 text-center">
-                  <span className="text-2xl font-bold text-gray-900">
-                    {dropoffFloor}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setDropoffFloor(dropoffFloor + 1)}
-                  className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
-                >
-                  <Icons.Plus className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-2">
-                Access Type
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setDropoffAccess("LIFT")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "LIFT"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                >
-                  LIFT
-                </button>
-                <button
-                  onClick={() => setDropoffAccess("STAIRS")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "STAIRS"
-                    ? "bg-gray-900 text-(--white)"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                >
-                  STAIRS
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {additionalDropoffs.map((ad) => (
-          <div key={ad.id} className="mt-8 pt-8 border-t border-gray-100">
-            <div className="flex items-center gap-2 mb-4">
-              <Icons.MapPin className="w-4 h-4 text-gray-600" />
-              <span className="widget-label-small text-gray-700">
-                Additional Drop-off {ad.id}
-              </span>
-            </div>
-
-            <p className="widget-description text-gray-500 mb-4 wrap-break-word">
-              {ad.address}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block widget-label-text text-gray-600 mb-2">
-                  Floor Level
-                </label>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() =>
-                      setFloorAccess((prev) => ({
-                        ...prev,
-                        [`additionalDropoff${ad.id} Floor`]: Math.max(
-                          0,
-                          prev[`additionalDropoff${ad.id} Floor`] - 1,
-                        ),
-                      }))
-                    }
-                    className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
-                  >
-                    <Icons.Minus className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <div className="flex-1 text-center">
-                    <span className="widget-price-large text-gray-900">
-                      {floorAccess[`additionalDropoff${ad.id} Floor`]}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() =>
-                      setFloorAccess((prev) => ({
-                        ...prev,
-                        [`additionalDropoff${ad.id} Floor`]:
-                          prev[`additionalDropoff${ad.id} Floor`] + 1,
-                      }))
-                    }
-                    className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
-                  >
-                    <Icons.Plus className="w-4 h-4 text-gray-600" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block widget-label-text text-gray-600 mb-2">
-                  Access Type
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() =>
-                      setFloorAccess((prev) => ({
-                        ...prev,
-                        [`additionalDropoff${ad.id} Access`]: "LIFT",
-                      }))
-                    }
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] === "LIFT"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                  >
-                    LIFT
-                  </button>
-                  <button
-                    onClick={() =>
-                      setFloorAccess((prev) => ({
-                        ...prev,
-                        [`additionalDropoff${ad.id} Access`]: "STAIRS",
-                      }))
-                    }
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
-                      "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                  >
-                    STAIRS
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <FloorAccessibility
+        pickupFloor={pickupFloor}
+        setPickupFloor={setPickupFloor}
+        pickupAccess={pickupAccess}
+        setPickupAccess={setPickupAccess}
+        dropoffFloor={dropoffFloor}
+        setDropoffFloor={setDropoffFloor}
+        dropoffAccess={dropoffAccess}
+        setDropoffAccess={setDropoffAccess}
+        primaryPickupAddress={primaryPickupAddress}
+        primaryDropoffAddress={primaryDropoffAddress}
+        additionalDropoffs={additionalDropoffs}
+        floorAccess={floorAccess}
+        setFloorAccess={setFloorAccess}
+      />
 
       <div className="bg-gray-900 rounded-lg md:p-8 p-3 mb-6 relative overflow-hidden">
         {(googleDurationText || googleDistanceText) && (
@@ -605,13 +400,20 @@ const WidgetInventory = ({ onContinue, onBack }) => {
             <p className="widget-value-text text-gray-900 mb-1">
               Riding along with the vehicle?
             </p>
-            <p className="widget-description text-gray-600">
+            <p className="widget-description text-(--medium-grey)">
               Update passenger seating availability for truck cabin
             </p>
           </div>
           <button
-            onClick={() => setRidingAlong(!ridingAlong)}
-            className={`relative w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${ridingAlong ? "bg-gray-900" : "bg-gray-300"
+            onClick={() => {
+              if (!ridingAlong) {
+                setRidingAlong(true);
+              } else {
+                setRidingAlong(false);
+                setPassengerCount(0);
+              }
+            }}
+            className={`relative cursor-pointer w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${ridingAlong ? "bg-gray-900" : "bg-gray-300"
               }`}
           >
             <span
@@ -625,9 +427,9 @@ const WidgetInventory = ({ onContinue, onBack }) => {
           <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <Icons.User className="w-5 h-5 text-gray-600" />
+                <Icons.User className="w-5 h-5 text-(--medium-grey)" />
                 <div>
-                  <span className="widget-value-text-sm text-gray-900">
+                  <span className="widget-value-text-sm text-(--dark-grey)">
                     Passenger Count
                   </span>
                   <p className="widget-label-tiny leading-none mt-1">
@@ -644,7 +446,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                   }
                   className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
                 >
-                  <Icons.Minus className="w-4 h-4 text-gray-600" />
+                  <Icons.Minus className="w-4 h-4 text-(--medium-grey)" />
                 </button>
                 <span className="widget-title text-gray-900 w-8 text-center">
                   {passengerCount}
@@ -656,7 +458,7 @@ const WidgetInventory = ({ onContinue, onBack }) => {
                   }
                   className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
                 >
-                  <Icons.Plus className="w-4 h-4 text-gray-600" />
+                  <Icons.Plus className="w-4 h-4 text-(--medium-grey)" />
                 </button>
               </div>
             </div>

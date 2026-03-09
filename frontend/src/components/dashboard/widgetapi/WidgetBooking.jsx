@@ -23,7 +23,6 @@ const WidgetBooking = ({
     pickup: "",
     bookingType: "",
     notes: "",
-    internalNotes: "",
     date: "",
     hour: "",
     minute: "",

@@ -258,7 +258,13 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                 Duration:
               </strong>
               <span className="ml-2 text-(--dark-grey)">
-                {viewData?.durationText || "N/A"} (Est: {viewData?.estimatedDuration || 0} mins)
+                {(() => {
+                  const totalMins = viewData?.estimatedDuration || 0;
+                  const hours = Math.floor(totalMins / 60);
+                  const mins = totalMins % 60;
+                  const timeStr = hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''} ${mins > 0 ? mins + ' mins' : ''}` : `${mins} mins`;
+                  return `${timeStr} (including extra time)`;
+                })()}
               </span>
             </div>
 

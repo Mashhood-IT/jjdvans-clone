@@ -83,7 +83,7 @@ const BookingsList = () => {
   });
 
   const passengerMap = new Map();
-  filteredBookings.forEach((booking) => {
+  allBookings.forEach((booking) => {
     const p = booking.passenger;
     if (p?.name && !passengerMap.has(p.name)) {
       passengerMap.set(p.name, { label: p.name, value: p.name });
@@ -93,7 +93,7 @@ const BookingsList = () => {
   const passengerList = Array.from(passengerMap.values());
 
   const vehicleMap = new Map();
-  filteredBookings.forEach((booking) => {
+  allBookings.forEach((booking) => {
     const v = booking.vehicle;
     if (v?.vehicleName && !vehicleMap.has(v.vehicleName)) {
       vehicleMap.set(v.vehicleName, {

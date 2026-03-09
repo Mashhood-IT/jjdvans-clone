@@ -1,31 +1,23 @@
 import React, { useEffect, useState } from "react";
-import sidebarItems from "../../../constants/constantscomponents/sidebarItems";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import useUIStore from "../../../store/useUIStore";
-import Icons from "../../../assets/icons";
 import classNames from "classnames";
+import Icons from "../../assets/icons";
+import sidebarItems from "../constants/constantcomponents/sidebarItems";
 
-const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
+const MobileSidebar = ({ activeSubTabs, setActiveSubTabs, isOpen, toggleSidebar }) => {
     const user = useSelector((state) => state?.auth?.user);
-    const permissions = user?.permissions || [];
     const userRole = user?.role;
     const location = useLocation();
-    const isOpen = useUIStore((state) => state.isSidebarOpen);
-    const toggleSidebar = useUIStore((state) => state.toggleSidebar);
 
     const [activeMain, setActiveMain] = useState(null);
 
     const sidebarTabs = sidebarItems
         .map((item) => {
-            const hasPermission = permissions
-                .map((p) => p.toLowerCase())
-                .includes(item.title.toLowerCase());
-
             const hasRole =
                 !item.roles || item.roles.length === 0 || item.roles.includes(userRole);
 
-            if (!hasPermission || !hasRole) return null;
+            if (!hasRole) return null;
 
             const filteredSubTabs = item.subTabs
                 ?.map((sub) => {
@@ -126,27 +118,17 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
 
             <div
                 className={classNames(
-                    "fixed top-0 left-0 h-full z-50 transition-all duration-300 ease-in-out md:hidden",
+                    "fixed top-0 left-0 bg-(--navy-blue) h-full z-50 transition-all duration-300 ease-in-out md:hidden",
                     isOpen ? "w-64" : "w-0 overflow-hidden"
                 )}
             >
-                <div className="flex flex-col h-full text-theme overflow-hidden">
+                <div className="flex flex-col h-full text-(--white) overflow-hidden">
                     <div className="flex border-b border-(--light-gray) justify-between p-3">
                         <h1 className="text-xl font-bold uppercase">
-                            {["clientadmin", "superadmin", "demo"].includes(user?.role)
-                                ? "Admin Panel"
-                                : user?.role === "driver"
-                                    ? "Driver Portal"
-                                    : user?.role === "customer"
-                                        ? "Customer Portal"
-                                        : user?.role === "staffmember"
-                                            ? "Manager Portal"
-                                            : user?.role === "associateadmin"
-                                                ? "associate admin"
-                                                : "Portal"}
+                            ADMIN PANEL
                         </h1 >
                         <button onClick={toggleSidebar} className="cursor-pointer">
-                            <Icons.X className="w-6 h-6 text-theme" />
+                            <Icons.X className="w-6 h-6 text-(--white)" />
                         </button>
                     </div>
                     <div className="flex-1 overflow-y-auto">
@@ -168,17 +150,17 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                                             <>
                                                 <li
                                                     onClick={() => handleToggle(index)}
-                                                    className={`relative p-4 hover-theme flex items-center justify-between cursor-pointer ${isMainActive ? "active-theme" : ""
+                                                    className={`relative p-4 flex items-center justify-between cursor-pointer ${isMainActive ? "active-theme" : ""
                                                         } pl-4 pr-3`}
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <item.icon className="w-4 h-4 text-theme" />
-                                                        <span className="text-sm font-medium text-theme">
+                                                        <item.icon className="w-4 h-4 text-(--white)" />
+                                                        <span className="text-sm font-medium text-(--white)">
                                                             {item.title}
                                                         </span>
                                                     </div>
                                                     <Icons.ChevronDown
-                                                        className={`w-4 h-4 text-theme transition-transform ${activeMain === index ? "rotate-180" : ""
+                                                        className={`w-4 h-4 text-(--white) transition-transform ${activeMain === index ? "rotate-180" : ""
                                                             }`}
                                                     />
                                                 </li>
@@ -202,17 +184,17 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                                                                                 onClick={() =>
                                                                                     handleSubToggle(index, subIndex)
                                                                                 }
-                                                                                className={`flex items-center justify-between p-2 gap-3 hover-theme cursor-pointer ${isSubActive ? "active-theme" : ""
+                                                                                className={`flex items-center justify-between p-2 gap-3 cursor-pointer ${isSubActive ? "active-theme" : ""
                                                                                     }`}
                                                                             >
                                                                                 <div className="flex items-center gap-3">
-                                                                                    <sub.icon className="w-4 h-4 text-theme" />
-                                                                                    <span className="text-[13px] text-theme">
+                                                                                    <sub.icon className="w-4 h-4 text-(--white)" />
+                                                                                    <span className="text-[13px] text-(--white)">
                                                                                         {sub.title}
                                                                                     </span>
                                                                                 </div>
                                                                                 <Icons.ChevronDown
-                                                                                    className={`w-4 h-4 text-theme transition-transform ${activeMain === index
+                                                                                    className={`w-4 h-4 text-(--white) transition-transform ${activeMain === index
                                                                                         ? "rotate-180"
                                                                                         : ""
                                                                                         }`}
@@ -226,14 +208,14 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                                                                                                 <Link
                                                                                                     to={nestedSub.route}
                                                                                                     onClick={toggleSidebar}
-                                                                                                    className={`flex items-center p-2 gap-3 hover-theme ${nestedSub.route ===
+                                                                                                    className={`flex items-center p-2 gap-3 hover-(--lighter-gray) ${nestedSub.route ===
                                                                                                         location.pathname
-                                                                                                        ? "active-theme"
+                                                                                                        ? "active-(theme)"
                                                                                                         : ""
                                                                                                         }`}
                                                                                                 >
-                                                                                                    <nestedSub.icon className="w-4 h-4 text-theme" />
-                                                                                                    <span className="text-[13px] text-theme">
+                                                                                                    <nestedSub.icon className="w-4 h-4 text-(--white)" />
+                                                                                                    <span className="text-[13px] text-(--white)">
                                                                                                         {nestedSub.title}
                                                                                                     </span>
                                                                                                 </Link>
@@ -247,13 +229,13 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                                                                         <Link
                                                                             to={sub.route}
                                                                             onClick={toggleSidebar}
-                                                                            className={`flex items-center p-2 gap-3 hover-theme ${sub.route === location.pathname
-                                                                                ? "active-theme"
+                                                                            className={`flex items-center p-2 gap-3 hover-(--lighter-gray) ${sub.route === location.pathname
+                                                                                ? "active-(theme)"
                                                                                 : ""
                                                                                 }`}
                                                                         >
-                                                                            <sub.icon className="w-4 h-4 text-theme" />
-                                                                            <span className="text-[15px] text-theme">
+                                                                            <sub.icon className="w-4 h-4 text-(--white)" />
+                                                                            <span className="text-[15px] text-(--white)">
                                                                                 {sub.title}
                                                                             </span>
                                                                         </Link>
@@ -268,10 +250,10 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                                             <Link
                                                 to={item.route}
                                                 onClick={toggleSidebar}
-                                                className={`p-4 hover-theme flex items-center cursor-pointer justify-start pl-4 ${location.pathname === item.route && "active-theme"}`}
+                                                className={`p-4 hover-(--lighter-gray) flex items-center cursor-pointer justify-start pl-4 ${location.pathname === item.route && "active-(theme)"}`}
                                             >
-                                                <item.icon className="w-4 h-4 text-theme" />
-                                                <span className="ml-3 text-[15px] text-theme">{item.title}</span>
+                                                <item.icon className="w-4 h-4 text-(--white)" />
+                                                <span className="ml-3 text-[15px] text-(--white)">{item.title}</span>
                                             </Link>
                                         )}
                                     </div>
@@ -280,7 +262,7 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs }) => {
                         </ul>
                     </div>
                     <div className="mt-auto border-t border-(--light-gray)">
-                        <footer className=" md:p-3 p-2 text-theme text-sm text-center">
+                        <footer className=" md:p-3 p-2 text-(--white) text-sm text-center">
                             © {new Date().getFullYear()} MTL Booking App. <br /> All
                             rights reserved.
                         </footer>

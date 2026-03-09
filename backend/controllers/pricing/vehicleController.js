@@ -14,9 +14,9 @@ export const createVehicle = async (req, res) => {
 
         const slabs = req.body.slabs ? JSON.parse(req.body.slabs) : [];
         const extraHelp = req.body.extraHelp ? JSON.parse(req.body.extraHelp) : [];
-        let image;
+        let image = req.body.existingImage || "";
         if (req.file) {
-            image = req.file.path
+            image = req.file.path;
         }
 
         const vehicle = new Vehicle({
@@ -63,7 +63,7 @@ export const updateVehicle = async (req, res) => {
             halfHourPrice,
             priceType,
             percentageIncrease,
-            image,
+            existingImage,
         } = req.body;
 
         const slabs = req.body.slabs ? JSON.parse(req.body.slabs) : undefined;
@@ -83,9 +83,10 @@ export const updateVehicle = async (req, res) => {
 
         if (req.file) {
             updatedData.image = req.file.path;
-        } else if (image) {
-            updatedData.image = image;
+        } else if (existingImage) {
+            updatedData.image = existingImage;
         }
+
 
         Object.keys(updatedData).forEach(key => {
             if (updatedData[key] === undefined) {

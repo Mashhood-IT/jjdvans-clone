@@ -1,6 +1,6 @@
 import React from "react";
 import Icons from "../../../../assets/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const JourneySummaryCard = ({
   formData,
@@ -8,6 +8,7 @@ const JourneySummaryCard = ({
   distanceText,
   currencyCode = "GBP",
 }) => {
+  const navigate = useNavigate()
   const dropList = [
     formData?.dropoff,
     formData?.additionalDropoff1,
@@ -133,9 +134,7 @@ const JourneySummaryCard = ({
               </div>
             </div>
           </div>
-          <Link to="/">
-            <button className="btn btn-primary mt-3">EDIT FULL ROUTE</button>
-          </Link>
+          <button onClick={() => navigate(-1)} className="btn btn-primary mt-3">EDIT FULL ROUTE</button>
         </div>
       </div>
 

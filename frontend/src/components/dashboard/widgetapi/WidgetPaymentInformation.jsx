@@ -15,6 +15,7 @@ import WidgetStepHeader from './widgetcomponents/WidgetStepHeader';
 
 const WidgetPaymentInformation = ({
   companyId,
+  isEdit = false,
   onBookNow,
   vehicle = {},
   booking = {},
@@ -123,8 +124,6 @@ const WidgetPaymentInformation = ({
   const currencySetting = bookingSettingData?.setting?.currency?.[0] || {};
   const currencySymbol = currencySetting?.symbol || "£";
 
-  const [journeyDateTime, setJourneyDateTime] = useState(null);
-
   const parseIntSafe = (val) => {
     const parsed = parseInt(val);
     return !isNaN(parsed) && parsed >= 0 ? parsed : 0;
@@ -170,9 +169,6 @@ const WidgetPaymentInformation = ({
       const dt = new Date(effectiveBooking.date);
       dt.setHours(hourVal);
       dt.setMinutes(minuteVal);
-      setJourneyDateTime(dt);
-    } else {
-      setJourneyDateTime(null);
     }
   }, [booking]);
 
@@ -183,7 +179,7 @@ const WidgetPaymentInformation = ({
       selectedCountry,
     };
     localStorage.setItem("widgetPaymentData", JSON.stringify(dataToSave));
-  }, [passengerDetails, formData]);
+  }, [passengerDetails, formData, selectedCountry]);
 
   const pricingInfo = useMemo(() => {
     const pricingDataRaw = localStorage.getItem("widgetPricing");
@@ -234,14 +230,12 @@ const WidgetPaymentInformation = ({
           setStripeError("Could not initialize Stripe payment. Please try another method.");
         }
       };
-      // Only attempt to init Stripe if it is actually enabled
       if (bookingSettingData?.setting?.stripeKeys?.enabled) {
         initStripe();
       }
     }
   }, [formData.paymentMethod, finalFare, companyId, currencySetting.value, clientSecret, createPaymentIntent, bookingSettingData?.setting?.stripeKeys?.enabled]);
 
-  // Safety check to ensure the chosen payment method is valid according to current settings
   useEffect(() => {
     if (bookingSettingData?.setting) {
       const allowedMethods = ["Cash"];
@@ -316,15 +310,15 @@ const WidgetPaymentInformation = ({
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-(--white) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) widget-value-text-sm">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
                 01
               </div>
-              <h2 className="widget-title text-gray-900">Client Profile</h2>
+              <h2 className="widget-title text-(--dark-black)">Client Profile</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block widget-label-small text-gray-700 mb-2">
+                <label className="block widget-label-small text-(--dark-grey) mb-2">
                   First Name
                 </label>
                 <input
@@ -342,7 +336,7 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div>
-                <label className="block widget-label-small text-gray-700 mb-2">
+                <label className="block widget-label-small text-(--dark-grey) mb-2">
                   Email Address
                 </label>
                 <input
@@ -359,7 +353,7 @@ const WidgetPaymentInformation = ({
                 />
               </div>
               <div>
-                <label className="block widget-label-small text-gray-700 mb-2">
+                <label className="block widget-label-small text-(--dark-grey) mb-2">
                   Phone
                 </label>
 
@@ -373,7 +367,6 @@ const WidgetPaymentInformation = ({
                     })
                   }
                   inputClass="custom_input"
-                  containerClass="w-full"
                 />
               </div>
             </div>
@@ -381,15 +374,15 @@ const WidgetPaymentInformation = ({
 
           <div className="bg-(--white) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-(--white) widget-value-text-sm">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
                 02
               </div>
-              <h2 className="widget-title text-gray-900">Service Requirements</h2>
+              <h2 className="widget-title text-(--dark-black)">Service Requirements</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block widget-label-small text-gray-700 mb-2">
+                <label className="block widget-label-small text-(--dark-grey) mb-2">
                   Moving Date
                 </label>
                 <div>
@@ -411,7 +404,7 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div>
-                <label className="block widget-label-small text-gray-700 mb-2">
+                <label className="block widget-label-small text-(--dark-grey) mb-2">
                   Moving Time
                 </label>
                 <div>
@@ -429,7 +422,7 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div className="md:col-span-1">
-                <label className="block widget-label-small text-gray-700 mb-2">
+                <label className="block widget-label-small text-(--dark-grey) mb-2">
                   Pickup Address
                 </label>
                 <div>
@@ -453,7 +446,7 @@ const WidgetPaymentInformation = ({
                 .filter(Boolean)
                 .map((dropoff, idx) => (
                   <div key={idx} className="md:col-span-1">
-                    <label className="block widget-label-small text-gray-700 mb-2">
+                    <label className="block widget-label-small text-(--dark-grey) mb-2">
                       {idx === 0 ? "DROPOFF ADDRESS" : `Additional Drop-off ${idx}`}
                     </label>
                     <div>
@@ -473,20 +466,20 @@ const WidgetPaymentInformation = ({
 
         <div className="lg:col-span-1">
           <div className="bg-(--white) rounded-lg shadow-sm p-6 sticky top-8">
-            <h3 className="widget-title text-gray-900 mb-6">Price Estimate</h3>
+            <h3 className="widget-title text-(--dark-black) mb-6">Price Estimate</h3>
 
             <div className="space-y-3 mb-6">
               <div className="flex justify-between widget-description">
-                <span className="text-gray-600">Base Fare</span>
-                <span className="widget-value-text text-gray-900">
+                <span className="text-(--dark-grey)">Base Fare</span>
+                <span className="widget-value-text text-(--dark-black)">
                   {pricingInfo.currencySymbol}
                   {pricingInfo.baseFare.toFixed(2)}
                 </span>
               </div>
               {pricingInfo.workersCharges > 0 && (
                 <div className="flex justify-between widget-description">
-                  <span className="text-gray-600">Extra Workers</span>
-                  <span className="widget-value-text text-gray-900">
+                  <span className="text-(--dark-grey)">Extra Workers</span>
+                  <span className="widget-value-text text-(--dark-black)">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.workersCharges.toFixed(2)}
                   </span>
@@ -494,8 +487,8 @@ const WidgetPaymentInformation = ({
               )}
               {pricingInfo.extraTimeCharges > 0 && (
                 <div className="flex justify-between widget-description">
-                  <span className="text-gray-600">Extra Time</span>
-                  <span className="widget-value-text text-gray-900">
+                  <span className="text-(--dark-grey)">Extra Time</span>
+                  <span className="widget-value-text text-(--dark-black)">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.extraTimeCharges.toFixed(2)}
                   </span>
@@ -503,8 +496,8 @@ const WidgetPaymentInformation = ({
               )}
               {pricingInfo.childSeatTotal > 0 && (
                 <div className="flex justify-between widget-description">
-                  <span className="text-gray-600">Child Seats</span>
-                  <span className="widget-value-text text-gray-900">
+                  <span className="text-(--medium-grey)">Child Seats</span>
+                  <span className="widget-value-text text-(--dark-black)">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.childSeatTotal.toFixed(2)}
                   </span>
@@ -512,8 +505,8 @@ const WidgetPaymentInformation = ({
               )}
             </div>
 
-            <div className="border-t border-gray-200 pt-4 mb-6">
-              <div className="widget-price-large text-3xl text-gray-900">
+            <div className="border-t border-(--light-gray) pt-4 mb-6">
+              <div className="widget-price-large text-3xl text-(--dark-black)">
                 {pricingInfo.currencySymbol}
                 {finalFare?.toFixed(2)}
               </div>
@@ -581,19 +574,20 @@ const WidgetPaymentInformation = ({
               )}
 
               {stripeError && (
-                <div className="p-4 bg-red-50 border border-red-100 widget-error-text rounded-xl animate-in fade-in duration-300">
+                <div className="p-4 bg-(--light-red) border border-(--light-red) widget-error-text rounded-xl animate-in fade-in duration-300">
                   {stripeError}
                 </div>
               )}
-
-              {formData.paymentMethod !== "Stripe" && formData.paymentMethod !== "Paypal" && (
-                <button
-                  onClick={handleBookNow}
-                  className="btn btn-back w-full mt-4"
-                >
-                  Book Now
-                </button>
-              )}
+              <div className="flex justify-center">
+                {formData.paymentMethod !== "Stripe" && formData.paymentMethod !== "Paypal" && (
+                  <button
+                    onClick={handleBookNow}
+                    className="btn btn-back mt-4"
+                  >
+                    {isEdit ? "Update Booking" : "Book Now"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

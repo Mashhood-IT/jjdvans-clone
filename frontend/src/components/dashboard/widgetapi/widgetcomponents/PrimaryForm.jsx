@@ -28,13 +28,13 @@ const PrimaryForm = ({
   const [triggerGeocode] = useLazyGeocodeQuery();
 
   const REMOVAL_BOOKING_TYPES = [
-    { label: "House Removals", value: "house_removals" },
-    { label: "Furniture & General Items", value: "furniture" },
-    { label: "Moving Flat or Apartment", value: "flat_apartment" },
-    { label: "Office Moves", value: "office_moves" },
-    { label: "Piano or Electronic Equipment", value: "piano_electronics" },
-    { label: "Same-Day Delivery", value: "same_day" },
-    { label: "Pickup from Store", value: "pickup_store" },
+    { label: "House Removals", value: "House Removals" },
+    { label: "Furniture & General Items", value: "Furniture & General Items" },
+    { label: "Moving Flat or Apartment", value: "Moving Flat or Apartment" },
+    { label: "Office Moves", value: "Office Moves" },
+    { label: "Piano or Electronic Equipment", value: "Piano or Electronic Equipment" },
+    { label: "Same-Day Delivery", value: "Same-Day Delivery" },
+    { label: "Pickup from Store", value: "Pickup from Store" },
   ];
 
   const fetchSuggestions = async (query, setter) => {
@@ -135,10 +135,10 @@ const PrimaryForm = ({
   };
 
   return (
-    <div className="flex items-center justify-center lg:p-4">
+    <div className="flex items-center justify-center lg:p-4 w-full px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-(--white) rounded-2xl shadow-lg pt-5 px-3 pb-3 border border-gray-200"
+        className="bg-(--white) rounded-2xl shadow-lg pt-5 px-3 pb-3 border border-gray-200 w-full max-w-6xl"
       >
         <div className="grid grid-cols-12 gap-4 items-end">
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:pr-4">

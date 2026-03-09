@@ -118,7 +118,7 @@ const VehiclePricing = () => {
     if (uploadFile) {
       formData.append("image", uploadFile);
     } else if (selectedAccount.image) {
-      formData.append("image", selectedAccount.image);
+      formData.append("existingImage", selectedAccount.image);
     }
 
     const cleanedHelp = (selectedAccount.extraHelp || [])

@@ -28,10 +28,8 @@ const WidgetBookingInformation = ({
   const [formData, setFormData] = useState(null);
   const [distanceText, setDistanceText] = useState(null);
   const [durationText, setDurationText] = useState(null);
-  const [matchedHourlyRate, setMatchedHourlyRate] = useState('');
   const [matchedZonePrice, setMatchedZonePrice] = useState(null);
   const [matchedZoneToZonePrice, setMatchedZoneToZonePrice] = useState(null);
-  const [hourlyError, setHourlyError] = useState('');
   const [fixedZonePrice, setFixedZonePrice] = useState(null);
   const [journeyDateTime, setJourneyDateTime] = useState(null);
   const [matchedSurcharge, setMatchedSurcharge] = useState(0);
@@ -42,8 +40,6 @@ const WidgetBookingInformation = ({
 
   const [triggerGeocode] = useLazyGeocodeQuery();
   const [triggerDistance] = useLazyGetDistanceQuery();
-
-  const hourlyRates = [];
   const postcodePrices = [];
   const zones = [];
   const generalPricing = {
@@ -326,55 +322,6 @@ const WidgetBookingInformation = ({
   }, [zones, formData]);
 
   useEffect(() => {
-    if (
-      formData?.mode === "Hourly" &&
-      hourlyRates.length > 0 &&
-      actualMiles !== null
-    ) {
-      const original = formData?.originalHourlyOption?.value;
-
-      if (original) {
-        const selectedSlab = hourlyRates.find(pkg =>
-          Number(pkg.distance) === Number(original.distance) &&
-          Number(pkg.hours) === Number(original.hours)
-        );
-
-        if (selectedSlab) {
-          setMatchedHourlyRate(selectedSlab.vehicleRates || {});
-
-          if (actualMiles > Number(original.distance)) {
-            const warningMsg = `You've selected ${original.distance} miles for ${original.hours} hours, but your trip is ${actualMiles} miles. Prices are shown for your selected package. Extra charges may apply.`;
-            setHourlyError(warningMsg);
-          } else {
-            setHourlyError('');
-          }
-
-        } else {
-          setMatchedHourlyRate(null);
-          setHourlyError("Selected hourly package not found.");
-        }
-      } else {
-        const fallback = hourlyRates.find(pkg => Number(pkg.distance) >= actualMiles) ||
-          [...hourlyRates].sort((a, b) => b.distance - a.distance)[0];
-
-        if (fallback) {
-          setMatchedHourlyRate(fallback.vehicleRates || {});
-          setHourlyError("No selected package found. Showing closest match.");
-        } else {
-          setMatchedHourlyRate(null);
-          setHourlyError("No suitable hourly package found.");
-        }
-      }
-    }
-  }, [formData, hourlyRates, actualMiles]);
-
-  useEffect(() => {
-    if (hourlyError) {
-      toast.warning(hourlyError);
-    }
-  }, [hourlyError]);
-
-  useEffect(() => {
     const sendHeight = () => {
       const height = document.documentElement.scrollHeight;
       window.parent.postMessage({ type: "setHeight", height }, "*");
@@ -548,7 +495,6 @@ const WidgetBookingInformation = ({
 
         setFormData({
           ...data,
-          direction: data.direction || "One Way",
           pickupCoordinates: pickupCoord ? [pickupCoord] : [],
           dropoffCoordinates: dropoffCoord ? [dropoffCoord] : [],
         });
@@ -610,8 +556,6 @@ const WidgetBookingInformation = ({
     }
   }, []);
 
-  const isHourlyMode = formData?.mode === "Hourly";
-
   const calculateSegmentWiseFare = useCallback((vehicle) => {
     if (!segmentBreakdown || segmentBreakdown.length === 0) {
       return getVehiclePriceForDistance(vehicle, actualMiles || 0);
@@ -641,12 +585,7 @@ const WidgetBookingInformation = ({
       formData?.additionalDropoff4,
     ].filter(d => d && d.trim());
 
-    if (allDropoffs.length > 1) {
-      return 'mileage';
-    }
-
-    if (formData?.mode === 'Hourly') return 'hourly';
-    if (allDropoffs.length > 1) return "mileage";
+    if (allDropoffs.length > 1) return 'mileage';
     if (matchedPostcodePrice) return "postcode";
     if (fixedZonePrice !== null) return "zone";
     return 'mileage';
@@ -669,9 +608,6 @@ const WidgetBookingInformation = ({
 
     let coreFare = 0;
     switch (activePricingMode) {
-      case 'hourly':
-        coreFare = matchedHourlyRate?.[selectedCar.vehicleName] || 0;
-        break;
       case 'postcode':
         coreFare = matchedPostcodePrice?.price || 0;
         break;
@@ -713,7 +649,6 @@ const WidgetBookingInformation = ({
     selectedCarId,
     carList,
     activePricingMode,
-    matchedHourlyRate,
     matchedPostcodePrice,
     fixedZonePrice,
     matchedZoneToZonePrice,
@@ -770,9 +705,6 @@ const WidgetBookingInformation = ({
 
     let coreFare = 0;
     switch (activePricingMode) {
-      case 'hourly':
-        coreFare = matchedHourlyRate?.[selectedCar.vehicleName] || 0;
-        break;
       case 'postcode':
         coreFare = matchedPostcodePrice?.price || 0;
         break;
@@ -789,12 +721,10 @@ const WidgetBookingInformation = ({
         ? coreFare + (coreFare * (percentage / 100))
         : coreFare;
 
-
     return baseWithMarkup;
   }, [
     selectedCar,
     activePricingMode,
-    matchedHourlyRate,
     matchedPostcodePrice,
     fixedZonePrice,
     matchedZoneToZonePrice,
@@ -911,7 +841,6 @@ const WidgetBookingInformation = ({
                 }}
                 calculatedTotalPrice={calculatedTotalPrice}
                 primaryJourneyFare={computedPrimaryFare}
-                isHourlyMode={isHourlyMode}
               />
             ) : (
               <div className="p-12 bg-(--white) rounded-2xl border-2 border-dashed border-gray-100 text-center italic text-gray-400">

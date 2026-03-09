@@ -153,7 +153,7 @@ const CarCardSection = ({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="widget-price-large">
+                  <div className="widget-price-large text-(--main-color)">
                     {currencySymbol}{currentTotalPrice.toFixed(2)}
                   </div>
                   <p className="widget-label-tiny mt-0.5">Total Fare</p>
