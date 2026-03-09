@@ -143,15 +143,15 @@ const PrimaryForm = ({
         <div className="grid grid-cols-12 gap-4 items-end">
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:pr-4">
             <div className="relative">
-              <div className="flex items-center gap-x-1 text-gray-400">
+              <div className="flex items-center gap-x-1 text-(--black) font-bold">
                 <Icons.Map size={15} />
-                <span className="widget-label-text text-(--dark-grey)">Service Type</span>
+                <span>Service Type</span>
               </div>
               <select
                 name="bookingType"
                 value={formData.bookingType || ""}
                 onChange={handleChange}
-                className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent appearance-none bg-(--white) text-(--medium-grey)"
+                className="w-full pl-2 cursor-pointer pr-4 py-3 focus:outline-none focus:border-transparent appearance-none bg-(--white) placeholder:text-(--dark-gray) text-(--dark-gray)"
               >
                 <option value="">Select service</option>
                 {REMOVAL_BOOKING_TYPES.map(opt => (
@@ -162,9 +162,9 @@ const PrimaryForm = ({
           </div>
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:px-4">
             <div>
-              <div className="flex items-center gap-x-1 text-gray-400">
+              <div className="flex items-center gap-x-1 text-(--black) font-bold">
                 <Icons.MapPin size={15} />
-                <span className="widget-label-text text-(--dark-grey)">Pickup Address</span>
+                <span>Pickup Address</span>
               </div>
               <input
                 type="text"
@@ -172,7 +172,7 @@ const PrimaryForm = ({
                 placeholder="Enter Pickup Address"
                 value={formData.pickup}
                 onChange={handlePickupChange}
-                className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent text-(--dark-gray)"
+                className="w-full pl-2 pr-4 py-3 focus:outline-none placeholder:text-(--dark-gray) text-(--dark-gray)"
               />
               {pickupSuggestions.length > 0 && (
                 <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2 left-0 right-0">               <li
@@ -181,7 +181,7 @@ const PrimaryForm = ({
                     setFormData((prev) => ({ ...prev, pickup: val }));
                     setPickupSuggestions([]);
                   }}
-                  className="p-3 text-sm bg-blue-50 hover:bg-blue-100 cursor-pointer border-b transition-colors font-medium"
+                  className="p-3 text-sm bg-blue-50 hover:bg-blue-100 cursor-pointer border-b transition-colors"
                 >
                   ➕ Use: "{formData.pickup}"
                 </li>
@@ -201,16 +201,16 @@ const PrimaryForm = ({
 
           <div className="col-span-12 md:col-span-3 relative md:pl-4">
             <div>
-              <div className="flex items-center gap-x-1 text-gray-400">
+              <div className="flex items-center gap-x-1 text-(--black) font-bold">
                 <Icons.MapPin size={15} />
-                <span className="widget-label-text text-(--dark-grey)">Drop-off Address</span>
+                <span>Drop-off Address</span>
               </div>
               <input
                 type="text"
                 value={dropOffs[0]}
                 placeholder="Enter Drop Off Address"
                 onChange={(e) => handleDropOffChange(0, e.target.value)}
-                className="w-full pl-2 pr-4 py-3 focus:outline-none focus:border-transparent text-(--dark-gray)"
+                className="w-full pl-2 pr-4 py-3 focus:outline-none placeholder:text-(--dark-gray) text-(--dark-gray)"
               />
               {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
                 <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2">

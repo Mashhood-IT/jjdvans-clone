@@ -45,8 +45,8 @@ iframe {
 
 select,
 label {
-  font-family: "Roboto", monospace;
-  color: rgb(104, 102, 102);
+  font-family: var(--app-font);
+  color: var(--dark-gray);
   font-size: 15px;
 }
 
@@ -246,17 +246,6 @@ select:disabled {
   border-color: #fecaca;
 }
 
-.tab-success {
-  background-color: #dcfce7;
-  color: #15803d;
-  border: 1px solid #86efac;
-}
-
-.tab-success:hover {
-  background-color: #bbf7d0;
-  border-color: #bbf7d0;
-}
-
 .tab-suspended {
   background-color: #fef9c3;
   color: #a16207;
@@ -289,17 +278,6 @@ select:disabled {
   box-shadow: 0 0 15px rgba(44, 155, 230, 0.4);
 }
 
-.icon-box-success {
-  background-color: var(--success-color);
-  color: #fff;
-  box-shadow: 0 0 10px rgba(89, 89, 89, 0.2);
-}
-
-.icon-box-success:hover {
-  background-color: #046511;
-  box-shadow: 0 0 15px rgba(89, 89, 89, 0.4);
-}
-
 .icon-box-danger {
   background-color: var(--primary-dark-red);
   color: #fff;
@@ -311,17 +289,6 @@ select:disabled {
   box-shadow: 0 0 15px rgba(186, 9, 10, 0.4);
 }
 
-.icon-box-warning {
-  background-color: #fef9c3;
-  color: #a16207;
-  border: 1px solid #fcd34d;
-}
-
-.icon-box-warning:hover {
-  background-color: #fef08a;
-  border-color: #fef08a;
-}
-
 .icon-box-info {
   background-color: var(--light-blue);
   color: var(--dark-black);
@@ -331,21 +298,6 @@ select:disabled {
 .icon-box-info:hover {
   background-color: #cfe2e3;
   box-shadow: 0 0 15px #cfe2e3;
-}
-
-.icon-box-sm {
-  padding: 4px;
-  font-size: 14px;
-}
-
-.icon-box-lg {
-  padding: 12px;
-  font-size: 22px;
-}
-
-.icon-box-xl {
-  padding: 16px;
-  font-size: 28px;
 }
 
 ::-webkit-scrollbar {
@@ -395,97 +347,9 @@ select:disabled {
   background: transparent;
 }
 
-.goog-te-gadget span {
-  display: none !important;
-}
-
-.goog-te-gadget {
-  color: transparent !important;
-  font-size: 0px;
-}
-
-.goog-text-highlight {
-  background: none !important;
-  box-shadow: none !important;
-}
-
-#google_translate_element select {
-  background: #ffffff;
-  color: #000000;
-  border: none;
-  outline: none;
-  border-radius: 8px;
-  padding: 8px 6px;
-  border: 1px solid var(--light-gray);
-  width: 100%;
-  max-width: 180px;
-  box-sizing: border-box;
-}
-
-.custom-toast-width {
-  width: 400px !important;
-  max-width: 90vw;
-}
-
-@media (max-width: 480px) {
-  .custom-toast-width {
-    width: 320px !important;
-  }
-}
-
-.goog-te-gadget {
-  font-size: 0 !important;
-}
-
-.goog-te-gadget span {
-  display: none !important;
-}
-
-@media (min-width: 300px) and (max-width: 480px) {
-  #google_translate_element select {
-    padding: 8px 1%;
-    width: auto;
-    max-width: 50px;
-  }
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* @keyframes slide {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-slide {
-  display: flex;
-  animation: slide 35s linear infinite;
-}
-
-.animate-slide:hover {
-  animation-play-state: paused;
-} */
-
 input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   text-transform: uppercase;
   font-size: 15px;
-}
-
-.dull {
-  filter: grayscale(80%) brightness(70%);
-  opacity: 0.6;
-  pointer-events: none;
 }
 
 input[type="date"]::-webkit-datetime-edit,
@@ -494,34 +358,11 @@ input[type="date"]::-webkit-datetime-edit-text {
   color: var(--dark-gray);
 }
 
-.react-tel-input .form-control {
-  border: 1px solid #dee0e3 !important;
-  border-radius: 4px !important;
-  height: 33px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  transition: box-shadow 0.2s ease-in-out !important;
-}
-
-.integrations-table-wrapper div.flex.justify-center {
-  justify-content: flex-end !important;
-}
-
-@media (max-width: 640px) {
-  .integrations-table-wrapper .flex.justify-center.sm\:justify-end {
-    justify-content: flex-end !important;
-  }
-
-  .integrations-table-wrapper .flex.justify-center {
-    justify-content: flex-end !important;
-  }
-}
 
 .widget-label-text {
   @apply text-sm font-semibold;
 }
 
-/* Widget Typography Standard Classes */
 .widget-page-title {
   @apply text-2xl md:text-4xl font-bold text-gray-900 leading-tight;
 }

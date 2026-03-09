@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import PrimaryForm from "./widgetcomponents/PrimaryForm";
-import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 
 const WidgetBooking = ({
   onSubmitSuccess,
@@ -61,7 +60,7 @@ const WidgetBooking = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const requiredFields = ["bookingType", "pickup", "dropoff"];
+    const requiredFields = ["bookingType", "pickup"];
     for (const field of requiredFields) {
       if (!formData[field]?.toString().trim()) {
         toast.error(`${field} is required`)

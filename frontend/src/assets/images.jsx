@@ -1,5 +1,7 @@
+import dummyImg from "./images/dummyImg.webp";
+
 const IMAGES = {
-  dummyImg: "/assets/images/dummyImg.webp",
+  dummyImg,
 };
 
-export default IMAGES;
+export default IMAGES

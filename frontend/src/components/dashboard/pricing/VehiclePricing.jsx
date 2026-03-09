@@ -19,7 +19,6 @@ import { useGetBookingSettingQuery } from "../../../redux/api/bookingSettingsApi
 
 const VehiclePricing = () => {
   const { showLoading, hideLoading } = useLoading();
-  const user = useSelector((state) => state?.auth?.user)
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState("All");
@@ -130,6 +129,7 @@ const VehiclePricing = () => {
       }));
     formData.append("extraHelp", JSON.stringify(cleanedHelp));
 
+    console.log(formData)
     try {
       if (selectedAccount._id) {
         await updateVehicle({ id: selectedAccount._id, formData });
