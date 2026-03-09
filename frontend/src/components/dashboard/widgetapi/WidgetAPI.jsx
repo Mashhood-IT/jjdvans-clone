@@ -10,6 +10,7 @@ const WidgetAPI = () => {
     import.meta.env.VITE_BASE_URL_FRONTEND;
   const companyId = user?.companyId || "";
 
+
   const iframeCode = `<iframe
   id="mtlWidget"
   src="${BASE_URL}widget-form?company=${companyId}"
