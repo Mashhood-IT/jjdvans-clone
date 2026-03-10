@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 import FloorAccessibility from "./widgetcomponents/FloorAccessibility";
 import Icons from "../../../assets/icons";
+import { toast } from "react-toastify";
 
-const WidgetInventory = ({ onContinue }) => {
+const WidgetInventory = ({ onContinue, items, setItems }) => {
   const selectedVehicle = JSON.parse(
     localStorage.getItem("selectedVehicle") || "{}",
   );
@@ -30,7 +30,7 @@ const WidgetInventory = ({ onContinue }) => {
   });
   const [ridingAlong, setRidingAlong] = useState(false);
   const [passengerCount, setPassengerCount] = useState(0);
-  const [items, setItems] = useState([]);
+  
   const [showItemInput, setShowItemInput] = useState(false);
   const [currentItem, setCurrentItem] = useState("");
 
@@ -170,8 +170,6 @@ const WidgetInventory = ({ onContinue }) => {
     let totalMinutes = estimatedHours * 60 + estimatedMinutes;
     totalMinutes += increment ? 30 : -30;
 
-    // Minimum time frame will always be 2 hours (120 minutes)
-    // Also shouldn't go below what Google estimated (rounded up)
     const googleMin = Math.max(120, Math.ceil(initialGoogleMinutes / 30) * 30);
     if (totalMinutes < googleMin) totalMinutes = googleMin;
 
@@ -180,11 +178,6 @@ const WidgetInventory = ({ onContinue }) => {
   };
 
   const handleContinue = () => {
-    if (items.length === 0) {
-      toast.error("Please add at least one item to your inventory before continuing.");
-      return;
-    }
-
     const inventoryData = {
       pickupFloor,
       dropoffFloor,

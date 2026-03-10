@@ -451,18 +451,18 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
             <div className="flex flex-col gap-2 w-full max-w-md mx-auto">
               {(viewData?.fare !== undefined || viewData?.additionalTimeFare || viewData?.workersCharges) && (
                 <div className="space-y-1 border-b border-gray-200 pb-2 mb-2">
-                  <div className="flex justify-between text-xs text-gray-500">
+                  <div className="flex justify-between text-xs text-(--dark-grey)">
                     <span>Base Fare:</span>
                     <span>{currencySymbol}{Number(viewData?.fare || 0).toFixed(2)}</span>
                   </div>
                   {viewData?.additionalTimeFare > 0 && (
-                    <div className="flex justify-between text-xs text-gray-500">
+                    <div className="flex justify-between text-xs text-(--dark-grey)">
                       <span>Additional Time Charges:</span>
                       <span>+{currencySymbol}{Number(viewData?.additionalTimeFare).toFixed(2)}</span>
                     </div>
                   )}
                   {viewData?.workersCharges > 0 && (
-                    <div className="flex justify-between text-xs text-gray-500">
+                    <div className="flex justify-between text-xs text-(--dark-grey)">
                       <span>Extra Men Charges:</span>
                       <span>+{currencySymbol}{Number(viewData?.workersCharges).toFixed(2)}</span>
                     </div>
@@ -472,9 +472,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium flex items-center justify-center">
                 <span className="text-(--dark-gray)">Total Fare:</span>
                 <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
-                  {currencySymbol}
+                {currencySymbol}
                   {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(2)}
-                  &nbsp;{currencyLabel}
                 </span>
               </div>
             </div>

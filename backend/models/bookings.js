@@ -96,6 +96,11 @@ const BookingSchema = new mongoose.Schema({
     totalPrice: Number,
     paymentMethod: String,
     passenger: PassengerSchema,
+    status: {
+        type: String,
+        enum: ["New","Completed"],
+        default: "New"
+    },
 
     ridingAlong: Boolean,
     passengerCount: Number,

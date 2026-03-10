@@ -12,12 +12,10 @@ import CustomModal from "../../constants/constantcomponents/CustomModal";
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import { actionMenuItems } from "../../constants/dashboardTabsData/data";
 
-const BookingsList = () => {
+const CompletedBookings = () => {
   const { showLoading, hideLoading } = useLoading();
   const { data: allBookings = [], isLoading, refetch } = useGetAllBookingsQuery();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
+  
   const [selectedRow, setSelectedRow] = useState(null);
   const [selectedActionRow, setSelectedActionRow] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -40,10 +38,10 @@ const BookingsList = () => {
     }
   }, [isLoading]);
 
-  // Filter out completed bookings - show only non-completed bookings
-  const activeBookings = allBookings.filter((booking) => booking.status !== "Completed");
+  // Filter only completed bookings
+  const completedBookings = allBookings.filter((booking) => booking.status === "Completed");
 
-  const filteredBookings = activeBookings.filter((booking) => {
+  const filteredBookings = completedBookings.filter((booking) => {
     if (startDate || endDate) {
       const journey = booking;
       if (!journey?.date) return false;
@@ -86,7 +84,7 @@ const BookingsList = () => {
   });
 
   const passengerMap = new Map();
-  allBookings.forEach((booking) => {
+  completedBookings.forEach((booking) => {
     const p = booking.passenger;
     if (p?.name && !passengerMap.has(p.name)) {
       passengerMap.set(p.name, { label: p.name, value: p.name });
@@ -96,7 +94,7 @@ const BookingsList = () => {
   const passengerList = Array.from(passengerMap.values());
 
   const vehicleMap = new Map();
-  allBookings.forEach((booking) => {
+  completedBookings.forEach((booking) => {
     const v = booking.vehicle;
     if (v?.vehicleName && !vehicleMap.has(v.vehicleName)) {
       vehicleMap.set(v.vehicleName, {
@@ -127,7 +125,7 @@ const BookingsList = () => {
 
   return (
     <>
-      <OutletHeading name="Bookings List" />
+      <OutletHeading name="Completed Bookings" />
 
       <BookingsFilters
         selectedPassengers={selectedPassengers}
@@ -190,4 +188,5 @@ const BookingsList = () => {
   );
 };
 
-export default BookingsList;
+export default CompletedBookings;
+

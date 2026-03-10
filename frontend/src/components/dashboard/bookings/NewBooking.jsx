@@ -129,7 +129,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
   }
 
   return (
-    <div className="w-full relative">
+    <div className="w-full">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-(--white) z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -139,7 +139,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
         ref={iframeRef}
         src={widgetUrl}
         className="w-full border-none transition-all duration-300"
-        style={{ minHeight: "600px", overflow: "hidden" }}
+        style={{ minHeight: "600px"}}
         title="Booking Widget"
         onLoad={() => setLoading(false)}
       />

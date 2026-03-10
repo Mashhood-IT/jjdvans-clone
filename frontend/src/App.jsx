@@ -11,22 +11,22 @@ import Dashboard from "./components/dashboard/home/Dashboard";
 import { LoadingProvider } from "./components/common/LoadingProvider";
 import EditProfile from "./components/dashboard/profile/EditProfile";
 import BookingsList from "./components/dashboard/bookings/BookingsList";
+import CompletedBookings from "./components/dashboard/bookings/CompletedBookings";
 import NewBooking from "./components/dashboard/bookings/NewBooking";
 import WidgetMain from "./components/dashboard/widgetapi/WidgetMain";
 import VehiclePricing from "./components/dashboard/pricing/VehiclePricing";
 import WidgetAPI from "./components/dashboard/widgetapi/WidgetAPI";
-import { ToastContainer } from "react-toastify";
 import DistanceSlab from "./components/dashboard/pricing/DistanceSlab";
 import ViewCompany from "./components/dashboard/companyaccount/ViewCompany";
 import CustomersList from "./components/dashboard/customers/CustomersList";
 import BookingCalendar from "./components/dashboard/bookings/BookingCalendar";
 import BookingSettings from "./components/dashboard/settings/BookingSettings";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const App = () => {
   return (
     <div>
       <LoadingProvider>
-        <ToastContainer position="top-right" />
         <Routes>
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
@@ -40,19 +40,19 @@ const App = () => {
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route path="my-dashboard" index element={<Dashboard />} />
               <Route path="bookings/list" element={<BookingsList />} />
-              <Route path="bookings/new" element={<NewBooking />} />
+              <Route path="bookings/completed" element={<CompletedBookings />} />
+              <Route path="new-booking" element={<NewBooking />} />
               <Route path="bookings/calendar" element={<BookingCalendar />} />
 
-
-              <Route path="user-profiles/customers/list" element={<CustomersList />} />
+              <Route
+                path="user-profiles/customers/list"
+                element={<CustomersList />}
+              />
               <Route path="view-company" element={<ViewCompany />} />
 
               <Route path="settings/widget-api" element={<WidgetAPI />} />
               <Route path="pricing/vehicle" element={<VehiclePricing />} />
-              <Route
-                path="pricing/distance-slab"
-                element={<DistanceSlab />}
-              />
+              <Route path="pricing/distance-slab" element={<DistanceSlab />} />
 
               <Route path="settings/booking" element={<BookingSettings />} />
 
@@ -61,6 +61,7 @@ const App = () => {
             </Route>
           </Route>
         </Routes>
+        <ToastContainer position="top-center" autoClose={2000} />
       </LoadingProvider>
     </div>
   );

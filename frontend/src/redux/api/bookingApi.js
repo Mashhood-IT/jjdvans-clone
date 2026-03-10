@@ -34,6 +34,14 @@ export const bookingApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Bookings"],
     }),
+    updateBookingStatus: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/booking/update-booking-status`,
+        method: "PATCH",
+        body: {id, status},
+      }),
+      invalidatesTags: ["Bookings"],
+    }),
     deleteBooking: builder.mutation({
       query: (id) => ({
         url: `/booking/${id}`,
@@ -56,6 +64,7 @@ export const {
   useGetBookingByIdQuery,
   useCreateBookingMutation,
   useUpdateBookingMutation,
+  useUpdateBookingStatusMutation,
   useDeleteBookingMutation,
   useSendBookingEmailMutation
 } = bookingApi

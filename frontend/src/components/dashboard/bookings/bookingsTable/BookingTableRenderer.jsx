@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import DeleteModal from "../../../constants/constantcomponents/DeleteModal";
 import CustomTable from "../../../constants/constantcomponents/CustomTable";
-import { useDeleteBookingMutation } from "../../../../redux/api/bookingApi";
+import { useDeleteBookingMutation, useUpdateBookingStatusMutation } from "../../../../redux/api/bookingApi";
 import { useGetBookingSettingQuery } from "../../../../redux/api/bookingSettingsApi";
+import SelectOption from "../../../constants/constantcomponents/SelectOption";
 
 const BookingTableRenderer = ({
   emptyMessage,
@@ -27,6 +28,7 @@ const BookingTableRenderer = ({
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
   const [deleteBooking] = useDeleteBookingMutation();
+  const [updateBookingStatus] = useUpdateBookingStatusMutation()
   const { data: settingsData } = useGetBookingSettingQuery();
   const defaultCurrencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
   const currencyPolicy = settingsData?.setting?.currencyApplication || "New Bookings Only";
@@ -66,6 +68,32 @@ const BookingTableRenderer = ({
             break;
           case "pickup":
             row[key] = item?.pickup || "";
+            break;
+          case "status": 
+            row[key] = (
+              <SelectOption 
+                options={[
+                  { value: "New", label: "New" },
+                  { value: "Completed", label: "Completed" }
+                ]}
+                value={item.status || "New"}
+                onChange={async (e) => {
+                  const newStatus = e.target.value;
+                  try {
+                    const updatedStatus = await updateBookingStatus({
+                      id: item._id,
+                      status: newStatus
+                    })
+                    if(updatedStatus) {
+                      toast.success("Booking Status updated successfully")
+                    }
+                  } catch (error) {
+                      toast.error("Error updating booking status")
+                      console.log(error)
+                  }
+                }}
+              />
+            );
             break;
           case "dropoff":
             row[key] = item?.dropoff || "";

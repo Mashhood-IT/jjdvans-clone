@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import Icons from "../../../assets/icons";
 import moment from "moment-timezone";
 import BookingTableRenderer from "./bookingsTable/BookingTableRenderer";
+import { useLocation } from "react-router-dom";
 
 const BookingsTable = ({
   assignedDrivers,
@@ -16,9 +17,10 @@ const BookingsTable = ({
   selectedRow,
   setSelectedRow,
   openCompletionModal,
-  filteredBookings
+  filteredBookings,
 }) => {
   const user = useSelector((state) => state.auth.user);
+  const location = useLocation();
   const timezone = useSelector((state) => state.timezone?.timezone) || "UTC";
   const [tooltip, setTooltip] = useState({ show: false, text: "", x: 0, y: 0 });
 
@@ -28,11 +30,16 @@ const BookingsTable = ({
     { key: "dropoff", label: "Dropoff" },
     { key: "passenger", label: "Passenger" },
     { key: "date", label: "Date" },
+    ...(location.pathname !== "/dashboard/bookings/completed"
+      ? [
+          { key: "status", label: "Status" },
+          { key: "actions", label: "Actions" },
+        ]
+      : []),
     { key: "vehicle", label: "Vehicle" },
     { key: "totalPrice", label: "Total Price" },
     { key: "paymentMethod", label: "Payment" },
     { key: "createdAt", label: "Created At" },
-    { key: "actions", label: "Actions" },
   ];
   const filteredTableHeaders = tableHeaders;
   const getErrMsg = (err) => err?.message || "Something went wrong";

@@ -6,7 +6,12 @@ const sidebarItems = [
     icon: Icons.LayoutDashboard,
     route: "/dashboard/my-dashboard",
   },
-
+  
+  {
+    title: "New Booking",
+    route: "/dashboard/new-booking",
+    icon: Icons.PlusCircle,
+  },
   {
     title: "Booking Logs",
     icon: Icons.ScrollText,
@@ -18,9 +23,9 @@ const sidebarItems = [
         icon: Icons.ListChecks,
       },
       {
-        title: "New Booking",
-        route: "/dashboard/bookings/new",
-        icon: Icons.PlusCircle,
+        title: "Completed Bookings",
+        route: "/dashboard/bookings/completed",
+        icon: Icons.CheckCircle,
       },
       {
         title: "Booking Calendar",

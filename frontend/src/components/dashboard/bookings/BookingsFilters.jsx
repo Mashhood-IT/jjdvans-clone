@@ -22,7 +22,7 @@ const BookingsFilters = ({
       <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between w-full mb-4">
         <div className="flex flex-row flex-wrap gap-y-3 gap-x-2 items-center w-full">
           <div className="flex gap-2 ">
-            <Link to="/dashboard/bookings/new">
+            <Link to="/dashboard/new-booking">
               <button
                 title="Add New Booking"
                 className="icon-box icon-box-primary"

@@ -13,6 +13,8 @@ import WidgetInventory from "./WidgetInventory";
 import WidgetBookingDetails from "./WidgetBookingDetails";
 import Icons from "../../../assets/icons";
 import BreadCrumbs from "./widgetcomponents/BreadCrumbs";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const WidgetMain = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +31,7 @@ const WidgetMain = () => {
       new URLSearchParams(window.location.search).get("isEdit") === "true",
     bookingId: new URLSearchParams(window.location.search).get("bookingId"),
   });
+  const [items, setItems] = useState([]);
 
   const [createBooking, { isLoading: isBookingLoading }] =
     useCreateBookingMutation();
@@ -41,7 +44,6 @@ const WidgetMain = () => {
     sessionStorage.setItem("widget_tab_open", "true");
   }, []);
 
-  // Ensure each widget step starts at the top when first opened
   useEffect(() => {
     if (location.pathname.startsWith("/widget-form")) {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -361,6 +363,13 @@ const WidgetMain = () => {
   }
   return (
     <div className={`w-full h-full bg-transparent py-4 md:py-8`}>
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        newestOnTop
+        limit={1}
+        style={{ position: "fixed", top: "20px", zIndex: 999999 }}
+      />
       <div>
         <BreadCrumbs />
         <Routes>
@@ -430,8 +439,17 @@ const WidgetMain = () => {
             path="widget-inventory"
             element={
               <WidgetInventory
+                items={items}
+                setItems={setItems}
                 companyId={companyId}
                 onContinue={() => {
+                  if (items.length === 0) {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    toast.error(
+                      "Please add at least one item to your inventory before continuing.",
+                    );
+                    return;
+                  }
                   navigate(`/widget-form/widget-payment?company=${companyId}`);
                 }}
               />
