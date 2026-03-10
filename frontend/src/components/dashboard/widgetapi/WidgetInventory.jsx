@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 import FloorAccessibility from "./widgetcomponents/FloorAccessibility";
 import Icons from "../../../assets/icons";
 import { toast } from "react-toastify";
 
 const WidgetInventory = ({ onContinue, items, setItems }) => {
+  const containerRef = useRef(null);
   const selectedVehicle = JSON.parse(
     localStorage.getItem("selectedVehicle") || "{}",
   );
@@ -15,9 +16,7 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
   const [dropoffAccess, setDropoffAccess] = useState("STAIRS");
   const [estimatedHours, setEstimatedHours] = useState(0);
   const [estimatedMinutes, setEstimatedMinutes] = useState(0);
-
   const [additionalDropoffs, setAdditionalDropoffs] = useState([]);
-
   const [floorAccess, setFloorAccess] = useState({
     additionalDropoff1Floor: 0,
     additionalDropoff1Access: "STAIRS",
@@ -30,10 +29,8 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
   });
   const [ridingAlong, setRidingAlong] = useState(false);
   const [passengerCount, setPassengerCount] = useState(0);
-  
   const [showItemInput, setShowItemInput] = useState(false);
   const [currentItem, setCurrentItem] = useState("");
-
   const [googleDurationText, setGoogleDurationText] = useState(null);
   const [googleDistanceText, setGoogleDistanceText] = useState(null);
   const [initialGoogleMinutes, setInitialGoogleMinutes] = useState(0);
@@ -178,6 +175,17 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
   };
 
   const handleContinue = () => {
+    if (items.length === 0) {
+      toast.error("Add items in inventory");
+      if (containerRef.current) {
+        containerRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      return;
+    }
     const inventoryData = {
       pickupFloor,
       dropoffFloor,
@@ -198,7 +206,6 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
       onContinue();
     }
   };
-
   const handleAddItem = () => {
     if (currentItem.trim()) {
       setItems([...items, { id: Date.now(), name: currentItem.trim() }]);
@@ -218,8 +225,7 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
   };
 
   return (
-    <div className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
-
+    <div ref={containerRef} className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
       <WidgetStepHeader
         step="3"
         title="Inventory & Requirements"
@@ -278,7 +284,9 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
                 key={item.id}
                 className="flex items-center justify-between px-4 py-3 bg-(--lightest-gray) border border-gray-200 rounded-lg"
               >
-                <span className="widget-value-text-sm text-gray-900">{item.name}</span>
+                <span className="widget-value-text-sm text-gray-900">
+                  {item.name}
+                </span>
                 <button
                   onClick={() => handleRemoveItem(item.id)}
                   className="text-red-600 cursor-pointer hover:text-red-800 transition-colors"
@@ -315,7 +323,7 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
         setFloorAccess={setFloorAccess}
       />
 
-      <div className="bg-gray-900 rounded-lg md:p-8 p-3 mb-6 relative overflow-hidden">
+      <div className="bg-gray-900 rounded-lg md:p-8 p-3 mb-6 relative">
         {(googleDurationText || googleDistanceText) && (
           <div className="flex items-center justify-center gap-4 mb-4">
             {googleDistanceText && (
@@ -350,7 +358,9 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
               <span className="widget-value-large text-6xl text-(--white) tabular-nums">
                 {String(estimatedHours).padStart(2, "0")}
               </span>
-              <span className="widget-value-large text-6xl text-(--white)">:</span>
+              <span className="widget-value-large text-6xl text-(--white)">
+                :
+              </span>
               <span className="widget-value-large text-6xl text-(--white) tabular-nums">
                 {String(estimatedMinutes).padStart(2, "0")}
               </span>
@@ -406,12 +416,14 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
                 setPassengerCount(0);
               }
             }}
-            className={`relative cursor-pointer w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${ridingAlong ? "bg-gray-900" : "bg-gray-300"
-              }`}
+            className={`relative cursor-pointer w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${
+              ridingAlong ? "bg-gray-900" : "bg-gray-300"
+            }`}
           >
             <span
-              className={`absolute top-1 left-1 w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${ridingAlong ? "translate-x-4 md:translate-x-6" : "translate-x-0"
-                }`}
+              className={`absolute top-1 left-1 w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${
+                ridingAlong ? "translate-x-4 md:translate-x-6" : "translate-x-0"
+              }`}
             />
           </button>
         </div>
@@ -464,7 +476,7 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
         )}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end items-center gap-3">
         <button onClick={handleContinue} className="btn btn-primary">
           Continue to Payment
         </button>

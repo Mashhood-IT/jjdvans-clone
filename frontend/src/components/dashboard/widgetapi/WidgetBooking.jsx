@@ -5,7 +5,6 @@ import PrimaryForm from "./widgetcomponents/PrimaryForm";
 const WidgetBooking = ({
   onSubmitSuccess,
   companyId: parentCompanyId,
-  data,
 }) => {
   const companyId =
     parentCompanyId ||

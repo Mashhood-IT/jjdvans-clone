@@ -15,6 +15,18 @@ import Icons from "../../../assets/icons";
 import BreadCrumbs from "./widgetcomponents/BreadCrumbs";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "auto",
+  });
+
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+};
+
 const WidgetMain = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,11 +57,7 @@ const WidgetMain = () => {
   }, []);
 
   useEffect(() => {
-    if (location.pathname.startsWith("/widget-form")) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    }
+    scrollToTop()
   }, [location.pathname]);
 
   useEffect(() => {
@@ -87,7 +95,6 @@ const WidgetMain = () => {
     navigate("/widget-form/widget-success");
   }, [navigate]);
 
-  // Hydrate in-memory widget state from localStorage so data survives reloads on any step
   useEffect(() => {
     try {
       const bookingRaw = localStorage.getItem("bookingForm");
@@ -102,7 +109,6 @@ const WidgetMain = () => {
 
       setFormData((prev) => ({
         ...prev,
-        // Only override sections when we actually have something stored
         booking:
           storedBooking && Object.keys(storedBooking).length > 0
             ? storedBooking
@@ -443,13 +449,6 @@ const WidgetMain = () => {
                 setItems={setItems}
                 companyId={companyId}
                 onContinue={() => {
-                  if (items.length === 0) {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                    toast.error(
-                      "Please add at least one item to your inventory before continuing.",
-                    );
-                    return;
-                  }
                   navigate(`/widget-form/widget-payment?company=${companyId}`);
                 }}
               />

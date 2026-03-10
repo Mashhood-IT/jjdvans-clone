@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import DeleteModal from "../../../constants/constantcomponents/DeleteModal";
+import ConfirmModal from "../../../constants/constantcomponents/ConfirmModal";
 import CustomTable from "../../../constants/constantcomponents/CustomTable";
-import { useDeleteBookingMutation, useUpdateBookingStatusMutation } from "../../../../redux/api/bookingApi";
+import {
+  useDeleteBookingMutation,
+  useUpdateBookingStatusMutation,
+} from "../../../../redux/api/bookingApi";
 import { useGetBookingSettingQuery } from "../../../../redux/api/bookingSettingsApi";
 import SelectOption from "../../../constants/constantcomponents/SelectOption";
 
@@ -26,12 +30,16 @@ const BookingTableRenderer = ({
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingStatusUpdate, setPendingStatusUpdate] = useState(null);
 
   const [deleteBooking] = useDeleteBookingMutation();
-  const [updateBookingStatus] = useUpdateBookingStatusMutation()
+  const [updateBookingStatus] = useUpdateBookingStatusMutation();
   const { data: settingsData } = useGetBookingSettingQuery();
-  const defaultCurrencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
-  const currencyPolicy = settingsData?.setting?.currencyApplication || "New Bookings Only";
+  const defaultCurrencySymbol =
+    settingsData?.setting?.currency?.[0]?.symbol || "£";
+  const currencyPolicy =
+    settingsData?.setting?.currencyApplication || "New Bookings Only";
 
   const formatCurrency = (value, booking) => {
     if (value === undefined || value === null || value === "-") return "-";
@@ -46,10 +54,8 @@ const BookingTableRenderer = ({
     return `£${Number(value).toFixed(2)}`;
   };
 
-
   const formatPassenger = (p) =>
     !p || typeof p !== "object" ? "-" : `${p.name || "N/A"}`;
-
 
   let tableData = [];
   if (!filteredBookings || filteredBookings.length === 0) {
@@ -69,27 +75,30 @@ const BookingTableRenderer = ({
           case "pickup":
             row[key] = item?.pickup || "";
             break;
-          case "status": 
+          case "status":
             row[key] = (
-              <SelectOption 
+              <SelectOption
                 options={[
                   { value: "New", label: "New" },
-                  { value: "Completed", label: "Completed" }
+                  { value: "Completed", label: "Completed" },
                 ]}
                 value={item.status || "New"}
-                onChange={async (e) => {
-                  const newStatus = e.target.value;
-                  try {
-                    const updatedStatus = await updateBookingStatus({
-                      id: item._id,
-                      status: newStatus
-                    })
-                    if(updatedStatus) {
-                      toast.success("Booking Status updated successfully")
-                    }
-                  } catch (error) {
-                      toast.error("Error updating booking status")
-                      console.log(error)
+                onChange={(newStatus) => {
+                  const status =
+                    newStatus?.value || newStatus?.target?.value || newStatus;
+
+                  if (status === "Completed") {
+                    setPendingStatusUpdate({ id: item._id, status });
+                    setShowConfirmModal(true);
+                  } else {
+                    updateBookingStatus({ id: item._id, status })
+                      .unwrap()
+                      .then(() =>
+                        toast.success("Booking Status updated successfully"),
+                      )
+                      .catch(() =>
+                        toast.error("Error updating booking status"),
+                      );
                   }
                 }}
               />
@@ -129,7 +138,7 @@ const BookingTableRenderer = ({
             const pickupLocation = item.pickup || "-";
             row[key] = (
               <div
-                className="w-full max-w-[250px] truncate whitespace-nowrap cursor-default"
+                className="w-full max-w-62.5 truncate whitespace-nowrap cursor-default"
                 onMouseEnter={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   setTooltip({
@@ -153,7 +162,7 @@ const BookingTableRenderer = ({
             const dropoffLocation = item.dropoff || "-";
             row[key] = (
               <div
-                className="w-full max-w-[250px] truncate whitespace-nowrap cursor-default"
+                className="w-full max-w-62.5 truncate whitespace-nowrap cursor-default"
                 onMouseEnter={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   setTooltip({
@@ -186,13 +195,12 @@ const BookingTableRenderer = ({
           case "createdAt":
             row[key] = item.createdAt
               ? moment(item.createdAt)
-                .tz(timezone)
-                .format("DD/MM/YYYY HH:mm:ss")
+                  .tz(timezone)
+                  .format("DD/MM/YYYY HH:mm:ss")
               : "-";
             break;
 
           case "actions":
-
             row[key] = (
               <div className="flex items-start  gap-2">
                 <div className="text-center">
@@ -214,7 +222,6 @@ const BookingTableRenderer = ({
                     <div className="mt-2 w-56 bg-(--white) border border-(--lightest-gray) rounded-lg js-actions-menu shadow-lg">
                       {actionMenuItems
                         .filter((action) => {
-
                           return true;
                         })
                         .map((action, i) => (
@@ -242,7 +249,6 @@ const BookingTableRenderer = ({
                             {action}
                           </button>
                         ))}
-
                     </div>
                   )}
                 </div>
@@ -256,7 +262,6 @@ const BookingTableRenderer = ({
       return row;
     });
   }
-
   return (
     <>
       <CustomTable
@@ -298,6 +303,28 @@ const BookingTableRenderer = ({
         onCancel={() => {
           setShowDeleteModal(false);
           setSelectedDeleteId(null);
+        }}
+      />
+
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onConfirm={async () => {
+          try {
+            await updateBookingStatus({
+              id: pendingStatusUpdate.id,
+              status: pendingStatusUpdate.status,
+            }).unwrap();
+            toast.success("Booking Status updated successfully");
+          } catch (err) {
+            toast.error("Error updating booking status");
+          } finally {
+            setShowConfirmModal(false);
+            setPendingStatusUpdate(null);
+          }
+        }}
+        onCancel={() => {
+          setShowConfirmModal(false);
+          setPendingStatusUpdate(null);
         }}
       />
     </>

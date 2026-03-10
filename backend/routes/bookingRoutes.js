@@ -6,9 +6,9 @@ const router = express.Router();
 
 router.post("/create-booking", createBooking);
 router.get("/get-all-bookings", getAllBookings);
+router.patch("/update-booking-status", updatBookingStatus);
 router.get("/:id", getBookingById);
 router.patch("/:id", updateBooking);
-router.patch("/update-booking-status", updatBookingStatus);
 router.delete("/:id", deleteBooking);
 router.post("/send-booking-email", protect, sendBookingDetailsEmail);
 

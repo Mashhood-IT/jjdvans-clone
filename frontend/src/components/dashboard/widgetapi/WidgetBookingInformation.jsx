@@ -57,9 +57,6 @@ const WidgetBookingInformation = ({
   const isPickupAirport = formData?.pickup?.toLowerCase()?.includes('airport');
   const isDropoffAirport = formData?.dropoff?.toLowerCase()?.includes('airport');
 
-  const pickupAirportPrice = isPickupAirport ? generalPricing?.pickupAirportPrice : 0;
-  const dropoffAirportPrice = isDropoffAirport ? generalPricing?.dropoffAirportPrice : 0;
-
 
   const getVehiclePriceForDistance = useCallback((vehicle, miles) => {
     if (!vehicle?.slabs || !Array.isArray(vehicle.slabs) || vehicle.slabs.length === 0) return 0;
@@ -155,7 +152,6 @@ const WidgetBookingInformation = ({
     }));
   }, []);
 
-  // Restore selected vehicle from localStorage / DB-seeded data
   useEffect(() => {
     try {
       const savedVehicle = localStorage.getItem("selectedVehicle");
@@ -163,13 +159,11 @@ const WidgetBookingInformation = ({
 
       const parsed = JSON.parse(savedVehicle);
 
-      // If we already have an id, just use it
       if (parsed.id) {
         setSelectedCarId(parsed.id);
         return;
       }
 
-      // Fallback: try to match by vehicleName with vehicles list from API
       if (parsed.vehicleName && Array.isArray(carList) && carList.length > 0) {
         const match = carList.find(
           (c) => c.vehicleName && c.vehicleName === parsed.vehicleName
@@ -184,6 +178,7 @@ const WidgetBookingInformation = ({
               vehicleName: match.vehicleName || parsed.vehicleName,
               image: match.image || parsed.image || IMAGES.profilecarimg,
               passengerSeats: match.passengerSeats || parsed.passengerSeats || 0,
+              maxSeats: match.passengerSeats || parsed.passengerSeats || 0,
               halfHourPrice: match.halfHourPrice || parsed.halfHourPrice || 0,
             })
           );
@@ -194,7 +189,6 @@ const WidgetBookingInformation = ({
     }
   }, [carList]);
 
-  // Restore previously chosen extra help (Self Load / 2 Men etc.) from DB-seeded pricing
   useEffect(() => {
     try {
       const rawPricing = localStorage.getItem("widgetPricing");
@@ -675,6 +669,7 @@ const WidgetBookingInformation = ({
     const vehiclePayload = {
       vehicleName: selectedCar.vehicleName,
       passengerSeats: selectedCar.passengerSeats || 0,
+      maxSeats: selectedCar.passengerSeats || 0,
       baseFare: primaryJourneyFare,
       totalFare: calculatedTotalPrice,
       extraHelp: selectedHelpOption ? {
@@ -830,6 +825,7 @@ const WidgetBookingInformation = ({
                       vehicleName: selectedCar.vehicleName,
                       image: selectedCar.image || IMAGES.dummyFile,
                       passengerSeats: selectedCar.passengerSeats || 0,
+                      maxSeats: selectedCar.passengerSeats || 0,
                       halfHourPrice: selectedCar.halfHourPrice
                     }));
                   }

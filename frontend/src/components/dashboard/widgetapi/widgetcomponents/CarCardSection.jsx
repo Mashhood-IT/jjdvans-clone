@@ -74,7 +74,6 @@ const CarCardSection = ({
           vehicleName = "Unnamed Vehicle",
           description = "",
           passengerSeats = 0,
-          checkinLuggage = 0,
           price: basePrice = 0,
         } = car;
 
@@ -118,7 +117,7 @@ const CarCardSection = ({
         return (
           <div
             key={_id}
-            className={`group rounded-2xl transition-all duration-300 overflow-hidden border-2 bg-(--white) flex flex-col ${isSelected
+            className={`group rounded-2xl transition-all duration-300 border-2 bg-(--white) flex flex-col ${isSelected
               ? "border-(--main-color) shadow-xl ring-1 ring-(--main-color)/20 scale-[1.02]"
               : "border-gray-100 hover:border-gray-200 hover:shadow-lg"
               }`}
@@ -170,7 +169,7 @@ const CarCardSection = ({
                 <h4 className="widget-label-tiny flex items-center gap-2">
                   <span className="w-4 h-px bg-gray-200" /> Who's helping with the move?
                 </h4>
-                <div className={`grid gap-2 ${helpOptions.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" : "grid-cols-2"}`} onClick={(e) => e.stopPropagation()}>
+                <div className={`grid gap-2 ${helpOptions.length === 1 ? "grid-cols-1 max-w-50 mx-auto" : "grid-cols-2"}`} onClick={(e) => e.stopPropagation()}>
                   {helpOptions.map((option) => (
                     <label
                       key={option.id}

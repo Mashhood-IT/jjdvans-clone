@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import SelectOption from "../../../constants/constantcomponents/SelectOption";
 import {
   useLazyGeocodeQuery,
   useLazySearchGooglePlacesQuery,

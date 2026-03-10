@@ -77,6 +77,7 @@ const BookingsList = () => {
 
     if (selectedVehicleTypes.length > 0) {
       const vehicleName = booking.vehicle?.vehicleName;
+      const maxSeats = booking?.vehicle?.maxSeats
       if (!vehicleName || !selectedVehicleTypes.includes(vehicleName)) {
         return false;
       }

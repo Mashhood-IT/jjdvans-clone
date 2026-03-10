@@ -4,14 +4,11 @@ const VehicleSchema = new mongoose.Schema({
     img: String,
     vehicleName: String,
     passenger: Number,
+    maxSeats: Number,
     description: String
 }, { _id: false })
 
-const ExtrasSchema = new mongoose.Schema({
-    extraTime: String,
 
-
-}, { _id: false })
 const PassengerSchema = new mongoose.Schema({
     name: String,
     email: String,

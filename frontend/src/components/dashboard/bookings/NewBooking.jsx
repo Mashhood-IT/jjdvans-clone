@@ -10,10 +10,8 @@ const NewBooking = ({ onClose, editBookingData }) => {
   const isEdit = !!editBookingData?._id;
   const [isSeededFromDb, setIsSeededFromDb] = useState(!isEdit);
 
-  const { data: existingBooking, isLoading: isBookingLoading } = useGetBookingByIdQuery(
-    editBookingData?._id,
-    { skip: !isEdit }
-  );
+  const { data: existingBooking, isLoading: isBookingLoading } =
+    useGetBookingByIdQuery(editBookingData?._id, { skip: !isEdit });
 
   useEffect(() => {
     if (!isEdit || !existingBooking || isSeededFromDb) return;
@@ -35,6 +33,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
       companyId: b.companyId || companyId,
       distanceText: b.distanceText || "",
       durationText: b.durationText || "",
+      passengerCount: b.passengerCount || "",
     };
     localStorage.setItem("bookingForm", JSON.stringify(bookingForm));
 
@@ -68,14 +67,12 @@ const NewBooking = ({ onClose, editBookingData }) => {
     };
     localStorage.setItem("widgetInventoryData", JSON.stringify(inventoryData));
 
-    // 4. widgetPricing — pricing breakdown
     const pricingData = {
       baseFare: b.fare || 0,
       extraHelp: { price: b.workersCharges || 0 },
     };
     localStorage.setItem("widgetPricing", JSON.stringify(pricingData));
 
-    // 5. widgetPaymentData — payment info
     const paymentData = {
       paymentMethod: b.paymentMethod || "Cash",
       passengerDetails: b.passenger || {},
@@ -85,7 +82,6 @@ const NewBooking = ({ onClose, editBookingData }) => {
     setIsSeededFromDb(true);
   }, [isEdit, existingBooking, companyId, isSeededFromDb]);
 
-  // Clean up localStorage on unmount
   useEffect(() => {
     return () => {
       if (isEdit) {
@@ -117,7 +113,6 @@ const NewBooking = ({ onClose, editBookingData }) => {
 
   const widgetUrl = `/widget-form?company=${companyId}&source=admin${isEdit ? `&isEdit=true&bookingId=${editBookingData._id}` : ""}`;
 
-  // Wait for booking data to be fetched and seeded into localStorage before rendering iframe
   if (isEdit && (isBookingLoading || !isSeededFromDb)) {
     return (
       <div className="w-full relative" style={{ minHeight: "600px" }}>
@@ -139,7 +134,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
         ref={iframeRef}
         src={widgetUrl}
         className="w-full border-none transition-all duration-300"
-        style={{ minHeight: "600px"}}
+        style={{ minHeight: "600px" }}
         title="Booking Widget"
         onLoad={() => setLoading(false)}
       />

@@ -70,11 +70,13 @@ export const getBookingById = async (req, res) => {
 
 export const updatBookingStatus = async (req, res) => {
   try {
-    const {id, status} = req.body;
-    const booking = await Booking.findByIdAndUpdate(id, status, {
-      new: true
-    })
-  if (!booking) {
+    const { id, status } = req.body;
+    const booking = await Booking.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true },
+    );
+    if (!booking) {
       return res.status(404).json({
         success: false,
         message: "Booking not found",
@@ -93,7 +95,7 @@ export const updatBookingStatus = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 export const updateBooking = async (req, res) => {
   try {
     const { id } = req.params;
