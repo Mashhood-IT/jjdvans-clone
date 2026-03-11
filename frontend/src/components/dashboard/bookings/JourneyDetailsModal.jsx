@@ -12,7 +12,8 @@ import { useGetBookingSettingQuery } from "../../../redux/api/bookingSettingsApi
 import { toast } from "react-toastify";
 
 const JourneyDetailsModal = ({ viewData = {} }) => {
-
+  const user = useSelector((state) => state.auth.user);
+  const companyLogo = user?.superadminCompanyLogo
   const [selectedType, setSelectedType] = useState("Send Customer");
   const [email, setEmail] = useState("");
   const pdfRef = useRef();
@@ -29,9 +30,12 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
 
   const [sendBookingEmail] = useSendBookingEmailMutation();
   const { data: settingsData } = useGetBookingSettingQuery();
-  const defaultCurrencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
-  const defaultCurrencyLabel = settingsData?.setting?.currency?.[0]?.label || "British Pound";
-  const currencyPolicy = settingsData?.setting?.currencyApplication || "New Bookings Only";
+  const defaultCurrencySymbol =
+    settingsData?.setting?.currency?.[0]?.symbol || "£";
+  const defaultCurrencyLabel =
+    settingsData?.setting?.currency?.[0]?.label || "British Pound";
+  const currencyPolicy =
+    settingsData?.setting?.currencyApplication || "New Bookings Only";
 
   const currencySymbol =
     currencyPolicy === "All Bookings"
@@ -61,7 +65,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
     } catch (err) {
       toast.error("Failed to send email");
     }
-
   };
 
   const downloadPDF = async () => {
@@ -117,8 +120,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
     const isMiles = textLower.includes("mile") || textLower.includes("mi");
 
     if (!isKm && !isMiles) return text;
-
-
   };
 
   const formatDateTime = (dateStr, hour, minute) => {
@@ -142,11 +143,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
 
   const pickupTime =
     viewData?.date && viewData?.hour !== undefined
-      ? formatDateTime(
-        viewData.date,
-        viewData.hour,
-        viewData.minute,
-      )
+      ? formatDateTime(viewData.date, viewData.hour, viewData.minute)
       : "N/A";
 
   const isCancelled = viewData?.status === "Cancelled";
@@ -193,8 +190,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-5 sm:gap-6">
-          <div className="space-y-2 bg-(--white) p-3 rounded-lg shadow-sm border border-(--lightest-gray)">
+ <div className="grid lg:grid-cols-2 gap-4">
+          <div className="space-y-1.5 bg-(--white) p-2.5 rounded-lg shadow-sm border border-(--lightest-gray)">
             <div className="text-sm">
               <strong className="text-(--dark-gray) font-semibold">
                 Booking ID:
@@ -218,8 +215,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               <span className="ml-2 text-(--dark-grey)">
                 {viewData?.createdAt
                   ? moment(viewData.createdAt)
-                    .tz(timezone)
-                    .format("DD/MM/YYYY HH:mm:ss")
+                      .tz(timezone)
+                      .format("DD/MM/YYYY HH:mm:ss")
                   : "N/A"}
               </span>
             </div>
@@ -262,7 +259,10 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                   const totalMins = viewData?.estimatedDuration || 0;
                   const hours = Math.floor(totalMins / 60);
                   const mins = totalMins % 60;
-                  const timeStr = hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''} ${mins > 0 ? mins + ' mins' : ''}` : `${mins} mins`;
+                  const timeStr =
+                    hours > 0
+                      ? `${hours} hour${hours > 1 ? "s" : ""} ${mins > 0 ? mins + " mins" : ""}`
+                      : `${mins} mins`;
                   return `${timeStr} (including extra time)`;
                 })()}
               </span>
@@ -290,27 +290,15 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     {viewData?.pickup || "N/A"}
                   </span>
                 </div>
-
-                {viewData?.pickupDoorNumber && (
-                  <div className="flex flex-col xs:flex-row xs:items-start gap-1">
-                    <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
-                      Door No.:
-                    </strong>
-                    <span className="text-(--dark-grey) text-xs">
-                      {viewData.pickupDoorNumber}
-                    </span>
-                  </div>
-                )}
-
                 <div className="flex flex-col xs:flex-row xs:items-start gap-1">
                   <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
                     Access / Floor:
                   </strong>
                   <span className="text-(--dark-grey) text-xs">
-                    {viewData?.pickupAccess || "STAIRS"} / Floor {viewData?.pickupFloorNo || 0}
+                    {viewData?.pickupAccess || "STAIRS"} / Floor{" "}
+                    {viewData?.pickupFloorNo || 0}
                   </span>
                 </div>
-
               </div>
             </div>
 
@@ -330,7 +318,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                   const drop = dropMap[idx];
                   if (!drop) return null;
 
-
                   return (
                     <div
                       key={idx}
@@ -338,7 +325,10 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     >
                       <div className="flex flex-col gap-1">
                         <strong className="text-(--dark-gray) text-xs">
-                          {idx === 0 ? "Main Drop Off" : `Additional Drop Off ${idx}`}:
+                          {idx === 0
+                            ? "Main Drop Off"
+                            : `Additional Drop Off ${idx}`}
+                          :
                         </strong>
                         <span className="text-(--dark-grey) text-xs wrap-break-word">
                           {drop}
@@ -351,7 +341,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                             Access / Floor:
                           </strong>
                           <span className="text-(--dark-grey) text-xs">
-                            {viewData?.dropoffAccess || "STAIRS"} / Floor {viewData?.dropoffFloorNo || 0}
+                            {viewData?.dropoffAccess || "STAIRS"} / Floor{" "}
+                            {viewData?.dropoffFloorNo || 0}
                           </span>
                         </div>
                       )}
@@ -362,11 +353,11 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                             Access / Floor:
                           </strong>
                           <span className="text-(--dark-grey) text-xs">
-                            {viewData[`additionalDropoff${idx}Access`]} / Floor {viewData[`additionalDropoff${idx}FloorNo`] || 0}
+                            {viewData[`additionalDropoff${idx}Access`]} / Floor{" "}
+                            {viewData[`additionalDropoff${idx}FloorNo`] || 0}
                           </span>
                         </div>
                       )}
-
                     </div>
                   );
                 })}
@@ -374,7 +365,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
             </div>
           </div>
 
-          <div className="space-y-5 bg-(--white) p-5 sm:p-6 rounded-lg shadow-sm border border-(--lightest-gray) ">
+          <div className="space-y-3 bg-(--white) p-3 rounded-lg shadow-sm border border-(--lightest-gray)">
             <div>
               <div className="text-sm">
                 <strong className="text-(--dark-grey) font-semibold block mb-2">
@@ -446,25 +437,36 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
           </div>
         </div>
 
-        <div className="bg-(--white) p-5 sm:p-6 rounded-lg shadow-sm border border-(--lightest-gray) ">
+        <div className="bg-(--white) p-3 rounded-lg shadow-sm border border-(--lightest-gray)">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <div className="flex flex-col gap-2 w-full max-w-md mx-auto">
-              {(viewData?.fare !== undefined || viewData?.additionalTimeFare || viewData?.workersCharges) && (
+              {(viewData?.fare !== undefined ||
+                viewData?.additionalTimeFare ||
+                viewData?.workersCharges) && (
                 <div className="space-y-1 border-b border-gray-200 pb-2 mb-2">
                   <div className="flex justify-between text-xs text-(--dark-grey)">
                     <span>Base Fare:</span>
-                    <span>{currencySymbol}{Number(viewData?.fare || 0).toFixed(2)}</span>
+                    <span>
+                      {currencySymbol}
+                      {Number(viewData?.fare || 0).toFixed(2)}
+                    </span>
                   </div>
                   {viewData?.additionalTimeFare > 0 && (
                     <div className="flex justify-between text-xs text-(--dark-grey)">
                       <span>Additional Time Charges:</span>
-                      <span>+{currencySymbol}{Number(viewData?.additionalTimeFare).toFixed(2)}</span>
+                      <span>
+                        +{currencySymbol}
+                        {Number(viewData?.additionalTimeFare).toFixed(2)}
+                      </span>
                     </div>
                   )}
                   {viewData?.workersCharges > 0 && (
                     <div className="flex justify-between text-xs text-(--dark-grey)">
                       <span>Extra Men Charges:</span>
-                      <span>+{currencySymbol}{Number(viewData?.workersCharges).toFixed(2)}</span>
+                      <span>
+                        +{currencySymbol}
+                        {Number(viewData?.workersCharges).toFixed(2)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -472,8 +474,10 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium flex items-center justify-center">
                 <span className="text-(--dark-gray)">Total Fare:</span>
                 <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
-                {currencySymbol}
-                  {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(2)}
+                  {currencySymbol}
+                  {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(
+                    2,
+                  )}
                 </span>
               </div>
             </div>
@@ -481,12 +485,10 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
         </div>
         <div className="text-center text-(--dark-grey) mt-3 text-xs sm:text-sm">
           <span className="font-medium">Approx. Distance:</span>
-          <span className="ml-2">
-            {viewData?.distanceText}
-          </span>
+          <span className="ml-2">{viewData?.distanceText}</span>
         </div>
       </div>
-      <PDFContent ref={pdfRef} viewData={viewData} companyData={companyData} />
+      <PDFContent ref={pdfRef} viewData={viewData} companyData={companyData} companyLogo={companyLogo} />
     </>
   );
 };

@@ -131,10 +131,6 @@ const WidgetBookingInformation = ({
     return total;
   };
 
-
-
-
-
   const extractPostcode = (address) => {
     const match = address?.match(/\b[A-Z]{1,2}\d{1,2}[A-Z]?\b/i);
     return match ? match[0].toUpperCase() : null;
@@ -145,6 +141,9 @@ const WidgetBookingInformation = ({
   const [matchedPostcodePrice, setMatchedPostcodePrice] = useState(null);
 
   useEffect(() => {
+      const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    
+    if (isEdit) return;
     const savedData = localStorage.getItem("bookingForm");
     const parsed = JSON.parse(savedData);
     setFormData((prev) => ({
@@ -152,7 +151,49 @@ const WidgetBookingInformation = ({
     }));
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
+    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        try {
+          const savedVehicle = localStorage.getItem("selectedVehicle");
+          if (!savedVehicle) return;
+
+          const parsed = JSON.parse(savedVehicle);
+
+          if (parsed.id) {
+            setSelectedCarId(parsed.id);
+            return;
+          }
+
+          if (parsed.vehicleName && Array.isArray(carList) && carList.length > 0) {
+            const match = carList.find(
+              (c) => c.vehicleName && c.vehicleName === parsed.vehicleName
+            );
+            if (match) {
+              setSelectedCarId(match._id);
+              localStorage.setItem(
+                "selectedVehicle",
+                JSON.stringify({
+                  ...parsed,
+                  id: match._id,
+                  vehicleName: match.vehicleName || parsed.vehicleName,
+                  image: match.image || parsed.image || IMAGES.profilecarimg,
+                  passengerSeats: match.passengerSeats || parsed.passengerSeats || 0,
+                  maxSeats: match.passengerSeats || parsed.passengerSeats || 0,
+                  halfHourPrice: match.halfHourPrice || parsed.halfHourPrice || 0,
+                })
+              );
+            }
+          }
+        } catch (err) {
+          console.error("Error restoring selectedVehicle from localStorage:", err);
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+    
+    // Normal mode - immediate load
     try {
       const savedVehicle = localStorage.getItem("selectedVehicle");
       if (!savedVehicle) return;
@@ -189,7 +230,31 @@ const WidgetBookingInformation = ({
     }
   }, [carList]);
 
-  useEffect(() => {
+useEffect(() => {
+    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    
+    // In edit mode, wait for parent to seed data
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        try {
+          const rawPricing = localStorage.getItem("widgetPricing");
+          if (!rawPricing) return;
+
+          const parsed = JSON.parse(rawPricing);
+          if (parsed.extraHelp && typeof parsed.extraHelp.price === "number") {
+            setExtraHelpPrice(parsed.extraHelp.price);
+            setSelectedHelpOption({
+              label: parsed.extraHelp.label || parsed.extraHelp.label === "" ? parsed.extraHelp.label : "Self Load",
+              price: parsed.extraHelp.price,
+            });
+          }
+        } catch (err) {
+          console.error("Error restoring widgetPricing from localStorage:", err);
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+    
     try {
       const rawPricing = localStorage.getItem("widgetPricing");
       if (!rawPricing) return;
@@ -331,180 +396,187 @@ const WidgetBookingInformation = ({
     return res?.location || null;
   };
 
-  useEffect(() => {
-    const storedForm = localStorage.getItem("bookingForm");
+useEffect(() => {
+    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    
+    const delay = isEdit ? 200 : 0;
+    
+    const timer = setTimeout(() => {
+      const storedForm = localStorage.getItem("bookingForm");
 
-    if (!storedForm) {
-      toast.error("No booking form found.");
-      return;
-    }
-
-    const data = JSON.parse(storedForm);
-    setFormData(data);
-
-    if (data.segments && Array.isArray(data.segments) && data.segments.length > 0) {
-      setSegmentBreakdown(data.segments);
-
-      const totalMiles = data.segments.reduce((sum, seg) => sum + seg.miles, 0);
-      setActualMiles(totalMiles);
-      setDistanceText(`${totalMiles.toFixed(2)} mi`);
-
-      const totalSeconds = data.segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
-      if (totalSeconds > 0) {
-        // Minimum time frame is always 2 hours (120 minutes)
-        const totalMinutes = Math.max(120, Math.round(totalSeconds / 60));
-        const hours = Math.floor(totalMinutes / 60);
-        const mins = totalMinutes % 60;
-        setDurationText(`${hours} hours ${mins} mins`);
-      } else {
-        setDurationText(data.segments.map((s) => s.durationText).join(" + "));
-      }
-    }
-
-
-    const calculateMultiSegmentDistance = async () => {
-      const allDropoffs = [
-        data.dropoff,
-        data.additionalDropoff1,
-        data.additionalDropoff2,
-        data.additionalDropoff3,
-        data.additionalDropoff4,
-      ].filter(d => {
-        if (!d || !d.trim()) return false;
-        return d.includes(' - ') || d.includes(',') || d.split(' ').length >= 3;
-      });
-
-      const hasMultipleDropoffs = allDropoffs.length > 1;
-
-      const origin = data.pickup?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
-
-      if (!origin) {
-        toast.error("Invalid pickup location");
+      if (!storedForm) {
+        toast.error("No booking form found.");
         return;
       }
 
-      try {
-        let totalMiles = 0;
-        let segments = [];
+      const data = JSON.parse(storedForm);
+      setFormData(data);
 
-        if (hasMultipleDropoffs) {
+      if (data.segments && Array.isArray(data.segments) && data.segments.length > 0) {
+        setSegmentBreakdown(data.segments);
 
-          let currentOrigin = origin;
-          let currentOriginAddress = data.pickup;
+        const totalMiles = data.segments.reduce((sum, seg) => sum + seg.miles, 0);
+        setActualMiles(totalMiles);
+        setDistanceText(`${totalMiles.toFixed(2)} mi`);
 
-          for (let i = 0; i < allDropoffs.length; i++) {
-
-            const destinationAddress = allDropoffs[i];
-            const destination = destinationAddress.replace("Custom Input - ", "").split(" - ").pop()?.trim();
-
-            const res = await triggerDistance({ origin: currentOrigin, destination, companyId }).unwrap();
-
-            if (!res?.distanceText) {
-              console.error(`Failed to get distance for segment ${i + 1}`);
-              continue;
-            }
-
-            let segmentMiles = 0;
-            if (res.distanceText.includes("km")) {
-              const km = parseFloat(res.distanceText.replace("km", "").trim());
-              segmentMiles = parseFloat((km * 0.621371).toFixed(2));
-            } else if (res.distanceText.includes("mi")) {
-              segmentMiles = parseFloat(res.distanceText.replace("mi", "").trim());
-            }
-
-            segments.push({
-              segmentNumber: i + 1,
-              from: currentOriginAddress,
-              to: destinationAddress,
-              miles: segmentMiles,
-              distanceText: res.distanceText,
-              durationText: res.durationText,
-              durationValue: res.durationValue,
-            });
-
-            totalMiles += segmentMiles;
-
-            currentOrigin = destination;
-            currentOriginAddress = destinationAddress;
-          }
-
-          setSegmentBreakdown(segments);
-          setActualMiles(totalMiles);
-          setDistanceText(`${totalMiles.toFixed(2)} mi`);
-
-          const totalSeconds = segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
+        const totalSeconds = data.segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
+        if (totalSeconds > 0) {
           const totalMinutes = Math.max(120, Math.round(totalSeconds / 60));
           const hours = Math.floor(totalMinutes / 60);
           const mins = totalMinutes % 60;
           setDurationText(`${hours} hours ${mins} mins`);
-
-          const updatedData = { ...data, segments };
-          localStorage.setItem("bookingForm", JSON.stringify(updatedData));
-
         } else {
-          const destination = allDropoffs[0]?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
-
-          if (!destination) {
-            toast.error("Invalid dropoff location");
-            return;
-          }
-
-          const res = await triggerDistance({ origin, destination, companyId }).unwrap();
-
-          if (res?.distanceText?.includes("km")) {
-            const km = parseFloat(res.distanceText.replace("km", "").trim());
-            totalMiles = parseFloat((km * 0.621371).toFixed(2));
-            setDistanceText(`${totalMiles} miles`);
-            setActualMiles(totalMiles);
-          } else if (res?.distanceText?.includes("mi")) {
-            totalMiles = parseFloat(res.distanceText.replace("mi", "").trim());
-            setDistanceText(`${totalMiles} miles`);
-            setActualMiles(totalMiles);
-          }
-
-          const totalMinutes = Math.max(120, Math.round((res?.durationValue || 0) / 60));
-          const hours = Math.floor(totalMinutes / 60);
-          const mins = totalMinutes % 60;
-          setDurationText(`${hours} hours ${mins} mins`);
-
-          const singleSegment = [{
-            segmentNumber: 1,
-            from: data.pickup,
-            to: allDropoffs[0],
-            miles: totalMiles,
-            distanceText: res?.distanceText || "",
-            durationText: res?.durationText || "",
-            durationValue: res?.durationValue || 0,
-          }];
-          setSegmentBreakdown(singleSegment);
-
-          const updatedData = { ...data, segments: singleSegment };
-          localStorage.setItem("bookingForm", JSON.stringify(updatedData));
+          setDurationText(data.segments.map((s) => s.durationText).join(" + "));
         }
+      }
 
-        const [pickupCoord, dropoffCoord] = await Promise.all([
-          getLatLng(origin),
-          getLatLng(allDropoffs[allDropoffs.length - 1]?.replace("Custom Input - ", "").split(" - ").pop()?.trim())
-        ]);
 
-        setFormData({
-          ...data,
-          pickupCoordinates: pickupCoord ? [pickupCoord] : [],
-          dropoffCoordinates: dropoffCoord ? [dropoffCoord] : [],
+      const calculateMultiSegmentDistance = async () => {
+        const allDropoffs = [
+          data.dropoff,
+          data.additionalDropoff1,
+          data.additionalDropoff2,
+          data.additionalDropoff3,
+          data.additionalDropoff4,
+        ].filter(d => {
+          if (!d || !d.trim()) return false;
+          return d.includes(' - ') || d.includes(',') || d.split(' ').length >= 3;
         });
 
-      } catch (err) {
-        console.error('Distance calculation error:', err);
-        toast.warn("Distance calculation failed.");
-      }
-    };
+        const hasMultipleDropoffs = allDropoffs.length > 1;
 
-    calculateMultiSegmentDistance();
+        const origin = data.pickup?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
 
-    const pickupCode = extractPostcode(data.pickup);
-    const dropoffCode = extractPostcode(data.dropoff);
-    setPickupPostcode(pickupCode);
-    setDropoffPostcode(dropoffCode);
+        if (!origin) {
+          toast.error("Invalid pickup location");
+          return;
+        }
+
+        try {
+          let totalMiles = 0;
+          let segments = [];
+
+          if (hasMultipleDropoffs) {
+
+            let currentOrigin = origin;
+            let currentOriginAddress = data.pickup;
+
+            for (let i = 0; i < allDropoffs.length; i++) {
+
+              const destinationAddress = allDropoffs[i];
+              const destination = destinationAddress.replace("Custom Input - ", "").split(" - ").pop()?.trim();
+
+              const res = await triggerDistance({ origin: currentOrigin, destination, companyId }).unwrap();
+
+              if (!res?.distanceText) {
+                console.error(`Failed to get distance for segment ${i + 1}`);
+                continue;
+              }
+
+              let segmentMiles = 0;
+              if (res.distanceText.includes("km")) {
+                const km = parseFloat(res.distanceText.replace("km", "").trim());
+                segmentMiles = parseFloat((km * 0.621371).toFixed(2));
+              } else if (res.distanceText.includes("mi")) {
+                segmentMiles = parseFloat(res.distanceText.replace("mi", "").trim());
+              }
+
+              segments.push({
+                segmentNumber: i + 1,
+                from: currentOriginAddress,
+                to: destinationAddress,
+                miles: segmentMiles,
+                distanceText: res.distanceText,
+                durationText: res.durationText,
+                durationValue: res.durationValue,
+              });
+
+              totalMiles += segmentMiles;
+
+              currentOrigin = destination;
+              currentOriginAddress = destinationAddress;
+            }
+
+            setSegmentBreakdown(segments);
+            setActualMiles(totalMiles);
+            setDistanceText(`${totalMiles.toFixed(2)} mi`);
+
+            const totalSeconds = segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
+            const totalMinutes = Math.max(120, Math.round(totalSeconds / 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            setDurationText(`${hours} hours ${mins} mins`);
+
+            const updatedData = { ...data, segments };
+            localStorage.setItem("bookingForm", JSON.stringify(updatedData));
+
+          } else {
+            const destination = allDropoffs[0]?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
+
+            if (!destination) {
+              toast.error("Invalid dropoff location");
+              return;
+            }
+
+            const res = await triggerDistance({ origin, destination, companyId }).unwrap();
+
+            if (res?.distanceText?.includes("km")) {
+              const km = parseFloat(res.distanceText.replace("km", "").trim());
+              totalMiles = parseFloat((km * 0.621371).toFixed(2));
+              setDistanceText(`${totalMiles} miles`);
+              setActualMiles(totalMiles);
+            } else if (res?.distanceText?.includes("mi")) {
+              totalMiles = parseFloat(res.distanceText.replace("mi", "").trim());
+              setDistanceText(`${totalMiles} miles`);
+              setActualMiles(totalMiles);
+            }
+
+            const totalMinutes = Math.max(120, Math.round((res?.durationValue || 0) / 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            setDurationText(`${hours} hours ${mins} mins`);
+
+            const singleSegment = [{
+              segmentNumber: 1,
+              from: data.pickup,
+              to: allDropoffs[0],
+              miles: totalMiles,
+              distanceText: res?.distanceText || "",
+              durationText: res?.durationText || "",
+              durationValue: res?.durationValue || 0,
+            }];
+            setSegmentBreakdown(singleSegment);
+
+            const updatedData = { ...data, segments: singleSegment };
+            localStorage.setItem("bookingForm", JSON.stringify(updatedData));
+          }
+
+          const [pickupCoord, dropoffCoord] = await Promise.all([
+            getLatLng(origin),
+            getLatLng(allDropoffs[allDropoffs.length - 1]?.replace("Custom Input - ", "").split(" - ").pop()?.trim())
+          ]);
+
+          setFormData({
+            ...data,
+            pickupCoordinates: pickupCoord ? [pickupCoord] : [],
+            dropoffCoordinates: dropoffCoord ? [dropoffCoord] : [],
+          });
+
+        } catch (err) {
+          console.error('Distance calculation error:', err);
+          toast.warn("Distance calculation failed.");
+        }
+      };
+
+      calculateMultiSegmentDistance();
+
+      const pickupCode = extractPostcode(data.pickup);
+      const dropoffCode = extractPostcode(data.dropoff);
+      setPickupPostcode(pickupCode);
+      setDropoffPostcode(dropoffCode);
+    }, delay);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -536,6 +608,9 @@ const WidgetBookingInformation = ({
   }, [pickupPostcode, dropoffPostcode, postcodePrices, formData]);
 
   useEffect(() => {
+      const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    
+    if (isEdit) return;
     try {
       const savedData = localStorage.getItem("bookingForm");
       if (savedData) {

@@ -151,7 +151,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
         <div
           className={classNames(
             isOpen ? "w-64" : "w-16",
-            isMobileView ? "rounded-none" : "rounded-2xl",
+            isMobileView && "rounded-none",
             "flex flex-col h-full bg-(--navy-blue) relative border-r border-(--light-gray) overflow-hidden",
           )}
         >

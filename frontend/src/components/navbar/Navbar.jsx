@@ -101,7 +101,7 @@ const Navbar = ({ toggleSidebar }) => {
       onPointerDown={(e) => e.stopPropagation()}
       onMouseEnter={!isMobile ? handleMouseEnterTooltip : undefined}
       onMouseLeave={!isMobile ? handleMouseLeave : undefined}
-      className="absolute right-0 mt-2 w-48 bg-(--white) text-(--dark-grey) rounded-lg shadow-lg z-999"
+      className="absolute right-0 mt-2 w-48 bg-(--white) text-(--dark-grey) z-999"
     >
       <div className="border-b">
         <div className="ps-4 pt-4 flex items-center space-x-3">
@@ -160,7 +160,7 @@ const Navbar = ({ toggleSidebar }) => {
 
   return (
     <>
-      <nav className="bg-(--navy-blue) text-(--white) md:rounded-2xl rounded-none z-20 relative p-3 sm:p-4 lg:p-[17.2px] flex flex-col-reverse md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
+      <nav className="bg-(--navy-blue) text-(--white) z-20 relative p-3 sm:p-4 lg:p-[17.2px] flex flex-col-reverse md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
         <div className="flex items-center justify-between w-full md:w-auto shrink-0">
           <div className="flex items-center space-x-2">
             <button

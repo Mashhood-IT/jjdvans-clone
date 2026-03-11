@@ -138,8 +138,8 @@ const CarCardSection = ({
               </div>
             </div>
 
-            <div className="p-4 flex flex-col flex-grow">
-              <div className="flex justify-between items-start mb-2 min-h-[50px]">
+            <div className="p-4 flex flex-col grow">
+              <div className="flex justify-between items-start mb-2 min-h-12.5">
                 <div>
                   <h3 className="widget-title text-gray-900">
                     {vehicleName}

@@ -13,8 +13,6 @@ import WidgetInventory from "./WidgetInventory";
 import WidgetBookingDetails from "./WidgetBookingDetails";
 import Icons from "../../../assets/icons";
 import BreadCrumbs from "./widgetcomponents/BreadCrumbs";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const scrollToTop = () => {
   window.scrollTo({
@@ -57,7 +55,7 @@ const WidgetMain = () => {
   }, []);
 
   useEffect(() => {
-    scrollToTop()
+    scrollToTop();
   }, [location.pathname]);
 
   useEffect(() => {
@@ -96,6 +94,9 @@ const WidgetMain = () => {
   }, [navigate]);
 
   useEffect(() => {
+    if (formData.isEdit) {
+      return;
+    }
     try {
       const bookingRaw = localStorage.getItem("bookingForm");
       const pricingRaw = localStorage.getItem("widgetPricing");
@@ -369,13 +370,6 @@ const WidgetMain = () => {
   }
   return (
     <div className={`w-full h-full bg-transparent py-4 md:py-8`}>
-      <ToastContainer
-        position="top-center"
-        autoClose={2000}
-        newestOnTop
-        limit={1}
-        style={{ position: "fixed", top: "20px", zIndex: 999999 }}
-      />
       <div>
         <BreadCrumbs />
         <Routes>

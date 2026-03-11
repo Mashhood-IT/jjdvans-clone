@@ -47,19 +47,6 @@ const WidgetSuccess = ({ formData, companyId }) => {
               Return to Home
             </button>
           </Link>
-          <button
-            onClick={() =>
-              navigate("/add-customer", {
-                state: {
-                  email: formData?.payment?.passengerDetails?.email || "",
-                  companyId,
-                },
-              })
-            }
-            className="px-6 py-3 text-(--white) bg-(--main-color) hover:bg-(--dark-sky) rounded-full widget-button-text transition"
-          >
-            View Your Portal
-          </button>
         </div>
       </div>
     </div>

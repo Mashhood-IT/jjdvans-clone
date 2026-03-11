@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetBookingByIdQuery } from "../../../redux/api/bookingApi";
+import { useLoading } from "../../common/LoadingProvider";
 
 const NewBooking = ({ onClose, editBookingData }) => {
   const user = useSelector((state) => state.auth.user);
   const companyId = user?.companyId;
   const iframeRef = useRef(null);
+  const { showLoading, hideLoading } = useLoading();
+
   const [loading, setLoading] = useState(true);
   const isEdit = !!editBookingData?._id;
   const [isSeededFromDb, setIsSeededFromDb] = useState(!isEdit);
@@ -15,6 +18,11 @@ const NewBooking = ({ onClose, editBookingData }) => {
 
   useEffect(() => {
     if (!isEdit || !existingBooking || isSeededFromDb) return;
+    localStorage.removeItem("bookingForm");
+    localStorage.removeItem("selectedVehicle");
+    localStorage.removeItem("widgetInventoryData");
+    localStorage.removeItem("widgetPricing");
+    localStorage.removeItem("widgetPaymentData");
 
     const b = existingBooking;
 
@@ -83,6 +91,16 @@ const NewBooking = ({ onClose, editBookingData }) => {
   }, [isEdit, existingBooking, companyId, isSeededFromDb]);
 
   useEffect(() => {
+    if (isEdit && (isBookingLoading || !isSeededFromDb)) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+
+    return () => hideLoading();
+  }, [isEdit, isBookingLoading, isSeededFromDb, showLoading, hideLoading]);
+
+  useEffect(() => {
     return () => {
       if (isEdit) {
         localStorage.removeItem("bookingForm");
@@ -113,23 +131,8 @@ const NewBooking = ({ onClose, editBookingData }) => {
 
   const widgetUrl = `/widget-form?company=${companyId}&source=admin${isEdit ? `&isEdit=true&bookingId=${editBookingData._id}` : ""}`;
 
-  if (isEdit && (isBookingLoading || !isSeededFromDb)) {
-    return (
-      <div className="w-full relative" style={{ minHeight: "600px" }}>
-        <div className="absolute inset-0 flex items-center justify-center bg-(--white) z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-(--white) z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      )}
       <iframe
         ref={iframeRef}
         src={widgetUrl}

@@ -27,7 +27,34 @@ const WidgetBooking = ({
     minute: "",
   });
 
-  useEffect(() => {
+useEffect(() => {
+    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    
+    if (isEdit) {
+      const timer = setTimeout(() => {
+        const savedData = localStorage.getItem("bookingForm");
+        if (savedData) {
+          const parsed = JSON.parse(savedData);
+          setFormData((prev) => ({
+            ...prev,
+            ...parsed,
+          }));
+          const restoredDropOffs = [
+            parsed.dropoff,
+            parsed.additionalDropoff1,
+            parsed.additionalDropoff2,
+            parsed.additionalDropoff3,
+            parsed.additionalDropoff4,
+          ].filter(Boolean);
+          if (restoredDropOffs.length > 0) {
+            setDropOffs(restoredDropOffs);
+          }
+        }
+      }, 100); 
+      
+      return () => clearTimeout(timer);
+    }
+    
     const savedData = localStorage.getItem("bookingForm");
     if (savedData) {
       const parsed = JSON.parse(savedData);

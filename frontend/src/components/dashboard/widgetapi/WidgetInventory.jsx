@@ -44,86 +44,94 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
     document.body.scrollTop = 0;
   }, []);
 
-  useEffect(() => {
-    const savedInventory = localStorage.getItem("widgetInventoryData");
-    if (savedInventory) {
-      try {
-        const inv = JSON.parse(savedInventory);
-        if (inv.pickupFloor !== undefined) setPickupFloor(inv.pickupFloor);
-        if (inv.dropoffFloor !== undefined) setDropoffFloor(inv.dropoffFloor);
-        if (inv.pickupAccess) setPickupAccess(inv.pickupAccess);
-        if (inv.dropoffAccess) setDropoffAccess(inv.dropoffAccess);
-        if (inv.estimatedHours !== undefined)
-          setEstimatedHours(inv.estimatedHours);
-        if (inv.estimatedMinutes !== undefined)
-          setEstimatedMinutes(inv.estimatedMinutes);
-        if (inv.ridingAlong !== undefined) setRidingAlong(inv.ridingAlong);
-        if (inv.passengerCount !== undefined)
-          setPassengerCount(inv.passengerCount);
-        if (inv.items && Array.isArray(inv.items)) setItems(inv.items);
-        if (inv.initialGoogleMinutes !== undefined)
-          setInitialGoogleMinutes(inv.initialGoogleMinutes);
-        if (inv.floorAccess)
-          setFloorAccess((prev) => ({ ...prev, ...inv.floorAccess }));
-        return;
-      } catch (err) {
-        console.error("Error parsing widgetInventoryData:", err);
-      }
-    }
-
-    const bookingForm = localStorage.getItem("bookingForm");
-    if (bookingForm) {
-      try {
-        const data = JSON.parse(bookingForm);
-        if (data.pickup) setPrimaryPickupAddress(data.pickup);
-        if (data.dropoff) setPrimaryDropoffAddress(data.dropoff);
-        let totalMinutes = 0;
-
-        if (
-          data.segments &&
-          Array.isArray(data.segments) &&
-          data.segments.length > 0
-        ) {
-          const combinedDuration = data.segments
-            .map((s) => s.durationText)
-            .join(" + ");
-          setGoogleDurationText(combinedDuration);
-
-          data.segments.forEach((seg) => {
-            totalMinutes += parseDurationToMinutes(seg.durationText);
-          });
-
-          const totalMiles = data.segments.reduce(
-            (sum, seg) => sum + (seg.miles || 0),
-            0,
-          );
-          setGoogleDistanceText(`${totalMiles.toFixed(1)} mi`);
-        } else if (data.durationText) {
-          setGoogleDurationText(data.durationText);
-          totalMinutes = parseDurationToMinutes(data.durationText);
+useEffect(() => {
+    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    
+    const delay = isEdit ? 200 : 0;
+    
+    const timer = setTimeout(() => {
+      const savedInventory = localStorage.getItem("widgetInventoryData");
+      if (savedInventory) {
+        try {
+          const inv = JSON.parse(savedInventory);
+          if (inv.pickupFloor !== undefined) setPickupFloor(inv.pickupFloor);
+          if (inv.dropoffFloor !== undefined) setDropoffFloor(inv.dropoffFloor);
+          if (inv.pickupAccess) setPickupAccess(inv.pickupAccess);
+          if (inv.dropoffAccess) setDropoffAccess(inv.dropoffAccess);
+          if (inv.estimatedHours !== undefined)
+            setEstimatedHours(inv.estimatedHours);
+          if (inv.estimatedMinutes !== undefined)
+            setEstimatedMinutes(inv.estimatedMinutes);
+          if (inv.ridingAlong !== undefined) setRidingAlong(inv.ridingAlong);
+          if (inv.passengerCount !== undefined)
+            setPassengerCount(inv.passengerCount);
+          if (inv.items && Array.isArray(inv.items)) setItems(inv.items);
+          if (inv.initialGoogleMinutes !== undefined)
+            setInitialGoogleMinutes(inv.initialGoogleMinutes);
+          if (inv.floorAccess)
+            setFloorAccess((prev) => ({ ...prev, ...inv.floorAccess }));
+          return;
+        } catch (err) {
+          console.error("Error parsing widgetInventoryData:", err);
         }
-
-        if (totalMinutes > 0) {
-          const rawGoogleMinutes = totalMinutes;
-          setInitialGoogleMinutes(rawGoogleMinutes);
-
-          totalMinutes = Math.max(120, Math.ceil(totalMinutes / 30) * 30);
-
-          setEstimatedHours(Math.floor(totalMinutes / 60));
-          setEstimatedMinutes(totalMinutes % 60);
-        }
-
-        const ad = [
-          { id: 1, address: data.additionalDropoff1 },
-          { id: 2, address: data.additionalDropoff2 },
-          { id: 3, address: data.additionalDropoff3 },
-          { id: 4, address: data.additionalDropoff4 },
-        ].filter((d) => d.address && d.address.trim() !== "");
-        setAdditionalDropoffs(ad);
-      } catch (err) {
-        console.error("Error parsing bookingForm for duration:", err);
       }
-    }
+
+      const bookingForm = localStorage.getItem("bookingForm");
+      if (bookingForm) {
+        try {
+          const data = JSON.parse(bookingForm);
+          if (data.pickup) setPrimaryPickupAddress(data.pickup);
+          if (data.dropoff) setPrimaryDropoffAddress(data.dropoff);
+          let totalMinutes = 0;
+
+          if (
+            data.segments &&
+            Array.isArray(data.segments) &&
+            data.segments.length > 0
+          ) {
+            const combinedDuration = data.segments
+              .map((s) => s.durationText)
+              .join(" + ");
+            setGoogleDurationText(combinedDuration);
+
+            data.segments.forEach((seg) => {
+              totalMinutes += parseDurationToMinutes(seg.durationText);
+            });
+
+            const totalMiles = data.segments.reduce(
+              (sum, seg) => sum + (seg.miles || 0),
+              0,
+            );
+            setGoogleDistanceText(`${totalMiles.toFixed(1)} mi`);
+          } else if (data.durationText) {
+            setGoogleDurationText(data.durationText);
+            totalMinutes = parseDurationToMinutes(data.durationText);
+          }
+
+          if (totalMinutes > 0) {
+            const rawGoogleMinutes = totalMinutes;
+            setInitialGoogleMinutes(rawGoogleMinutes);
+
+            totalMinutes = Math.max(120, Math.ceil(totalMinutes / 30) * 30);
+
+            setEstimatedHours(Math.floor(totalMinutes / 60));
+            setEstimatedMinutes(totalMinutes % 60);
+          }
+
+          const ad = [
+            { id: 1, address: data.additionalDropoff1 },
+            { id: 2, address: data.additionalDropoff2 },
+            { id: 3, address: data.additionalDropoff3 },
+            { id: 4, address: data.additionalDropoff4 },
+          ].filter((d) => d.address && d.address.trim() !== "");
+          setAdditionalDropoffs(ad);
+        } catch (err) {
+          console.error("Error parsing bookingForm for duration:", err);
+        }
+      }
+    }, delay);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {

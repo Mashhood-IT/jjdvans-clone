@@ -1,12 +1,22 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import CustomTable from "../../constants/constantcomponents/CustomTable";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
+import { useLoading } from "../../common/LoadingProvider";
 
 const CustomersList = () => {
+  const {showLoading, hideLoading} = useLoading()
   const { data: bookings = [], isLoading, isError } = useGetAllBookingsQuery();
   const [selectedRow, setSelectedRow] = useState(null);
 
+  useEffect(()=> {
+    if (isLoading) {
+      showLoading()
+    } else {
+      hideLoading()
+    }
+  },[showLoading, hideLoading, isLoading])
+  
   const customersData = useMemo(() => {
     return bookings
       .filter((b) => b.passenger)
@@ -26,7 +36,6 @@ const CustomersList = () => {
     { key: "phone", label: "Phone" },
   ];
 
-  if (isLoading) return <div>Loading customers...</div>;
   if (isError) return <div>Failed to load customers</div>;
 
   return (

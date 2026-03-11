@@ -19,14 +19,14 @@ const DashboardLayout = () => {
         setActiveSubTabs={setActiveSubTabs}
       />
       <div className="h-screen flex flex-col overflow-hidden bg-(--lightest-gray)">
-        <div className="shrink-0 md:px-4 md:py-4">
+        <div>
           <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         </div>
 
-        <div className="flex flex-1 min-h-0 md:px-4 md:pb-4">
+        <div className="flex flex-1 min-h-0">
           <div
-            className={`shrink-0 hidden md:block transition-all duration-300 ${isSidebarOpen ? "md:mr-5" : "md:mr-0"}`}
-            style={{ width: isSidebarOpen ? undefined : "80px", overflow: isSidebarOpen ? undefined : "hidden" }}
+            className={`shrink-0 hidden md:block transition-all duration-300`}
+            style={{ width: isSidebarOpen ? undefined : "60px", overflow: isSidebarOpen ? undefined : "hidden" }}
           >
             <Sidebar
               activeSubTabs={activeSubTabs}
@@ -36,7 +36,7 @@ const DashboardLayout = () => {
           </div>
 
           <div className="flex-1 relative min-w-0 flex flex-col">
-            <div className="flex-1 flex flex-col bg-(--white) md:rounded-2xl rounded-none shadow-lg border border-(--lightest-gray) overflow-hidden">
+            <div className="flex-1 flex flex-col bg-(--white) border border-(--lightest-gray) overflow-hidden">
               <div className="flex-1 overflow-y-auto">
                 <div
                   className="md:p-6 p-3"
