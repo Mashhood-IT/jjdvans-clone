@@ -95,7 +95,7 @@ const BookingSchema = new mongoose.Schema({
     passenger: PassengerSchema,
     status: {
         type: String,
-        enum: ["New","Completed"],
+        enum: ["New","Completed","Deleted"],
         default: "New"
     },
 

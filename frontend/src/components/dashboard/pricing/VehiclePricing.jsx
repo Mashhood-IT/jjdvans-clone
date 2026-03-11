@@ -129,7 +129,6 @@ const VehiclePricing = () => {
       }));
     formData.append("extraHelp", JSON.stringify(cleanedHelp));
 
-    console.log(formData)
     try {
       if (selectedAccount._id) {
         await updateVehicle({ id: selectedAccount._id, formData });

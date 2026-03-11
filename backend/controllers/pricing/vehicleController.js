@@ -1,46 +1,83 @@
 import Vehicle from "../../models/pricing/Vehicle.js";
 
 export const createVehicle = async (req, res) => {
-    try {
-        const {
-            vehicleName,
-            passengerSeats,
-            halfHourPrice,
-            description,
-            priority,
-            priceType,
-            percentageIncrease,
-        } = req.body;
+  try {
+    const {
+      vehicleName,
+      passengerSeats,
+      halfHourPrice,
+      description,
+      priority,
+      priceType,
+      percentageIncrease,
+      slabs: frontendSlabs,
+    } = req.body;
 
-        const slabs = req.body.slabs ? JSON.parse(req.body.slabs) : [];
-        const extraHelp = req.body.extraHelp ? JSON.parse(req.body.extraHelp) : [];
-        let image = req.body.existingImage || "";
-        if (req.file) {
-            image = req.file.path;
-        }
+    const extraHelp = req.body.extraHelp ? JSON.parse(req.body.extraHelp) : [];
+    let image = req.body.existingImage || "";
+    if (req.file) image = req.file.path;
 
-        const vehicle = new Vehicle({
-            vehicleName,
-            passengerSeats: Number(passengerSeats || 0),
-            halfHourPrice,
-            description,
-            priority: Number(priority || 0),
-            priceType: priceType || "Percentage",
-            percentageIncrease: Number(percentageIncrease || 0),
-            slabs,
-            extraHelp,
-            image,
+    const percent = Number(percentageIncrease || 0);
+
+    let slabs = [];
+
+    if (!frontendSlabs || JSON.parse(frontendSlabs).length === 0) {
+      const lastVehicle = await Vehicle.findOne().sort({ createdAt: -1 });
+
+      if (lastVehicle && lastVehicle.slabs.length) {
+        slabs = lastVehicle.slabs.map((slab) => {
+          const distance = slab.to - slab.from;
+
+          const basePerUnit =
+            distance && lastVehicle.percentageIncrease
+              ? slab.price / distance / (1 + lastVehicle.percentageIncrease / 100)
+              : distance
+              ? slab.price / distance
+              : 0;
+
+          const newPrice = basePerUnit * distance * (1 + percent / 100);
+
+          return {
+            from: slab.from,
+            to: slab.to,
+            price: parseFloat(newPrice.toFixed(2)),
+          };
         });
-
-        const savedVehicle = await vehicle.save();
-        res.status(201).json({
-            message: "Vehicle created successfully",
-            data: savedVehicle,
-        });
-    } catch (error) {
-        console.error("Create vehicle error:", error);
-        res.status(500).json({ message: "Failed to create vehicle", error: error.message });
+      }
+    } else {
+      slabs = JSON.parse(frontendSlabs).map((s) => ({
+        from: Number(s.from),
+        to: Number(s.to),
+        price: Number(s.price),
+      }));
     }
+
+    const vehicle = new Vehicle({
+      vehicleName,
+      passengerSeats: Number(passengerSeats || 0),
+      halfHourPrice,
+      description,
+      priority: Number(priority || 0),
+      priceType: priceType || "Percentage",
+      percentageIncrease: percent,
+      slabs,
+      extraHelp,
+      image,
+    });
+
+    const savedVehicle = await vehicle.save();
+
+    res.status(201).json({
+      message: "Vehicle created successfully",
+      data: savedVehicle,
+    });
+  } catch (error) {
+    console.error("Create vehicle error:", error);
+    res.status(500).json({
+      message: "Failed to create vehicle",
+      error: error.message,
+    });
+  }
 };
 
 export const getAllVehicles = async (req, res) => {

@@ -76,33 +76,67 @@ const BookingTableRenderer = ({
             row[key] = item?.pickup || "";
             break;
           case "status":
-            row[key] = (
-              <SelectOption
-                options={[
-                  { value: "New", label: "New" },
-                  { value: "Completed", label: "Completed" },
-                ]}
-                value={item.status || "New"}
-                onChange={(newStatus) => {
-                  const status =
-                    newStatus?.value || newStatus?.target?.value || newStatus;
+            if (item.status === "Deleted") {
+              row[key] = (
+                <div className="flex gap-2">
+                  <button
+                    className="btn btn-success"
+                    onClick={() => {
+                      updateBookingStatus({ id: item._id, status: "New" })
+                        .unwrap()
+                        .then(() => toast.success("Booking Restored"))
+                        .catch(() => toast.error("Failed to restore booking"));
+                    }}
+                  >
+                    Restore
+                  </button>
 
-                  if (status === "Completed") {
-                    setPendingStatusUpdate({ id: item._id, status });
-                    setShowConfirmModal(true);
-                  } else {
-                    updateBookingStatus({ id: item._id, status })
-                      .unwrap()
-                      .then(() =>
-                        toast.success("Booking Status updated successfully"),
-                      )
-                      .catch(() =>
-                        toast.error("Error updating booking status"),
-                      );
-                  }
-                }}
-              />
-            );
+                  <button
+                    className="btn btn-edit"
+                    onClick={() => {
+                      setSelectedDeleteId(item._id);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            } else {
+              row[key] = (
+                <SelectOption
+                  options={[
+                    { value: "New", label: "New" },
+                    { value: "Completed", label: "Completed" },
+                    { value: "Deleted", label: "Deleted" },
+                  ]}
+                  value={item.status || "New"}
+                  onChange={(newStatus) => {
+                    const status =
+                      newStatus?.value || newStatus?.target?.value || newStatus;
+
+                    if (status === "Completed") {
+                      setPendingStatusUpdate({ id: item._id, status });
+                      setShowConfirmModal(true);
+                    } else if (status === "Deleted") {
+                      updateBookingStatus({ id: item._id, status: "Deleted" })
+                        .unwrap()
+                        .then(() => toast.success("Booking moved to Deleted"))
+                        .catch(() => toast.error("Error updating booking"));
+                    } else {
+                      updateBookingStatus({ id: item._id, status })
+                        .unwrap()
+                        .then(() =>
+                          toast.success("Booking Status updated successfully"),
+                        )
+                        .catch(() =>
+                          toast.error("Error updating booking status"),
+                        );
+                    }
+                  }}
+                />
+              );
+            }
             break;
           case "dropoff":
             row[key] = item?.dropoff || "";
@@ -236,8 +270,12 @@ const BookingTableRenderer = ({
                                   setEditBookingData(editedData);
                                   setShowEditModal(true);
                                 } else if (action === "Delete") {
-                                  setSelectedDeleteId(item._id);
-                                  setShowDeleteModal(true);
+                                  await updateBookingStatus({
+                                    id: item._id,
+                                    status: "Deleted",
+                                  }).unwrap();
+
+                                  toast.success("Booking moved to Deleted");
                                   setSelectedActionRow(null);
                                 }
                               } catch (err) {
