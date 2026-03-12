@@ -119,8 +119,6 @@ const WidgetPaymentInformation = ({
     loadInitialData();
   }, [vehicle]);
 
-
-
   const currencySetting = bookingSettingData?.setting?.currency?.[0] || {};
   const currencySymbol = currencySetting?.symbol || "£";
 
@@ -305,7 +303,6 @@ const WidgetPaymentInformation = ({
         description="Verify your relocation details and passenger requirements to finalize your professional service estimate."
       />
 
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-(--white) rounded-lg shadow-sm p-6">
@@ -334,7 +331,6 @@ const WidgetPaymentInformation = ({
                   className="custom_input"
                 />
               </div>
-
               <div>
                 <label className="block widget-label-small text-(--dark-grey) mb-2">
                   Email Address
@@ -371,7 +367,6 @@ const WidgetPaymentInformation = ({
               </div>
             </div>
           </div>
-
           <div className="bg-(--white) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
@@ -402,7 +397,6 @@ const WidgetPaymentInformation = ({
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block widget-label-small text-(--dark-grey) mb-2">
                   Moving Time
@@ -463,7 +457,6 @@ const WidgetPaymentInformation = ({
             </div>
           </div>
         </div>
-
         <div className="lg:col-span-1">
           <div className="bg-(--white) rounded-lg shadow-sm p-6 sticky top-8">
             <h3 className="widget-title text-(--dark-black) mb-6">Price Estimate</h3>

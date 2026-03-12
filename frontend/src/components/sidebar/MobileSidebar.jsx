@@ -115,7 +115,6 @@ const MobileSidebar = ({ activeSubTabs, setActiveSubTabs, isOpen, toggleSidebar 
                     onClick={toggleSidebar}
                 />
             )}
-
             <div
                 className={classNames(
                     "fixed top-0 left-0 bg-(--navy-blue) h-full z-50 transition-all duration-300 ease-in-out md:hidden",

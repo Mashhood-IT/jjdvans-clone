@@ -8,7 +8,6 @@ const VehicleSchema = new mongoose.Schema({
     description: String
 }, { _id: false })
 
-
 const PassengerSchema = new mongoose.Schema({
     name: String,
     email: String,
@@ -95,7 +94,7 @@ const BookingSchema = new mongoose.Schema({
     passenger: PassengerSchema,
     status: {
         type: String,
-        enum: ["New","Completed","Deleted"],
+        enum: ["New", "Completed", "Deleted"],
         default: "New"
     },
 

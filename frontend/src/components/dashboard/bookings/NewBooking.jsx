@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetBookingByIdQuery } from "../../../redux/api/bookingApi";
+import { useGetAllVehiclesQuery } from "../../../redux/api/vehicleApi";
 import { useLoading } from "../../common/LoadingProvider";
+import { toast } from "react-toastify";
 
 const NewBooking = ({ onClose, editBookingData }) => {
   const user = useSelector((state) => state.auth.user);
@@ -14,10 +16,12 @@ const NewBooking = ({ onClose, editBookingData }) => {
   const [isSeededFromDb, setIsSeededFromDb] = useState(!isEdit);
 
   const { data: existingBooking, isLoading: isBookingLoading } =
-    useGetBookingByIdQuery(editBookingData?._id, { skip: !isEdit });
+    useGetBookingByIdQuery(editBookingData?._id, { skip: !isEdit, refetchOnMountOrArgChange: true });
+
+  const { data: vehicleList } = useGetAllVehiclesQuery(undefined, { skip: !isEdit });
 
   useEffect(() => {
-    if (!isEdit || !existingBooking || isSeededFromDb) return;
+    if (!isEdit || !existingBooking || isSeededFromDb || !vehicleList) return;
     localStorage.removeItem("bookingForm");
     localStorage.removeItem("selectedVehicle");
     localStorage.removeItem("widgetInventoryData");
@@ -46,7 +50,24 @@ const NewBooking = ({ onClose, editBookingData }) => {
     localStorage.setItem("bookingForm", JSON.stringify(bookingForm));
 
     if (b.vehicle) {
-      localStorage.setItem("selectedVehicle", JSON.stringify(b.vehicle));
+      const vehicles = Array.isArray(vehicleList) ? vehicleList : (vehicleList?.data || []);
+      const matchedVehicle = vehicles.find(
+        (v) => v.vehicleName && v.vehicleName === b.vehicle.vehicleName
+      );
+
+      const fullVehicle = {
+        ...b.vehicle,
+        ...(matchedVehicle ? {
+          id: matchedVehicle._id,
+          vehicleName: matchedVehicle.vehicleName,
+          image: matchedVehicle.image || b.vehicle.image,
+          passengerSeats: matchedVehicle.passengerSeats || 0,
+          maxSeats: matchedVehicle.passengerSeats || 0,
+          halfHourPrice: matchedVehicle.halfHourPrice || 0,
+        } : {}),
+      };
+
+      localStorage.setItem("selectedVehicle", JSON.stringify(fullVehicle));
     }
 
     const inventoryData = {
@@ -88,7 +109,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
     localStorage.setItem("widgetPaymentData", JSON.stringify(paymentData));
 
     setIsSeededFromDb(true);
-  }, [isEdit, existingBooking, companyId, isSeededFromDb]);
+  }, [isEdit, existingBooking, companyId, isSeededFromDb, vehicleList]);
 
   useEffect(() => {
     if (isEdit && (isBookingLoading || !isSeededFromDb)) {
@@ -96,8 +117,6 @@ const NewBooking = ({ onClose, editBookingData }) => {
     } else {
       hideLoading();
     }
-
-    return () => hideLoading();
   }, [isEdit, isBookingLoading, isSeededFromDb, showLoading, hideLoading]);
 
   useEffect(() => {
@@ -121,6 +140,9 @@ const NewBooking = ({ onClose, editBookingData }) => {
         }
       }
       if (event.data && event.data.type === "bookingSuccess") {
+        if (isEdit) {
+          toast.success("Booking Updated Successfully");
+        }
         onClose?.();
       }
     };

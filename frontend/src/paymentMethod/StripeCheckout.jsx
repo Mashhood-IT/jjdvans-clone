@@ -80,4 +80,5 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
         </form>
     );
 };
+
 export default StripeCheckout

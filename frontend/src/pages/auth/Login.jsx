@@ -56,7 +56,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="xyz@gmail.com"
-            className="w-full px-4 py-2 bg-(--lightest-gray) border border-[var(--light-gray)] rounded-lg placeholder-(--medium-grey) text-sm focus:outline-none focus:ring-2 focus:ring-(--main-color) focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-2 bg-(--lightest-gray) border border-(--light-gray) rounded-lg placeholder-(--medium-grey) text-sm focus:outline-none focus:ring-2 focus:ring-(--main-color) focus:border-transparent transition-all duration-200"
           />
         </div>
         <div className="relative">
@@ -72,7 +72,7 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="********"
-            className="w-full px-4 py-2 pr-10 pt-2.5 bg-(--lightest-gray) border border-[var(--light-gray)] rounded-lg placeholder-(--medium-grey) text-sm focus:outline-none focus:ring-2 focus:ring-(--main-color) focus:border-transparent transition-all duration-200"
+            className="w-full px-4 py-2 pr-10 pt-2.5 bg-(--lightest-gray) border border-(--light-gray) rounded-lg placeholder-(--medium-grey) text-sm focus:outline-none focus:ring-2 focus:ring-(--main-color) focus:border-transparent transition-all duration-200"
           />
           <span
             className="absolute top-1/2 right-3 transform translate-y-1/4 cursor-pointer text-(--medium-grey)"

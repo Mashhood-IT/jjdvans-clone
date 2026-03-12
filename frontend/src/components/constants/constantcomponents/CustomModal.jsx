@@ -12,11 +12,11 @@ const CustomModal = ({
 
   return (
     <div
-      className="fixed inset-0 bg-(--black)/20 flex items-center justify-center z-[9999] p-4 md:p-6"
+      className="fixed inset-0 bg-(--black)/20 flex items-center justify-center z-9999 p-4 md:p-6"
       onClick={onClose}
     >
       <div
-        className={`bg-(--white) rounded-2xl border border-[var(--light-gray)] overflow-hidden flex flex-col shadow-2xl ${modalClassName}`}
+        className={`bg-(--white) rounded-2xl border border-(--light-gray) overflow-hidden flex flex-col shadow-2xl ${modalClassName}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center border-b border-(--light-gray) p-3 shrink-0">

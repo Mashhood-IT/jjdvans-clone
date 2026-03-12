@@ -268,4 +268,3 @@ const FloorAccessibility = ({
 };
 
 export default FloorAccessibility;
-

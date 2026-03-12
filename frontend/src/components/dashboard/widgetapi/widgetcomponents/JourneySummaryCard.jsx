@@ -1,6 +1,6 @@
 import React from "react";
 import Icons from "../../../../assets/icons";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const JourneySummaryCard = ({
   formData,
@@ -69,7 +69,6 @@ const JourneySummaryCard = ({
             </div>
           </div>
 
-          {/* Primary Drop-off */}
           {dropList.filter(Boolean).length > 0 && (
             <div>
               <p className="widget-label-small text-(--medium-grey) mb-2">
@@ -86,7 +85,6 @@ const JourneySummaryCard = ({
             </div>
           )}
 
-          {/* Additional Drop-offs */}
           {dropList.filter(Boolean).length > 1 && (
             <div className="space-y-4">
               <p className="widget-label-small text-(--medium-grey) mb-2 flex items-center gap-1">

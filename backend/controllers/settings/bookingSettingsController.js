@@ -101,7 +101,6 @@ export const updateBookingSetting = async (req, res) => {
                 }
             );
 
-            console.log(`Updated currency for all bookings to ${newCurrency.value}`);
         }
 
         res.status(200).json({
@@ -158,7 +157,6 @@ export const getPublicBookingSetting = async (req, res) => {
             return res.status(404).json({ message: "Booking settings not found" });
         }
 
-        // Sanitize sensitive info
         const publicSetting = {
             currency: setting.currency,
             currencyApplication: setting.currencyApplication,

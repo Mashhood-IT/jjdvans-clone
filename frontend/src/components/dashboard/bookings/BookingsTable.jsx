@@ -28,13 +28,14 @@ const BookingsTable = ({
     { key: "bookingId", label: "Booking ID" },
     { key: "pickup", label: "Pickup" },
     { key: "dropoff", label: "Dropoff" },
+    { key: "source", label: "Source" },
     { key: "passenger", label: "Passenger" },
     { key: "date", label: "Date" },
     ...(location.pathname !== "/dashboard/bookings/completed"
       ? [
-          { key: "status", label: "Status" },
-          { key: "actions", label: "Actions" },
-        ]
+        { key: "status", label: "Status" },
+        { key: "actions", label: "Actions" },
+      ]
       : []),
     { key: "vehicle", label: "Vehicle" },
     { key: "totalPrice", label: "Total Price" },

@@ -96,6 +96,7 @@ export const updatBookingStatus = async (req, res) => {
     });
   }
 };
+
 export const updateBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -197,27 +198,25 @@ const generateBookingEmailHTML = (booking, companyData = null) => {
             <td style="padding:20px;background-color:#1f2937;border-radius:6px 6px 0 0;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  ${
-                    companyData?.superadminCompanyLogo
-                      ? `
+                  ${companyData?.superadminCompanyLogo
+      ? `
                   <td style="width:50px;vertical-align:middle;padding-right:12px;">
                     <img src="${companyData.superadminCompanyLogo}" alt="Logo" style="width:50px;height:50px;object-fit:contain;display:block;" />
                   </td>
                   `
-                      : ""
-                  }
+      : ""
+    }
                   <td style="vertical-align:middle;">
                     <div style="color:#ffffff;font-size:18px;font-weight:700;margin:0;">${companyData?.superadminCompanyName || "Booking Confirmation"}</div>
-                    ${
-                      companyData?.superadminCompanyPhoneNumber ||
-                      companyData?.superadminCompanyEmail
-                        ? `
+                    ${companyData?.superadminCompanyPhoneNumber ||
+      companyData?.superadminCompanyEmail
+      ? `
                     <div style="color:rgba(255,255,255,0.8);font-size:12px;margin:4px 0 0 0;">
                       ${companyData?.superadminCompanyPhoneNumber || ""} ${companyData?.superadminCompanyPhoneNumber && companyData?.superadminCompanyEmail ? "•" : ""} ${companyData?.superadminCompanyEmail || ""}
                     </div>
                     `
-                        : ""
-                    }
+      : ""
+    }
                   </td>
                 </tr>
               </table>
@@ -264,34 +263,34 @@ const generateBookingEmailHTML = (booking, companyData = null) => {
                   <td style="padding:15px;">
                     <div style="font-size:13px;color:#111827;font-weight:600;margin-bottom:8px;">📍 Drop Off</div>
                     ${[0, 1, 2, 3, 4]
-                      .map((idx) => {
-                        const dropMap = [
-                          booking?.dropoff,
-                          booking?.additionalDropoff1,
-                          booking?.additionalDropoff2,
-                          booking?.additionalDropoff3,
-                          booking?.additionalDropoff4,
-                        ];
-                        const drop = dropMap[idx];
-                        if (!drop) return "";
+      .map((idx) => {
+        const dropMap = [
+          booking?.dropoff,
+          booking?.additionalDropoff1,
+          booking?.additionalDropoff2,
+          booking?.additionalDropoff3,
+          booking?.additionalDropoff4,
+        ];
+        const drop = dropMap[idx];
+        if (!drop) return "";
 
-                        const accessField =
-                          idx === 0
-                            ? "dropoffAccess"
-                            : `additionalDropoff${idx}Access`;
-                        const floorField =
-                          idx === 0
-                            ? "dropoffFloorNo"
-                            : `additionalDropoff${idx}FloorNo`;
+        const accessField =
+          idx === 0
+            ? "dropoffAccess"
+            : `additionalDropoff${idx}Access`;
+        const floorField =
+          idx === 0
+            ? "dropoffFloorNo"
+            : `additionalDropoff${idx}FloorNo`;
 
-                        return `
+        return `
                         <div style="margin-bottom:${idx === 4 || !dropMap[idx + 1] ? "0" : "10px"};padding-bottom:${idx === 4 || !dropMap[idx + 1] ? "0" : "10px"};${idx === 4 || !dropMap[idx + 1] ? "" : "border-bottom:1px solid #f3f4f6;"}">
                           <div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>${idx === 0 ? "Main" : `Stop ${idx}`}:</strong> ${drop}</div>
                           ${booking?.[accessField] ? `<div style="font-size:12px;color:#374151;"><strong>Access:</strong> ${booking[accessField]} • Floor ${booking[floorField] || 0}</div>` : ""}
                         </div>
                         `;
-                      })
-                      .join("")}
+      })
+      .join("")}
                   </td>
                 </tr>
               </table>
@@ -316,12 +315,11 @@ const generateBookingEmailHTML = (booking, companyData = null) => {
               </table>
 
               <!-- Journey Details (if exists) -->
-              ${
-                booking?.notes ||
-                booking?.extraTime ||
-                booking?.durationText ||
-                booking?.distanceText
-                  ? `
+              ${booking?.notes ||
+      booking?.extraTime ||
+      booking?.durationText ||
+      booking?.distanceText
+      ? `
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:15px;">
                 <tr>
                   <td style="padding:15px;">
@@ -334,53 +332,49 @@ const generateBookingEmailHTML = (booking, companyData = null) => {
                 </tr>
               </table>
               `
-                  : ""
-              }
+      : ""
+    }
 
               <!-- Fare -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1f2937;border-radius:6px;">
                 <tr>
                   <td style="padding:20px;">
-                    ${
-                      booking?.fare ||
-                      booking?.additionalTimeFare ||
-                      booking?.workersCharges
-                        ? `
+                    ${booking?.fare ||
+      booking?.additionalTimeFare ||
+      booking?.workersCharges
+      ? `
                     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1);">
-                      ${
-                        booking?.fare
-                          ? `
+                      ${booking?.fare
+        ? `
                       <tr>
                         <td style="font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">Base Fare</td>
                         <td style="text-align:right;font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">$${Number(booking.fare).toFixed(2)}</td>
                       </tr>
                       `
-                          : ""
-                      }
-                      ${
-                        booking?.additionalTimeFare > 0
-                          ? `
+        : ""
+      }
+                      ${booking?.additionalTimeFare > 0
+        ? `
                       <tr>
                         <td style="font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">Additional Time</td>
                         <td style="text-align:right;font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">+$${Number(booking.additionalTimeFare).toFixed(2)}</td>
                       </tr>
                       `
-                          : ""
-                      }
-                      ${
-                        booking?.workersCharges > 0
-                          ? `
+        : ""
+      }
+                      ${booking?.workersCharges > 0
+        ? `
                       <tr>
                         <td style="font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">Extra Men</td>
                         <td style="text-align:right;font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">+$${Number(booking.workersCharges).toFixed(2)}</td>
                       </tr>
                       `
-                          : ""
-                      }
+        : ""
+      }
                     </table>
                     `
-                        : ""
-                    }
+      : ""
+    }
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td style="font-size:16px;color:#ffffff;font-weight:600;">Total Fare</td>
@@ -398,15 +392,14 @@ const generateBookingEmailHTML = (booking, companyData = null) => {
           <tr>
             <td style="padding:20px;text-align:center;background-color:#f9fafb;border-radius:0 0 6px 6px;border-top:1px solid #e5e7eb;">
               <p style="margin:0;font-size:11px;color:#6b7280;">This is an automated email. Please do not reply.</p>
-              ${
-                companyData?.superadminCompanyEmail
-                  ? `
+              ${companyData?.superadminCompanyEmail
+      ? `
               <p style="margin:8px 0 0 0;font-size:11px;color:#6b7280;">
                 Contact: <a href="mailto:${companyData.superadminCompanyEmail}" style="color:#111827;text-decoration:none;font-weight:600;">${companyData.superadminCompanyEmail}</a>
               </p>
               `
-                  : ""
-              }
+      : ""
+    }
             </td>
           </tr>
 

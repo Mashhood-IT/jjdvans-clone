@@ -44,7 +44,7 @@ const SelectedSearch = ({
       <button
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="border px-3 py-[7px] text-sm rounded-md bg-(--white) cursor-pointer border-[var(--light-gray)] w-full text-left hover:border-(--medium-grey) transition-colors flex items-center justify-between"
+        className="border px-3 py-[7px] text-sm rounded-md bg-(--white) cursor-pointer border-(--light-gray) w-full text-left hover:border-(--medium-grey) transition-colors flex items-center justify-between"
       >
         <span className="truncate">
           {selected.length === 0
@@ -55,7 +55,7 @@ const SelectedSearch = ({
       </button>
       {dropdownOpen && (
         <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 z-50 mt-2 bg-(--white) border rounded-lg border-[var(--light-gray)] shadow-xl max-h-72 overflow-y-auto w-[calc(100vw-2rem)] sm:w-[300px] md:w-full">
-          <div className="p-2 border-b border-[var(--light-gray)]">
+          <div className="p-2 border-b border-(--light-gray)">
             <input
               type="text"
               placeholder="Search"

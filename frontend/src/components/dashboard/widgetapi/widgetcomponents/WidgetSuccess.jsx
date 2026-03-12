@@ -19,7 +19,6 @@ const WidgetSuccess = ({ formData, companyId }) => {
           contact you shortly.
         </p>
 
-        {/* ── Payment Link notice ── */}
         {isPaymentLink && (
           <div className="mt-4 bg-(--light-yellow) border border-(--medium-yellow) rounded-xl p-4">
             <div className="flex items-center justify-center gap-2 mb-1">

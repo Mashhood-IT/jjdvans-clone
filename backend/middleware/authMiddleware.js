@@ -21,8 +21,6 @@ export const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      console.error(`[Auth-Failure] No token found for ${req.method} ${req.path}`);
-      console.error(`[Auth-Failure] Cookies keys: ${Object.keys(req.cookies || {}).join(", ")}`);
       return res.status(401).json({ message: "Not authorized, no token" });
     }
 
@@ -54,25 +52,4 @@ export const protect = async (req, res, next) => {
     console.error("JWT auth error:", err.message);
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
-};
-
-export const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Forbidden: Access denied" });
-    }
-    next();
-  };
-};
-
-export const injectCompanyId = (req, res, next) => {
-  if (req.user && req.user.companyId) {
-    if (!req.body.companyId) {
-      req.body.companyId = req.user.companyId;
-    }
-    if (!req.query.companyId) {
-      req.query.companyId = req.user.companyId;
-    }
-  }
-  next();
 };

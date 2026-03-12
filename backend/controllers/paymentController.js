@@ -12,7 +12,6 @@ export const createPaymentIntent = async (req, res) => {
             });
         }
 
-        // Fetch Stripe keys for this company
         const settings = await BookingSetting.findOne({ companyId });
         if (!settings || !settings.stripeKeys || !settings.stripeKeys.secretKey) {
             return res.status(404).json({
@@ -23,9 +22,8 @@ export const createPaymentIntent = async (req, res) => {
 
         const stripe = new Stripe(settings.stripeKeys.secretKey);
 
-        // Create PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(amount * 100), // Stripe expects amount in cents
+            amount: Math.round(amount * 100),
             currency: currency.toLowerCase(),
             metadata: { companyId },
         });

@@ -32,8 +32,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
   const { data: settingsData } = useGetBookingSettingQuery();
   const defaultCurrencySymbol =
     settingsData?.setting?.currency?.[0]?.symbol || "£";
-  const defaultCurrencyLabel =
-    settingsData?.setting?.currency?.[0]?.label || "British Pound";
+
   const currencyPolicy =
     settingsData?.setting?.currencyApplication || "New Bookings Only";
 
@@ -41,11 +40,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
     currencyPolicy === "All Bookings"
       ? defaultCurrencySymbol
       : viewData?.currency?.symbol || "£";
-
-  const currencyLabel =
-    currencyPolicy === "All Bookings"
-      ? defaultCurrencyLabel
-      : viewData?.currency?.label || "British Pound";
 
   useEffect(() => {
     if (selectedType === "Send Customer") {
@@ -108,20 +102,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
     input.style.pointerEvents = "none";
   };
 
-  const convertDistance = (text) => {
-    if (!text || typeof text !== "string") return "—";
-
-    const textLower = text.toLowerCase();
-    let value = parseFloat(text.replace(/[^\d.]/g, ""));
-
-    if (isNaN(value)) return text;
-
-    const isKm = textLower.includes("km");
-    const isMiles = textLower.includes("mile") || textLower.includes("mi");
-
-    if (!isKm && !isMiles) return text;
-  };
-
   const formatDateTime = (dateStr, hour, minute) => {
     if (dateStr == null || hour == null || minute == null) return "N/A";
 
@@ -146,7 +126,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
       ? formatDateTime(viewData.date, viewData.hour, viewData.minute)
       : "N/A";
 
-  const isCancelled = viewData?.status === "Cancelled";
 
   return (
     <>
@@ -190,7 +169,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
           </div>
         </div>
 
- <div className="grid lg:grid-cols-2 gap-4">
+        <div className="grid lg:grid-cols-2 gap-4">
           <div className="space-y-1.5 bg-(--white) p-2.5 rounded-lg shadow-sm border border-(--lightest-gray)">
             <div className="text-sm">
               <strong className="text-(--dark-gray) font-semibold">
@@ -210,13 +189,21 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
             </div>
             <div className="text-sm">
               <strong className="text-(--dark-gray) font-semibold">
+                Booking Source:
+              </strong>
+              <span className="ml-2 text-(--dark-grey)">
+                {viewData?.source.charAt(0).toUpperCase() + viewData?.source.slice(1) || "N/A"}
+              </span>
+            </div>
+            <div className="text-sm">
+              <strong className="text-(--dark-gray) font-semibold">
                 Booked On:
               </strong>
               <span className="ml-2 text-(--dark-grey)">
                 {viewData?.createdAt
                   ? moment(viewData.createdAt)
-                      .tz(timezone)
-                      .format("DD/MM/YYYY HH:mm:ss")
+                    .tz(timezone)
+                    .format("DD/MM/YYYY HH:mm:ss")
                   : "N/A"}
               </span>
             </div>
@@ -235,7 +222,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                 Notes:
               </strong>
               <span className="ml-2 text-(--dark-grey)">
-                {viewData?.notes || "None"}
+                {viewData?.notes.charAt(0).toUpperCase() + viewData?.notes?.slice(1) || "None"}
               </span>
             </div>
 
@@ -443,34 +430,34 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
               {(viewData?.fare !== undefined ||
                 viewData?.additionalTimeFare ||
                 viewData?.workersCharges) && (
-                <div className="space-y-1 border-b border-gray-200 pb-2 mb-2">
-                  <div className="flex justify-between text-xs text-(--dark-grey)">
-                    <span>Base Fare:</span>
-                    <span>
-                      {currencySymbol}
-                      {Number(viewData?.fare || 0).toFixed(2)}
-                    </span>
+                  <div className="space-y-1 border-b border-gray-200 pb-2 mb-2">
+                    <div className="flex justify-between text-xs text-(--dark-grey)">
+                      <span>Base Fare:</span>
+                      <span>
+                        {currencySymbol}
+                        {Number(viewData?.fare || 0).toFixed(2)}
+                      </span>
+                    </div>
+                    {viewData?.additionalTimeFare > 0 && (
+                      <div className="flex justify-between text-xs text-(--dark-grey)">
+                        <span>Additional Time Charges:</span>
+                        <span>
+                          +{currencySymbol}
+                          {Number(viewData?.additionalTimeFare).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    {viewData?.workersCharges > 0 && (
+                      <div className="flex justify-between text-xs text-(--dark-grey)">
+                        <span>Extra Men Charges:</span>
+                        <span>
+                          +{currencySymbol}
+                          {Number(viewData?.workersCharges).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  {viewData?.additionalTimeFare > 0 && (
-                    <div className="flex justify-between text-xs text-(--dark-grey)">
-                      <span>Additional Time Charges:</span>
-                      <span>
-                        +{currencySymbol}
-                        {Number(viewData?.additionalTimeFare).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-                  {viewData?.workersCharges > 0 && (
-                    <div className="flex justify-between text-xs text-(--dark-grey)">
-                      <span>Extra Men Charges:</span>
-                      <span>
-                        +{currencySymbol}
-                        {Number(viewData?.workersCharges).toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
               <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium flex items-center justify-center">
                 <span className="text-(--dark-gray)">Total Fare:</span>
                 <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">

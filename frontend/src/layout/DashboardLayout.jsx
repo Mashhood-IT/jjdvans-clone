@@ -13,8 +13,8 @@ const DashboardLayout = () => {
   return (
     <>
       <MobileSidebar
-      toggleSidebar={toggleSidebar}
-      isOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+        isOpen={isSidebarOpen}
         activeSubTabs={activeSubTabs}
         setActiveSubTabs={setActiveSubTabs}
       />

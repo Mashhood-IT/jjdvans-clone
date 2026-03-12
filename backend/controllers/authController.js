@@ -3,8 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import User from "../models/User.js";
-// import Booking from "../models/Booking.js";
-
 
 import sendEmail from "../sendEmail.js";
 import { otpEmailTemplate } from "../utils/user/otpEmailTemplate.js";
@@ -12,14 +10,11 @@ import { generateAccessToken, generateRefreshToken } from "../utils/generateToke
 
 dotenv.config();
 
-// HELPERS
-// Generate a 6-digit OTP
 export const genOtp = () => {
   const otp = Math.floor(100000 + Math.random() * 900000);
   return otp.toString();
 };
 
-// Controllers
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -35,16 +30,6 @@ export const login = async (req, res) => {
     const forwarded = req.headers["x-forwarded-for"];
     const rawIp = forwarded || req.socket.remoteAddress || "";
     const ip = rawIp.includes("::ffff:") ? rawIp.split("::ffff:")[1] : rawIp;
-
-    // let location = "Unknown, Unknown";
-    // try {
-    //   const { data: geo } = await axios.get(`http://ip-api.com/json/${ip}`);
-    //   if (geo?.status === "success") {
-    //     location = `${geo.city || "Unknown"}, ${geo.country || "Unknown"}`;
-    //   }
-    // } catch {
-    //   console.error("Geolocation fetch failed for IP:", ip);
-    // }
 
     await handleSuccessfulLogin(
       user,
@@ -67,8 +52,6 @@ async function handleSuccessfulLogin(
 
   const accessToken = generateAccessToken(user._id, user.role, user.companyId);
   const refreshToken = generateRefreshToken(user._id);
-
-  console.log(`Setting cookies. NODE_ENV: ${process.env.NODE_ENV}, Secure: ${process.env.NODE_ENV === "production"}`);
 
   res.cookie("access_token", accessToken, {
     httpOnly: true,
@@ -102,12 +85,8 @@ async function handleSuccessfulLogin(
     message,
 
   };
-
-
-
   res.json(responseData);
 }
-
 
 export const resendLoginOtp = async (req, res) => {
   const { userId } = req.body;
@@ -242,10 +221,7 @@ export const updateProfile = async (req, res) => {
 
     if (updatedFields.fullName) {
       const newFullName = updatedFields.fullName.trim();
-
-
     }
-
 
     if (req.body.phone && req.body.phone !== user.phone) {
       user.phone = req.body.phone;

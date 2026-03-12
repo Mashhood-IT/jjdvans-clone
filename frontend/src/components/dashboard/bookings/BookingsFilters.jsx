@@ -63,11 +63,6 @@ const BookingsFilters = ({
         </div>
 
       </div>
-
-      <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-4">
-
-
-      </div>
     </>
   );
 };

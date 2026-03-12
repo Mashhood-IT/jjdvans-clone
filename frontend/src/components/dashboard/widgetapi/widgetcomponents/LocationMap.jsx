@@ -8,24 +8,19 @@ const LocationMap = ({ pickup, dropoffs = [], pickupCoords, dropoffCoords, compa
     const polylineRef = useRef(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Fetch key even if companyId is missing (backend handles fallback)
     const { data: keyData, isLoading: isKeyLoading } = useGetMapKeyQuery(companyId || "");
 
     useEffect(() => {
-        // If google maps is already available, just set as loaded
         if (window.google?.maps) {
             setIsLoaded(true);
             return;
         }
 
-        // Wait for key if not available yet
         if (isKeyLoading || !keyData?.mapKey) return;
 
         const scriptId = 'google-maps-script';
         if (document.getElementById(scriptId)) {
-            // Script already exists but maybe not loaded yet?
-            // Onload should handle it if we are the first one, 
-            // but if we are second component we should just wait for window.google
+
             const checkGoogle = setInterval(() => {
                 if (window.google?.maps) {
                     setIsLoaded(true);

@@ -109,7 +109,7 @@ const SelectDateRange = ({ startDate, endDate, setStartDate, setEndDate }) => {
   return (
     <div ref={dropdownRef} className="relative inline-block w-full">
       <div
-        className="flex items-center gap-2 border border-[var(--light-gray)] px-3 py-[7px] bg-(--white) rounded-md cursor-pointer min-w-0 hover:border-(--medium-grey) transition-colors"
+        className="flex items-center gap-2 border border-(--light-gray) px-3 py-[7px] bg-(--white) rounded-md cursor-pointer min-w-0 hover:border-(--medium-grey) transition-colors"
         onClick={() => setDropdownOpen(!dropdownOpen)}
       >
         <Icons.CalendarDays className="w-4 h-4 text-(--black)" />
@@ -124,7 +124,7 @@ const SelectDateRange = ({ startDate, endDate, setStartDate, setEndDate }) => {
         />
       </div>
       {dropdownOpen && (
-        <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 mt-2 w-[calc(100vw-2rem)] sm:w-[320px] md:w-full min-w-[280px] bg-(--white) border border-[var(--light-gray)] shadow-xl z-50 rounded-lg overflow-hidden py-1">
+        <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 mt-2 w-[calc(100vw-2rem)] sm:w-[320px] md:w-full min-w-[280px] bg-(--white) border border-(--light-gray) shadow-xl z-50 rounded-lg overflow-hidden py-1">
           {ranges.map((r) => (
             <div
               key={r.label}

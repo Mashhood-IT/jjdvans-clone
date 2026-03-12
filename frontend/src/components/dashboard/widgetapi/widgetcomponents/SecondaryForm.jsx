@@ -156,7 +156,9 @@ const SecondaryForm = ({
                         [idx]: coords,
                     }));
                 }
-            } catch { }
+            } catch {
+                toast.error("Error fetching suggestions");
+            }
         }
     };
 
@@ -241,7 +243,6 @@ const SecondaryForm = ({
                             </div>
                         </div>
 
-                        {/* Additional Drop Offs */}
                         {dropOffs.map((val, idx) => {
                             if (idx === 0) return null;
                             return (

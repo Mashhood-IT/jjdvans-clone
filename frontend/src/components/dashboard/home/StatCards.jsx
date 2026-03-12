@@ -9,15 +9,22 @@ const StatCards = () => {
   const user = useSelector((state) => state?.auth?.user);
 
   const { data = [] } = useGetAllBookingsQuery();
-
-  const bookingsCustomer = data.filter((b) => b.passenger);
-
-
+  const adminBookings = data.filter((b) => b?.source === "admin")
+  const widgetBookings = data.filter((b) => b?.source === "widget")
+  const adminBookingsCustomers = adminBookings?.filter((b) => b.passenger).length;
+  const widgetBookingsCustomer = widgetBookings?.filter((b) => b.passenger).length;
+  
   const cardData = [
     { title: "Total Bookings", value: data?.length, icon: "FileText" },
     {
-      title: "Total Customers",
-      value: bookingsCustomer.length,
+      title: "Admin Customers",
+      value: adminBookingsCustomers,
+
+      icon: "Users",
+    },
+    {
+      title: "Widget Customers",
+      value: widgetBookingsCustomer,
 
       icon: "Users",
     },
@@ -26,14 +33,14 @@ const StatCards = () => {
   const roleVisibility = {
     superadmin: [
       "Total Bookings",
-      "Total Customers",
+      "Admin Customers",
+      "Widget Customers",
     ]
   };
 
   const visibleCards = cardData.filter((card) =>
     roleVisibility[user?.role?.toLowerCase()]?.includes(card.title)
   );
-
 
   return (
     <section className="w-full">

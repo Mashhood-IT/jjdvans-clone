@@ -40,7 +40,6 @@ const BookingsList = () => {
     }
   }, [isLoading]);
 
-  // Filter out completed bookings - show only non-completed bookings
   const activeBookings = allBookings.filter((booking) => booking.status !== "Completed");
 
   const filteredBookings = activeBookings.filter((booking) => {

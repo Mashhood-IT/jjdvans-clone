@@ -16,10 +16,8 @@ const Navbar = ({ toggleSidebar }) => {
   const TimeRef = useRef(null);
 
   const closeAllTooltips = useCallback(() => {
-    setShowTooltip(false);
     setIsDropdownOpen(false);
   }, []);
-
 
   const toggleUser = (e) => {
     e?.stopPropagation();
@@ -32,7 +30,6 @@ const Navbar = ({ toggleSidebar }) => {
   const name = user?.fullName;
   const profileImg = user?.profileImage;
 
-  const [showTooltip, setShowTooltip] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 

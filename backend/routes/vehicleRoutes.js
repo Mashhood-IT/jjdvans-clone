@@ -6,11 +6,8 @@ const router = express.Router();
 const upload = getUploader("vehicles");
 
 router.post("/create-vehicle", upload.single("image"), createVehicle);
-
 router.get("/get-all-vehicles", getAllVehicles);
-
 router.put("/update-vehicle/:id", upload.single("image"), updateVehicle);
-
 router.delete("/delete-vehicle/:id", deleteVehicle);
 
 export default router;

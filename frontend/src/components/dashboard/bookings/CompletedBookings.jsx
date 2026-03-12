@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { useLoading } from "../../common/LoadingProvider";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 
@@ -15,7 +14,7 @@ import { actionMenuItems } from "../../constants/dashboardTabsData/data";
 const CompletedBookings = () => {
   const { showLoading, hideLoading } = useLoading();
   const { data: allBookings = [], isLoading, refetch } = useGetAllBookingsQuery();
-  
+
   const [selectedRow, setSelectedRow] = useState(null);
   const [selectedActionRow, setSelectedActionRow] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -38,7 +37,6 @@ const CompletedBookings = () => {
     }
   }, [isLoading]);
 
-  // Filter only completed bookings
   const completedBookings = allBookings.filter((booking) => booking.status === "Completed");
 
   const filteredBookings = completedBookings.filter((booking) => {
@@ -189,4 +187,3 @@ const CompletedBookings = () => {
 };
 
 export default CompletedBookings;
-

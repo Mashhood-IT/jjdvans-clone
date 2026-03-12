@@ -229,8 +229,8 @@ const BookingTableRenderer = ({
           case "createdAt":
             row[key] = item.createdAt
               ? moment(item.createdAt)
-                  .tz(timezone)
-                  .format("DD/MM/YYYY HH:mm:ss")
+                .tz(timezone)
+                .format("DD/MM/YYYY HH:mm:ss")
               : "-";
             break;
 

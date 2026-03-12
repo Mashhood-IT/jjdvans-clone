@@ -10,7 +10,6 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
   const userRole = user?.role;
   const location = useLocation();
 
-
   const [activeMain, setActiveMain] = useState(null);
 
   const [parentTabPosition, setParentTabPosition] = useState(0);

@@ -305,12 +305,10 @@ const WidgetMain = () => {
       localStorage.removeItem("widgetInventoryData");
 
       localStorage.setItem("isWidgetFormFilled", "true");
-      toast.success(
-        response.message ||
-          (formData.isEdit
-            ? "Booking Updated Successfully"
-            : "Booking Request Received"),
-      );
+      
+      if (!formData.isEdit) {
+        toast.success(response.message || "Booking Request Received");
+      }
 
       window.parent.postMessage({ type: "bookingSuccess" }, "*");
 

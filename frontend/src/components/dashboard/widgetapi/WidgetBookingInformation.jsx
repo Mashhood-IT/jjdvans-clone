@@ -10,18 +10,23 @@ import { useLazyGeocodeQuery, useLazyGetDistanceQuery } from '../../../redux/api
 
 import { useGetAllVehiclesQuery } from '../../../redux/api/vehicleApi';
 import { useGetPublicBookingSettingQuery } from '../../../redux/api/bookingSettingsApi';
+import { useLoading } from '../../common/LoadingProvider';
 
 const WidgetBookingInformation = ({
   onNext,
   dropOffPrice,
 }) => {
-  const { data: vehicleResponse, isLoading: isVehiclesLoading } = useGetAllVehiclesQuery();
-  const carList = vehicleResponse?.data || vehicleResponse || [];
-
   const companyId = new URLSearchParams(window.location.search).get("company") || "";
   const { data: bookingSettingData } = useGetPublicBookingSettingQuery(companyId, {
     skip: !companyId
   });
+  const { showLoading, hideLoading } = useLoading()
+
+  const { data: vehicleResponse, isLoading: isVehiclesLoading } = useGetAllVehiclesQuery();
+  const [triggerGeocode] = useLazyGeocodeQuery();
+  const [triggerDistance] = useLazyGetDistanceQuery();
+
+  const carList = vehicleResponse?.data || vehicleResponse || [];
 
   const [actualMiles, setActualMiles] = useState(null);
   const [selectedCarId, setSelectedCarId] = useState(null);
@@ -37,9 +42,7 @@ const WidgetBookingInformation = ({
   const [calculatedTotalPrice, setCalculatedTotalPrice] = useState(0);
   const [extraHelpPrice, setExtraHelpPrice] = useState(0);
   const [segmentBreakdown, setSegmentBreakdown] = useState([]);
-
-  const [triggerGeocode] = useLazyGeocodeQuery();
-  const [triggerDistance] = useLazyGetDistanceQuery();
+  const [selectedHelpOption, setSelectedHelpOption] = useState(null);
   const postcodePrices = [];
   const zones = [];
   const generalPricing = {
@@ -47,16 +50,21 @@ const WidgetBookingInformation = ({
     dropoffAirportPrice: 10,
     minAdditionalDropOff: 5
   };
+
+  useEffect(() => {
+    if (isVehiclesLoading) {
+      showLoading()
+    } else {
+      hideLoading()
+    }
+  }, [showLoading, hideLoading, isVehiclesLoading])
+
   const fixedPrices = [];
   const discounts = [];
 
   const currencySetting = bookingSettingData?.setting?.currency?.[0] || null;
   const currencySymbol = currencySetting?.symbol || '£';
   const currencyCode = currencySetting?.value || 'GBP';
-
-  const isPickupAirport = formData?.pickup?.toLowerCase()?.includes('airport');
-  const isDropoffAirport = formData?.dropoff?.toLowerCase()?.includes('airport');
-
 
   const getVehiclePriceForDistance = useCallback((vehicle, miles) => {
     if (!vehicle?.slabs || !Array.isArray(vehicle.slabs) || vehicle.slabs.length === 0) return 0;
@@ -141,8 +149,8 @@ const WidgetBookingInformation = ({
   const [matchedPostcodePrice, setMatchedPostcodePrice] = useState(null);
 
   useEffect(() => {
-      const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-    
+    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+
     if (isEdit) return;
     const savedData = localStorage.getItem("bookingForm");
     const parsed = JSON.parse(savedData);
@@ -151,7 +159,7 @@ const WidgetBookingInformation = ({
     }));
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
     if (isEdit) {
       const timer = setTimeout(() => {
@@ -192,8 +200,7 @@ useEffect(() => {
       }, 150);
       return () => clearTimeout(timer);
     }
-    
-    // Normal mode - immediate load
+
     try {
       const savedVehicle = localStorage.getItem("selectedVehicle");
       if (!savedVehicle) return;
@@ -230,10 +237,9 @@ useEffect(() => {
     }
   }, [carList]);
 
-useEffect(() => {
+  useEffect(() => {
     const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-    
-    // In edit mode, wait for parent to seed data
+
     if (isEdit) {
       const timer = setTimeout(() => {
         try {
@@ -254,7 +260,7 @@ useEffect(() => {
       }, 150);
       return () => clearTimeout(timer);
     }
-    
+
     try {
       const rawPricing = localStorage.getItem("widgetPricing");
       if (!rawPricing) return;
@@ -279,7 +285,6 @@ useEffect(() => {
 
       const pickupName = formData.pickup.toLowerCase();
       const dropoffName = formData.dropoff.toLowerCase();
-
 
       const normalize = (text) =>
         text
@@ -396,11 +401,11 @@ useEffect(() => {
     return res?.location || null;
   };
 
-useEffect(() => {
+  useEffect(() => {
     const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-    
+
     const delay = isEdit ? 200 : 0;
-    
+
     const timer = setTimeout(() => {
       const storedForm = localStorage.getItem("bookingForm");
 
@@ -429,7 +434,6 @@ useEffect(() => {
           setDurationText(data.segments.map((s) => s.durationText).join(" + "));
         }
       }
-
 
       const calculateMultiSegmentDistance = async () => {
         const allDropoffs = [
@@ -575,7 +579,7 @@ useEffect(() => {
       setPickupPostcode(pickupCode);
       setDropoffPostcode(dropoffCode);
     }, delay);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -608,8 +612,8 @@ useEffect(() => {
   }, [pickupPostcode, dropoffPostcode, postcodePrices, formData]);
 
   useEffect(() => {
-      const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-    
+    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+
     if (isEdit) return;
     try {
       const savedData = localStorage.getItem("bookingForm");
@@ -661,8 +665,6 @@ useEffect(() => {
   };
 
   const activePricingMode = getActivePricingMode();
-
-
 
   useEffect(() => {
     const selectedCar = carList.find(c => c._id === selectedCarId);
@@ -728,9 +730,6 @@ useEffect(() => {
     calculateSegmentWiseFare,
     extraHelpPrice
   ]);
-
-
-  const [selectedHelpOption, setSelectedHelpOption] = useState(null);
 
   const handleSubmitBooking = () => {
     if (!selectedCarId || !formData) {
@@ -859,12 +858,7 @@ useEffect(() => {
           />
 
           <div className='mt-6'>
-            {isVehiclesLoading ? (
-              <div className="flex flex-col items-center justify-center p-12 bg-(--white) rounded-2xl border-2 border-dashed border-gray-100 italic text-gray-400">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--main-color) mb-4"></div>
-                Loading available vehicles...
-              </div>
-            ) : carList.length > 0 ? (
+            {carList.length > 0 ? (
               <CarCardSection
                 carList={carList.map((car) => {
                   let base = 0;
