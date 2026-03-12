@@ -10,12 +10,10 @@ const ConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
           Mark Booking as Completed?
         </h2>
         <p className="text-center text-(--dark-gray) mb-6">
-          Once you confirm, this booking will be permanently marked as &nbsp;
+          Are you sure, you want to mark booking as &nbsp;
           <span className="font-semibold text-(--success-color)">
-            
             Completed &nbsp;
           </span>
-          and cannot be changed.
         </p>
         <div className="flex items-center justify-center space-x-3 ">
           <button onClick={onConfirm} className="btn btn-success">

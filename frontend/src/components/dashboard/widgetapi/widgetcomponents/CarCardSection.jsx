@@ -9,6 +9,8 @@ const CarCardSection = ({
   onHelpSelect,
   currencySymbol = "$",
   savedExtraHelpPrice = null,
+  googleMinutes = 0,
+  roundedGoogleMinutes = 0,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState({});
 
@@ -112,7 +114,9 @@ const CarCardSection = ({
             };
         }
 
-        const currentTotalPrice = basePrice + (activeOption?.price || 0);
+        const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+        const fullDurationCharge = durationUnits * (car.halfHourPrice || 0);
+        const currentTotalPrice = basePrice + fullDurationCharge + (activeOption?.price || 0);
 
         return (
           <div
@@ -153,7 +157,7 @@ const CarCardSection = ({
                 </div>
                 <div className="text-right">
                   <div className="widget-price-large text-(--main-color)">
-                    {currencySymbol}{currentTotalPrice.toFixed(2)}
+                    {currencySymbol} {Math.round(currentTotalPrice)}
                   </div>
                   <p className="widget-label-tiny mt-0.5">Total Fare</p>
                 </div>

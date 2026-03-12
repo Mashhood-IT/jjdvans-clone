@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import Icons from "../../../assets/icons";
 import moment from "moment-timezone";
 import BookingTableRenderer from "./bookingsTable/BookingTableRenderer";
-import { useLocation } from "react-router-dom";
 
 const BookingsTable = ({
   assignedDrivers,
@@ -20,7 +19,6 @@ const BookingsTable = ({
   filteredBookings,
 }) => {
   const user = useSelector((state) => state.auth.user);
-  const location = useLocation();
   const timezone = useSelector((state) => state.timezone?.timezone) || "UTC";
   const [tooltip, setTooltip] = useState({ show: false, text: "", x: 0, y: 0 });
 
@@ -31,12 +29,8 @@ const BookingsTable = ({
     { key: "source", label: "Source" },
     { key: "passenger", label: "Passenger" },
     { key: "date", label: "Date" },
-    ...(location.pathname !== "/dashboard/bookings/completed"
-      ? [
-        { key: "status", label: "Status" },
-        { key: "actions", label: "Actions" },
-      ]
-      : []),
+    { key: "status", label: "Status" },
+    { key: "actions", label: "Actions" },
     { key: "vehicle", label: "Vehicle" },
     { key: "totalPrice", label: "Total Price" },
     { key: "paymentMethod", label: "Payment" },
@@ -88,7 +82,7 @@ const BookingsTable = ({
 
       {tooltip.show && (
         <div
-          className="fixed z-9999 w-62.5 max-w-sm px-3 py-4 text-[13px] text-(--dark-gray) leading-relaxed bg-(--white) border border-(--light-gray) rounded-md transition-all duration-300 ease-in-out"
+          className="fixed z-9999 w-[250px] max-w-sm px-3 py-4 text-[13px] text-[var(--dark-gray)] leading-relaxed bg-(--white) border border-(--light-gray) rounded-md transition-all duration-300 ease-in-out"
           style={{
             top: tooltip.y,
             left: tooltip.x,

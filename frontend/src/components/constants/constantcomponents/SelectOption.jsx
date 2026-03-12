@@ -6,14 +6,14 @@ const SelectOption = ({ options, label, width = "full", value, onChange, name, d
   const [isOpen, setIsOpen] = useState(false);
 
   const selectClass = classNames(
-    width === "full" ? "w-full" : `w-${width}`,
+    width === "full" ? "w-full" : width,
     "appearance-none px-3 py-1.5 text-sm border border-[var(--light-gray)] rounded-lg shadow-sm",
     "bg-(--white) dark:text-(--white)",
     "focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all cursor-pointer"
   );
 
   return (
-    <div className={classNames("w-full mb-1", width !== "full" && `sm:w-${width}`)}>
+<div className={classNames("mb-1", width === "full" ? "w-full" : width)}>
       {label && (
         <label className="block text-sm font-medium text-(--dark-grey) mb-1">
           {label}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import {
   useLazyGeocodeQuery,
@@ -23,8 +23,24 @@ const PrimaryForm = ({
   setFormData,
   companyId,
 }) => {
+
+  const serviceDropdownRef = useRef(null);
+  const serviceTimeoutRef = useRef(null);
+  const [showServiceDropdown, setShowServiceDropdown] = useState(false);
+  const [isHoveringService, setIsHoveringService] = useState(false);
+
   const [triggerSearchAutocomplete] = useLazySearchGooglePlacesQuery();
   const [triggerGeocode] = useLazyGeocodeQuery();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (serviceDropdownRef.current && !serviceDropdownRef.current.contains(event.target)) {
+        setShowServiceDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const REMOVAL_BOOKING_TYPES = [
     { label: "House Removals", value: "House Removals" },
@@ -141,22 +157,63 @@ const PrimaryForm = ({
       >
         <div className="grid grid-cols-12 gap-4 items-end">
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:pr-4">
-            <div className="relative">
-              <div className="flex items-center gap-x-1 text-(--black) font-bold">
+            <div
+              className="relative"
+              ref={serviceDropdownRef}
+              onMouseEnter={() => {
+                setIsHoveringService(true);
+                clearTimeout(serviceTimeoutRef.current);
+              }}
+              onMouseLeave={() => {
+                setIsHoveringService(false);
+
+                serviceTimeoutRef.current = setTimeout(() => {
+                  setShowServiceDropdown(false);
+                }, 2000);
+              }}
+            >           <div className="flex items-center gap-x-1 text-(--black) font-bold">
                 <Icons.Map size={15} />
                 <span>Service Type</span>
               </div>
-              <select
-                name="bookingType"
-                value={formData.bookingType || ""}
-                onChange={handleChange}
-                className="w-full pl-2 cursor-pointer pr-4 py-3 focus:outline-none focus:border-transparent appearance-none bg-(--white) placeholder:text-(--dark-gray) text-(--dark-gray)"
-              >
-                <option value="">Select service</option>
-                {REMOVAL_BOOKING_TYPES.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+              <div
+                className="w-full pl-2 pr-4 py-3 cursor-pointer text-(--dark-gray) bg-(--white)"
+                onClick={() => {
+                  setShowServiceDropdown((prev) => {
+                    const next = !prev;
+
+                    if (next) {
+                      clearTimeout(serviceTimeoutRef.current);
+                      serviceTimeoutRef.current = setTimeout(() => {
+                        if (!isHoveringService) {
+                          setShowServiceDropdown(false);
+                        }
+                      }, 2000);
+                    }
+
+                    return next;
+                  });
+                }}              >
+                {formData.bookingType
+                  ? REMOVAL_BOOKING_TYPES.find(opt => opt.value === formData.bookingType)?.label
+                  : "Select service"}
+              </div>
+
+              {showServiceDropdown && (
+                <div className="absolute z-50 w-full bg-(--white) border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                  {REMOVAL_BOOKING_TYPES.map(opt => (
+                    <div
+                      key={opt.value}
+                      className="px-2.5 py-1 cursor-pointer text-(--dark-gray) hover:bg-gray-100 transition-colors"
+                      onClick={() => {
+                        handleChange({ target: { name: "bookingType", value: opt.value } });
+                        setShowServiceDropdown(false);
+                      }}
+                    >
+                      {opt.label}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:px-4">

@@ -4,7 +4,7 @@ import FloorAccessibility from "./widgetcomponents/FloorAccessibility";
 import Icons from "../../../assets/icons";
 import { toast } from "react-toastify";
 
-const WidgetInventory = ({ onContinue, items, setItems }) => {
+const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoogleMinutes, roundedGoogleMinutes: passedRoundedMinutes }) => {
   const containerRef = useRef(null);
   const selectedVehicle = JSON.parse(
     localStorage.getItem("selectedVehicle") || "{}",
@@ -44,11 +44,11 @@ const WidgetInventory = ({ onContinue, items, setItems }) => {
     document.body.scrollTop = 0;
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-    
+
     const delay = isEdit ? 200 : 0;
-    
+
     const timer = setTimeout(() => {
       const savedInventory = localStorage.getItem("widgetInventoryData");
       if (savedInventory) {
@@ -110,12 +110,11 @@ useEffect(() => {
 
           if (totalMinutes > 0) {
             const rawGoogleMinutes = totalMinutes;
-            setInitialGoogleMinutes(rawGoogleMinutes);
+            const roundedVal = passedRoundedMinutes || Math.max(120, Math.ceil(rawGoogleMinutes / 30) * 30);
+            setInitialGoogleMinutes(roundedVal);
 
-            totalMinutes = Math.max(120, Math.ceil(totalMinutes / 30) * 30);
-
-            setEstimatedHours(Math.floor(totalMinutes / 60));
-            setEstimatedMinutes(totalMinutes % 60);
+            setEstimatedHours(Math.floor(roundedVal / 60));
+            setEstimatedMinutes(roundedVal % 60);
           }
 
           const ad = [
@@ -130,7 +129,7 @@ useEffect(() => {
         }
       }
     }, delay);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -268,7 +267,7 @@ useEffect(() => {
               />
               <button
                 onClick={handleAddItem}
-                className="px-4 py-2 cursor-pointer bg-(--light-gray) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
+                className="px-4 py-2 cursor-pointer bg-(--dark-grey) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
               >
                 Add
               </button>
@@ -424,14 +423,12 @@ useEffect(() => {
                 setPassengerCount(0);
               }
             }}
-            className={`relative cursor-pointer w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${
-              ridingAlong ? "bg-gray-900" : "bg-gray-300"
-            }`}
+            className={`relative cursor-pointer w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${ridingAlong ? "bg-gray-900" : "bg-gray-300"
+              }`}
           >
             <span
-              className={`absolute top-1 left-1 w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${
-                ridingAlong ? "translate-x-4 md:translate-x-6" : "translate-x-0"
-              }`}
+              className={`absolute top-1 left-1 w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${ridingAlong ? "translate-x-4 md:translate-x-6" : "translate-x-0"
+                }`}
             />
           </button>
         </div>

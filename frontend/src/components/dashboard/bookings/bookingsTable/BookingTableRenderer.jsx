@@ -8,6 +8,7 @@ import {
 } from "../../../../redux/api/bookingApi";
 import { useGetBookingSettingQuery } from "../../../../redux/api/bookingSettingsApi";
 import SelectOption from "../../../constants/constantcomponents/SelectOption";
+import { useLocation } from "react-router-dom";
 
 const BookingTableRenderer = ({
   emptyMessage,
@@ -28,6 +29,9 @@ const BookingTableRenderer = ({
   moment,
   timezone,
 }) => {
+  const location = useLocation()
+  console.log(location.pathname)
+  const newStatus = location.pathname.includes("completed") ? "Completed" : "New";
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -54,6 +58,7 @@ const BookingTableRenderer = ({
     return `£${Number(value).toFixed(2)}`;
   };
 
+
   const formatPassenger = (p) =>
     !p || typeof p !== "object" ? "-" : `${p.name || "N/A"}`;
 
@@ -72,9 +77,6 @@ const BookingTableRenderer = ({
           case "passenger":
             row[key] = formatPassenger(item.passenger);
             break;
-          case "pickup":
-            row[key] = item?.pickup || "";
-            break;
           case "status":
             if (item.status === "Deleted") {
               row[key] = (
@@ -82,7 +84,7 @@ const BookingTableRenderer = ({
                   <button
                     className="btn btn-success"
                     onClick={() => {
-                      updateBookingStatus({ id: item._id, status: "New" })
+                      updateBookingStatus({ id: item._id, status: newStatus })
                         .unwrap()
                         .then(() => toast.success("Booking Restored"))
                         .catch(() => toast.error("Failed to restore booking"));
@@ -105,7 +107,7 @@ const BookingTableRenderer = ({
             } else {
               row[key] = (
                 <SelectOption
-                  options={[
+                  width="min-w-28 w-full" options={[
                     { value: "New", label: "New" },
                     { value: "Completed", label: "Completed" },
                     { value: "Deleted", label: "Deleted" },
@@ -138,9 +140,6 @@ const BookingTableRenderer = ({
               );
             }
             break;
-          case "dropoff":
-            row[key] = item?.dropoff || "";
-            break;
           case "date": {
             const rawDate = item.date;
             const hour = item.hour;
@@ -172,7 +171,7 @@ const BookingTableRenderer = ({
             const pickupLocation = item.pickup || "-";
             row[key] = (
               <div
-                className="w-full max-w-62.5 truncate whitespace-nowrap cursor-default"
+                className="w-full max-w-[200px] truncate whitespace-nowrap cursor-default"
                 onMouseEnter={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   setTooltip({
@@ -196,7 +195,7 @@ const BookingTableRenderer = ({
             const dropoffLocation = item.dropoff || "-";
             row[key] = (
               <div
-                className="w-full max-w-62.5 truncate whitespace-nowrap cursor-default"
+                className="w-full max-w-[200px] truncate whitespace-nowrap cursor-default"
                 onMouseEnter={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   setTooltip({

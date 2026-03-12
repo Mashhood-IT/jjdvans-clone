@@ -37,7 +37,7 @@ const CompletedBookings = () => {
     }
   }, [isLoading]);
 
-  const completedBookings = allBookings.filter((booking) => booking.status === "Completed");
+  const completedBookings = allBookings.filter((booking) => booking.status !== "New");
 
   const filteredBookings = completedBookings.filter((booking) => {
     if (startDate || endDate) {

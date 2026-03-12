@@ -259,6 +259,7 @@ const VehiclePricing = () => {
                 type={(field.key === "vehicleName" || field.key === "description") ? "text" : "number"}
                 className="custom_input text-xs sm:text-sm shadow-sm border-gray-200 focus:border-(--main-color) focus:ring-1 focus:ring-(--main-color)"
                 value={selectedAccount?.[field.key] ?? ""}
+                onWheel={(e) => e.target.blur()}
                 onChange={(e) =>
                   setSelectedAccount({
                     ...selectedAccount,
@@ -308,15 +309,21 @@ const VehiclePricing = () => {
                     type="number"
                     placeholder="0"
                     className="custom_input text-xs sm:text-sm"
-                    value={help.price || 0}
+                    onWheel={(e) => e.target.blur()}
+
+                    value={help.price ?? ""}
                     onChange={(e) => {
                       const updated = [...selectedAccount.extraHelp];
-                      updated[index] = { ...updated[index], price: Number(e.target.value) };
+                      updated[index] = {
+                        ...updated[index],
+                        price: e.target.value === "" ? "" : Number(e.target.value)
+                      };
                       setSelectedAccount({
                         ...selectedAccount,
                         extraHelp: updated,
                       });
                     }}
+
                   />
                 </div>
                 <button

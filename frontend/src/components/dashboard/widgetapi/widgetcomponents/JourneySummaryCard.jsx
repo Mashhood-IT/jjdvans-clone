@@ -6,7 +6,6 @@ const JourneySummaryCard = ({
   formData,
   durationText,
   distanceText,
-  currencyCode = "GBP",
 }) => {
   const navigate = useNavigate()
   const dropList = [
@@ -19,35 +18,34 @@ const JourneySummaryCard = ({
 
   const convertToMiles = (distanceText) => {
     if (!distanceText) return "0 mi";
-    const match = distanceText.match(/([\d.]+)\s*(km|mi)/i);
+    const match = distanceText.match(/([\d.]+)\s*(km|mi|miles)/i);
     if (!match) return distanceText;
     const value = parseFloat(match[1]);
     const unit = match[2].toLowerCase();
     return unit === "km"
-      ? `${(value * 0.621371).toFixed(1)} mi`
-      : `${value.toFixed(1)} mi`;
+      ? `${(value * 0.621371).toFixed(2)} mi`
+      : `${value.toFixed(2)} mi`;
   };
 
   const getTotalDuration = (text) => {
-    if (!text) return "N/A";
+    if (!text) return { hours: 0, minutes: 0 };
     const segments = text.split("+").map((t) => t.trim());
     let totalMinutes = 0;
 
     segments.forEach((seg) => {
-      const hrMatch = seg.match(/(\d+)\s*hour/);
-      const minMatch = seg.match(/(\d+)\s*min/);
+      const hrMatch = seg.match(/(\d+)\s*hour/i);
+      const minMatch = seg.match(/(\d+)\s*min/i);
       if (hrMatch) totalMinutes += parseInt(hrMatch[1]) * 60;
       if (minMatch) totalMinutes += parseInt(minMatch[1]);
     });
 
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    if (hours && minutes) return `${hours}h ${minutes}m`;
-    if (hours) return `${hours}h`;
-    return `${minutes}m`;
+    return {
+      hours: Math.floor(totalMinutes / 60),
+      minutes: totalMinutes % 60
+    };
   };
 
-  const totalPrimaryDuration = getTotalDuration(durationText);
+  const { hours, minutes } = getTotalDuration(durationText);
 
   const primaryDistanceMiles = convertToMiles(distanceText);
 
@@ -63,7 +61,7 @@ const JourneySummaryCard = ({
               <div className="flex items-center justify-center w-7 h-7 bg-(--light-green) rounded-full shrink-0">
                 <Icons.MapPin className="w-4 h-4 text-(--success-color)" />
               </div>
-              <p className="widget-value-text text-(--white)">
+              <p className="widget-value-text-sm text-(--white)">
                 {formData?.pickup || "Pickup Location"}
               </p>
             </div>
@@ -78,7 +76,7 @@ const JourneySummaryCard = ({
                 <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
                   <Icons.MapPin className="w-4 h-4 text-(--primary-dark-red)" />
                 </div>
-                <p className="widget-value-text text-(--white)">
+                <p className="widget-value-text-sm text-(--white)">
                   {dropList.filter(Boolean)[0]}
                 </p>
               </div>
@@ -87,14 +85,13 @@ const JourneySummaryCard = ({
 
           {dropList.filter(Boolean).length > 1 && (
             <div className="space-y-4">
-              <p className="widget-label-small text-(--medium-grey) mb-2 flex items-center gap-1">
+              <p className="widget-label-small text-(--medium-grey) mb-2">
                 ADDITIONAL DROP-OFFS (2ND - 5TH)
-                <Icons.ChevronDown className="w-4 h-4" />
               </p>
               {dropList.filter(Boolean).slice(1).map((dropoff, idx) => (
-                <div key={idx} className="flex items-center gap-3 pl-4">
-                  <div className="flex items-center justify-center w-6 h-6 bg-(--light-red) rounded-full shrink-0">
-                    <Icons.MapPin className="w-3 h-3 text-(--primary-dark-red)" />
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
+                    <Icons.MapPin className="w-4 h-4 text-(--primary-dark-red)" />
                   </div>
                   <p className="widget-value-text-sm text-(--white)">
                     {dropoff}
@@ -115,7 +112,7 @@ const JourneySummaryCard = ({
                 <Icons.MapPin className="w-6 h-6 text-(--primary-dark-red)" />
                 <p className="widget-value-large text-(--white)">
                   {primaryDistanceMiles.replace(" mi", "")}
-                  <span className="widget-value-text ml-1">miles</span>
+                  <span className="widget-value-text ml-1">Miles</span>
                 </p>
               </div>
             </div>
@@ -127,8 +124,9 @@ const JourneySummaryCard = ({
               <div className="flex items-center justify-start gap-2">
                 <Icons.Clock className="w-6 h-6 text-(--white)" />
                 <p className="widget-value-large text-(--white)">
-                  {totalPrimaryDuration}
+                  {`${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`}
                 </p>
+                <span className="text-(--white) font-semibold mt-2">Hours</span>
               </div>
             </div>
           </div>
@@ -159,7 +157,6 @@ const JourneySummaryCard = ({
                 formData.minute,
               ).padStart(2, "0")} ${formData.hour < 12 ? "AM" : "PM"}`
               : "Time not set"}
-            <span className="text-(--medium-grey) ml-1">({currencyCode})</span>
           </span>
         </div>
       </div>

@@ -33,6 +33,8 @@ const WidgetBookingInformation = ({
   const [formData, setFormData] = useState(null);
   const [distanceText, setDistanceText] = useState(null);
   const [durationText, setDurationText] = useState(null);
+  const [googleMinutes, setGoogleMinutes] = useState(0);
+  const [roundedGoogleMinutes, setRoundedGoogleMinutes] = useState(120);
   const [matchedZonePrice, setMatchedZonePrice] = useState(null);
   const [matchedZoneToZonePrice, setMatchedZoneToZonePrice] = useState(null);
   const [fixedZonePrice, setFixedZonePrice] = useState(null);
@@ -425,14 +427,15 @@ const WidgetBookingInformation = ({
         setDistanceText(`${totalMiles.toFixed(2)} mi`);
 
         const totalSeconds = data.segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
-        if (totalSeconds > 0) {
-          const totalMinutes = Math.max(120, Math.round(totalSeconds / 60));
-          const hours = Math.floor(totalMinutes / 60);
-          const mins = totalMinutes % 60;
-          setDurationText(`${hours} hours ${mins} mins`);
-        } else {
-          setDurationText(data.segments.map((s) => s.durationText).join(" + "));
-        }
+        const rawMins = totalSeconds > 0 ? totalSeconds / 60 : 0;
+        setGoogleMinutes(rawMins);
+        
+        const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
+        setRoundedGoogleMinutes(roundedMins);
+
+        const hours = Math.floor(roundedMins / 60);
+        const mins = roundedMins % 60;
+        setDurationText(`${hours} hours ${mins} mins`);
       }
 
       const calculateMultiSegmentDistance = async () => {
@@ -478,7 +481,9 @@ const WidgetBookingInformation = ({
               }
 
               let segmentMiles = 0;
-              if (res.distanceText.includes("km")) {
+              if (res.distanceValue) {
+                segmentMiles = parseFloat((res.distanceValue / 1609.344).toFixed(2));
+              } else if (res.distanceText.includes("km")) {
                 const km = parseFloat(res.distanceText.replace("km", "").trim());
                 segmentMiles = parseFloat((km * 0.621371).toFixed(2));
               } else if (res.distanceText.includes("mi")) {
@@ -506,9 +511,14 @@ const WidgetBookingInformation = ({
             setDistanceText(`${totalMiles.toFixed(2)} mi`);
 
             const totalSeconds = segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
-            const totalMinutes = Math.max(120, Math.round(totalSeconds / 60));
-            const hours = Math.floor(totalMinutes / 60);
-            const mins = totalMinutes % 60;
+            const rawMins = totalSeconds / 60;
+            setGoogleMinutes(rawMins);
+
+            const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
+            setRoundedGoogleMinutes(roundedMins);
+
+            const hours = Math.floor(roundedMins / 60);
+            const mins = roundedMins % 60;
             setDurationText(`${hours} hours ${mins} mins`);
 
             const updatedData = { ...data, segments };
@@ -524,20 +534,29 @@ const WidgetBookingInformation = ({
 
             const res = await triggerDistance({ origin, destination, companyId }).unwrap();
 
-            if (res?.distanceText?.includes("km")) {
+            if (res.distanceValue) {
+              totalMiles = parseFloat((res.distanceValue / 1609.344).toFixed(2));
+              setDistanceText(`${totalMiles} mi`);
+              setActualMiles(totalMiles);
+            } else if (res?.distanceText?.includes("km")) {
               const km = parseFloat(res.distanceText.replace("km", "").trim());
               totalMiles = parseFloat((km * 0.621371).toFixed(2));
-              setDistanceText(`${totalMiles} miles`);
+              setDistanceText(`${totalMiles} mi`);
               setActualMiles(totalMiles);
             } else if (res?.distanceText?.includes("mi")) {
               totalMiles = parseFloat(res.distanceText.replace("mi", "").trim());
-              setDistanceText(`${totalMiles} miles`);
+              setDistanceText(`${totalMiles} mi`);
               setActualMiles(totalMiles);
             }
 
-            const totalMinutes = Math.max(120, Math.round((res?.durationValue || 0) / 60));
-            const hours = Math.floor(totalMinutes / 60);
-            const mins = totalMinutes % 60;
+            const rawMins = (res?.durationValue || 0) / 60;
+            setGoogleMinutes(rawMins);
+
+            const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
+            setRoundedGoogleMinutes(roundedMins);
+
+            const hours = Math.floor(roundedMins / 60);
+            const mins = roundedMins % 60;
             setDurationText(`${hours} hours ${mins} mins`);
 
             const singleSegment = [{
@@ -629,25 +648,6 @@ const WidgetBookingInformation = ({
     }
   }, []);
 
-  const calculateSegmentWiseFare = useCallback((vehicle) => {
-    if (!segmentBreakdown || segmentBreakdown.length === 0) {
-      return getVehiclePriceForDistance(vehicle, actualMiles || 0);
-    }
-
-    if (segmentBreakdown.length === 1) {
-      return getVehiclePriceForDistance(vehicle, segmentBreakdown[0].miles);
-    }
-
-    let totalFare = 0;
-
-    segmentBreakdown.forEach((segment) => {
-      const segmentFare = getVehiclePriceForDistance(vehicle, segment.miles);
-      totalFare += segmentFare;
-    });
-
-
-    return totalFare;
-  }, [segmentBreakdown, getVehiclePriceForDistance, currencySymbol, actualMiles]);
 
   const getActivePricingMode = () => {
     const allDropoffs = [
@@ -686,9 +686,12 @@ const WidgetBookingInformation = ({
         coreFare = fixedZonePrice !== null ? fixedZonePrice : matchedZoneToZonePrice || 0;
         break;
       default:
-        coreFare = calculateSegmentWiseFare(selectedCar);
+        coreFare = getVehiclePriceForDistance(selectedCar, actualMiles || 0);
         break;
     }
+
+    const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+    const fullDurationCharge = durationUnits * (selectedCar.halfHourPrice || 0);
 
     const baseWithMarkup =
       (activePricingMode === 'postcode' || activePricingMode === 'zone')
@@ -704,7 +707,8 @@ const WidgetBookingInformation = ({
       surchargeAmount -
       discountAmount +
       (matchedZonePrice || 0) +
-      (dropOffPrice || 0)
+      (dropOffPrice || 0) +
+      fullDurationCharge;
 
     const primaryAirportFee = calculatePrimaryAirportFees();
 
@@ -713,7 +717,6 @@ const WidgetBookingInformation = ({
         primaryAirportFee
       ).toFixed(2)
     );
-
 
     setCalculatedTotalPrice(grandTotal + (extraHelpPrice || 0));
   }, [
@@ -727,7 +730,7 @@ const WidgetBookingInformation = ({
     matchedSurcharge,
     dropOffPrice,
     matchedDiscount,
-    calculateSegmentWiseFare,
+    getVehiclePriceForDistance,
     extraHelpPrice
   ]);
 
@@ -757,6 +760,8 @@ const WidgetBookingInformation = ({
       baseFare: primaryJourneyFare,
       selectedCar: vehiclePayload,
       segmentBreakdown,
+      googleMinutes,
+      roundedGoogleMinutes,
     });
   };
 
@@ -781,23 +786,26 @@ const WidgetBookingInformation = ({
         coreFare = fixedZonePrice !== null ? fixedZonePrice : matchedZoneToZonePrice || 0;
         break;
       default:
-        coreFare = calculateSegmentWiseFare(selectedCar);
+        coreFare = getVehiclePriceForDistance(selectedCar, actualMiles || 0);
         break;
     }
+
+    const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+    const fullDurationCharge = durationUnits * (selectedCar.halfHourPrice || 0);
 
     const baseWithMarkup =
       (activePricingMode === 'postcode' || activePricingMode === 'zone')
         ? coreFare + (coreFare * (percentage / 100))
         : coreFare;
 
-    return baseWithMarkup;
+    return baseWithMarkup + fullDurationCharge;
   }, [
     selectedCar,
     activePricingMode,
     matchedPostcodePrice,
     fixedZonePrice,
     matchedZoneToZonePrice,
-    calculateSegmentWiseFare,
+    getVehiclePriceForDistance,
     matchedSurcharge,
     matchedZonePrice,
     dropOffPrice
@@ -865,6 +873,9 @@ const WidgetBookingInformation = ({
                   const raw = car.percentageIncrease ?? 0;
                   const percentage = isNaN(parseFloat(raw)) ? 0 : parseFloat(raw);
 
+                  const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+                  const fullDurationCharge = durationUnits * (car.halfHourPrice || 0);
+
                   if (fixedZonePrice !== null) {
                     base = fixedZonePrice + (fixedZonePrice * (percentage / 100));
                   } else if (matchedZoneToZonePrice !== null) {
@@ -872,7 +883,7 @@ const WidgetBookingInformation = ({
                   } else if (matchedPostcodePrice) {
                     base = matchedPostcodePrice.price + (matchedPostcodePrice.price * (percentage / 100));
                   } else {
-                    base = calculateSegmentWiseFare(car);
+                    base = getVehiclePriceForDistance(car, actualMiles || 0);
                   }
 
                   return {
@@ -885,6 +896,8 @@ const WidgetBookingInformation = ({
                 selectedCarId={selectedCarId}
                 formData={formData}
                 savedExtraHelpPrice={extraHelpPrice}
+                googleMinutes={googleMinutes}
+                roundedGoogleMinutes={roundedGoogleMinutes}
                 onSelect={(id) => {
                   setSelectedCarId(id);
                   const selectedCar = carList.find(car => car._id === id);

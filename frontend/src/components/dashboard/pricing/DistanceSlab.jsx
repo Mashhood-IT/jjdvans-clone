@@ -191,6 +191,7 @@ const DistanceSlab = () => {
           <div className="w-16 sm:w-20">
             <input
               type="number"
+              onWheel={(e) => e.target.blur()}
               className="custom_input text-xs sm:text-sm"
               value={item.from}
               onChange={(e) =>
@@ -203,6 +204,7 @@ const DistanceSlab = () => {
           <div className="w-16 sm:w-20">
             <input
               type="number"
+              onWheel={(e) => e.target.blur()}
               className="custom_input text-xs sm:text-sm"
               value={item.to}
               onChange={(e) => updateRow(idx, "to", parseFloat(e.target.value))}
@@ -214,6 +216,7 @@ const DistanceSlab = () => {
         <div className="w-20 sm:w-24">
           <input
             type="number"
+            onWheel={(e) => e.target.blur()}
             className="custom_input text-xs sm:text-sm"
             value={item.pricePerMile}
             onChange={(e) =>

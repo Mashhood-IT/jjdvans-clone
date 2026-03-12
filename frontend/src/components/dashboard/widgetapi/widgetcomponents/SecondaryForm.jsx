@@ -35,6 +35,69 @@ const SecondaryForm = ({
         handleChange(e);
     };
 
+    const [distanceText, setDistanceText] = useState("");
+
+    useEffect(() => {
+        const calculateDistance = async () => {
+            if (!window.google?.maps || !pickupCoords) {
+                setDistanceText("");
+                return;
+            }
+
+            const validDropoffs = Object.entries(dropoffCoords)
+                .sort(([keyA], [keyB]) => Number(keyA) - Number(keyB))
+                .filter(([_, coords]) => coords?.lat && coords?.lng)
+                .map(([_, coords]) => ({ lat: coords.lat, lng: coords.lng }));
+
+            if (validDropoffs.length === 0) {
+                setDistanceText("");
+                return;
+            }
+
+            try {
+                const directionsService = new window.google.maps.DirectionsService();
+
+                // Correct sequence: Pickup -> Dropoff 0 -> Dropoff 1 -> ... -> Dropoff N
+                // The last valid dropoff is the final destination
+                // All intermediate dropoffs (including the first one, if there are more) are waypoints
+                const destination = new window.google.maps.LatLng(
+                    validDropoffs[validDropoffs.length - 1].lat,
+                    validDropoffs[validDropoffs.length - 1].lng
+                );
+
+                const waypoints = validDropoffs.slice(0, -1).map(coords => ({
+                    location: new window.google.maps.LatLng(coords.lat, coords.lng),
+                    stopover: true
+                }));
+
+                const request = {
+                    origin: new window.google.maps.LatLng(pickupCoords.lat, pickupCoords.lng),
+                    destination: destination,
+                    waypoints: waypoints,
+                    travelMode: window.google.maps.TravelMode.DRIVING,
+                };
+
+                directionsService.route(request, (result, status) => {
+                    if (status === 'OK') {
+                        let totalDistanceMeters = 0;
+                        result.routes[0].legs.forEach(leg => {
+                            totalDistanceMeters += leg.distance.value;
+                        });
+                        const totalMiles = (totalDistanceMeters / 1609.344).toFixed(2);
+                        setDistanceText(`${totalMiles} mi`);
+                    } else {
+                        console.error('Directions request failed:', status);
+                        setDistanceText("");
+                    }
+                });
+            } catch (error) {
+                console.error('Error calculating distance:', error);
+                setDistanceText("");
+            }
+        };
+
+        calculateDistance();
+    }, [pickupCoords, dropoffCoords]);
     useEffect(() => {
         const restoreMarkers = async () => {
             if (formData?.pickup && !pickupCoords) {
@@ -171,7 +234,8 @@ const SecondaryForm = ({
                 <div>
                     <div className="mb-6 flex items-center justify-between">
                         <div>
-                            <h2 className="text-xl font-bold text-(--dark-gray) mb-2">Booking Details</h2>
+                            <h2 className="text-xl font-bold text-(--dark-gray) mb-2 flex items-center gap-2">Booking Details<span className="text-xs">{distanceText && `(${distanceText})`} </span>
+                            </h2>
                             <div className="h-1 w-12 bg-(--widgetBtnBg) rounded-full"></div>
                         </div>
                         <button
@@ -365,7 +429,7 @@ const SecondaryForm = ({
                         </button>
                     </div>
                 </div>
-            </form>
+            </form >
 
             <div className="md:col-span-6 col-span-12">
                 <LocationMap
@@ -376,7 +440,7 @@ const SecondaryForm = ({
                     companyId={companyId}
                 />
             </div>
-        </div>
+        </div >
     );
 };
 
