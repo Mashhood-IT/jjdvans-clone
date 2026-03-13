@@ -199,40 +199,18 @@ const WidgetMain = () => {
       const pricingData = pricingDataRaw ? JSON.parse(pricingDataRaw) : {};
 
       const additionalFare = Number(inventoryData.additionalFare || 0);
+      const floorCharges = Number(inventoryData.floorCharges || 0);
+      const accessTypeCharges = Number(inventoryData.accessTypeCharges || 0);
       const workersCharges = Number(pricingData.extraHelp?.price || 0);
       const baseFare = Number(pricingData.baseFare || finalPayload.fare || 0);
 
-      const totalPrice = baseFare + additionalFare + workersCharges;
+      const totalPrice = baseFare + additionalFare + floorCharges + accessTypeCharges + workersCharges;
 
       const bookingFormRaw = localStorage.getItem("bookingForm");
       const bookingFormData = bookingFormRaw ? JSON.parse(bookingFormRaw) : {};
-      let distanceText = "";
-      let durationText = "";
-      if (
-        bookingFormData.segments &&
-        Array.isArray(bookingFormData.segments) &&
-        bookingFormData.segments.length > 0
-      ) {
-        const totalMiles = bookingFormData.segments.reduce(
-          (sum, seg) => sum + (seg.miles || 0),
-          0,
-        );
-        distanceText = `${totalMiles.toFixed(2)} mi`;
-        const totalSeconds = bookingFormData.segments.reduce(
-          (sum, seg) => sum + (seg.durationValue || 0),
-          0,
-        );
-        if (totalSeconds > 0) {
-          const hours = Math.floor(totalSeconds / 3600);
-          const mins = Math.round((totalSeconds % 3600) / 60);
-          durationText =
-            hours > 0 ? `${hours} hours ${mins} mins` : `${mins} mins`;
-        } else {
-          durationText = bookingFormData.segments
-            .map((s) => s.durationText)
-            .join(" + ");
-        }
-      }
+      
+      const distanceText = bookingFormData.distanceText || "";
+      const durationText = bookingFormData.durationText || "";
 
       const rawAddedMinutes = Math.max(
         0,

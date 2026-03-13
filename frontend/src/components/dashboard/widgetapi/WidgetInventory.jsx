@@ -1,13 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 import FloorAccessibility from "./widgetcomponents/FloorAccessibility";
 import Icons from "../../../assets/icons";
 import { toast } from "react-toastify";
+import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 
 const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoogleMinutes, roundedGoogleMinutes: passedRoundedMinutes }) => {
   const containerRef = useRef(null);
   const selectedVehicle = JSON.parse(
     localStorage.getItem("selectedVehicle") || "{}",
+  );
+  const widgetPricing = JSON.parse(
+    localStorage.getItem("widgetPricing") || "{}",
   );
   const totalSeats = selectedVehicle.passengerSeats || 0;
   const [pickupFloor, setPickupFloor] = useState(0);
@@ -38,6 +42,58 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
   const [primaryPickupAddress, setPrimaryPickupAddress] = useState("");
   const [primaryDropoffAddress, setPrimaryDropoffAddress] = useState("");
 
+  const companyId =
+    new URLSearchParams(window.location.search).get("company") || "";
+  const { data: settingsData } = useGetPublicBookingSettingQuery(companyId, {
+    skip: !companyId,
+  });
+
+  const currencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
+
+  const { floorCharges, accessTypeCharges } = useMemo(() => {
+    if (!settingsData?.setting) return { floorCharges: 0, accessTypeCharges: 0 };
+    const {
+      pricePerFloor = 0,
+      priceForStairs = 0,
+      priceForLift = 0,
+    } = settingsData.setting;
+
+    let totalFloor = 0;
+    let totalAccess = 0;
+
+    // Pickup
+    totalFloor += (pickupFloor || 0) * pricePerFloor;
+    totalAccess += pickupAccess === "STAIRS" ? priceForStairs : priceForLift;
+
+    // Dropoff
+    totalFloor += (dropoffFloor || 0) * pricePerFloor;
+    totalAccess += dropoffAccess === "STAIRS" ? priceForStairs : priceForLift;
+
+    // Additional Dropoffs
+    additionalDropoffs.forEach((ad) => {
+      const floor = floorAccess[`additionalDropoff${ad.id}Floor`] || 0;
+      const access = floorAccess[`additionalDropoff${ad.id}Access`] || "STAIRS";
+      totalFloor += floor * pricePerFloor;
+      totalAccess += access === "STAIRS" ? priceForStairs : priceForLift;
+    });
+
+    return { floorCharges: totalFloor, accessTypeCharges: totalAccess };
+  }, [
+    pickupFloor,
+    dropoffFloor,
+    pickupAccess,
+    dropoffAccess,
+    floorAccess,
+    additionalDropoffs,
+    settingsData,
+  ]);
+
+  const totalFare = useMemo(() => {
+    const base = widgetPricing.baseFare || 0;
+    const extraHelp = widgetPricing.extraHelp?.price || 0;
+    return base + additionalFare + floorCharges + accessTypeCharges + extraHelp;
+  }, [widgetPricing.baseFare, additionalFare, floorCharges, accessTypeCharges, widgetPricing.extraHelp?.price]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     document.documentElement.scrollTop = 0;
@@ -45,7 +101,8 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
   }, []);
 
   useEffect(() => {
-    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
+    const isEdit =
+      new URLSearchParams(window.location.search).get("isEdit") === "true";
 
     const delay = isEdit ? 200 : 0;
 
@@ -82,40 +139,24 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
           const data = JSON.parse(bookingForm);
           if (data.pickup) setPrimaryPickupAddress(data.pickup);
           if (data.dropoff) setPrimaryDropoffAddress(data.dropoff);
-          let totalMinutes = 0;
+          if (data.distanceText) {
+            setGoogleDistanceText(data.distanceText);
+          } else if (data.segments?.length > 0) {
+            const totalMiles = data.segments.reduce((sum, seg) => sum + (seg.miles || 0), 0);
+            setGoogleDistanceText(`${totalMiles.toFixed(2)} mi`);
+          }
 
-          if (
-            data.segments &&
-            Array.isArray(data.segments) &&
-            data.segments.length > 0
-          ) {
-            const combinedDuration = data.segments
-              .map((s) => s.durationText)
-              .join(" + ");
-            setGoogleDurationText(combinedDuration);
-
-            data.segments.forEach((seg) => {
-              totalMinutes += parseDurationToMinutes(seg.durationText);
-            });
-
-            const totalMiles = data.segments.reduce(
-              (sum, seg) => sum + (seg.miles || 0),
-              0,
-            );
-            setGoogleDistanceText(`${totalMiles.toFixed(1)} mi`);
-          } else if (data.durationText) {
+          if (data.durationText) {
             setGoogleDurationText(data.durationText);
-            totalMinutes = parseDurationToMinutes(data.durationText);
+          } else if (data.segments?.length > 0) {
+            const combinedDuration = data.segments.map((s) => s.durationText).join(" + ");
+            setGoogleDurationText(combinedDuration);
           }
 
-          if (totalMinutes > 0) {
-            const rawGoogleMinutes = totalMinutes;
-            const roundedVal = passedRoundedMinutes || Math.max(120, Math.ceil(rawGoogleMinutes / 30) * 30);
-            setInitialGoogleMinutes(roundedVal);
-
-            setEstimatedHours(Math.floor(roundedVal / 60));
-            setEstimatedMinutes(roundedVal % 60);
-          }
+          const roundedVal = data.roundedGoogleMinutes || passedRoundedMinutes || 120;
+          setInitialGoogleMinutes(roundedVal);
+          setEstimatedHours(Math.floor(roundedVal / 60));
+          setEstimatedMinutes(roundedVal % 60);
 
           const ad = [
             { id: 1, address: data.additionalDropoff1 },
@@ -205,6 +246,8 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
       items,
       initialGoogleMinutes,
       additionalFare,
+      floorCharges,
+      accessTypeCharges,
       floorAccess,
     };
     localStorage.setItem("widgetInventoryData", JSON.stringify(inventoryData));
@@ -314,6 +357,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
         )}
       </div>
 
+
       <FloorAccessibility
         pickupFloor={pickupFloor}
         setPickupFloor={setPickupFloor}
@@ -328,77 +372,11 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
         additionalDropoffs={additionalDropoffs}
         floorAccess={floorAccess}
         setFloorAccess={setFloorAccess}
+        pricePerFloor={settingsData?.setting?.pricePerFloor}
+        priceForStairs={settingsData?.setting?.priceForStairs}
+        priceForLift={settingsData?.setting?.priceForLift}
+        currencySymbol={currencySymbol}
       />
-
-      <div className="bg-gray-900 rounded-lg md:p-8 p-3 mb-6 relative">
-        {(googleDurationText || googleDistanceText) && (
-          <div className="flex items-center justify-center gap-4 mb-4">
-            {googleDistanceText && (
-              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
-                <Icons.MapPin className="w-3 h-3" />
-                Route: {googleDistanceText}
-              </span>
-            )}
-            {googleDurationText && (
-              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
-                <Icons.Clock className="w-3 h-3" />
-                Drive time: {googleDurationText}
-              </span>
-            )}
-          </div>
-        )}
-
-        <div className="text-center mb-4">
-          <p className="widget-label-small text-gray-400 mb-6">
-            Estimated Duration
-          </p>
-
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <button
-              onClick={() => adjustDuration(false)}
-              className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
-            >
-              <Icons.Minus className="w-5 h-5 text-(--white)" />
-            </button>
-
-            <div className="flex items-center gap-2">
-              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
-                {String(estimatedHours).padStart(2, "0")}
-              </span>
-              <span className="widget-value-large text-6xl text-(--white)">
-                :
-              </span>
-              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
-                {String(estimatedMinutes).padStart(2, "0")}
-              </span>
-            </div>
-
-            <button
-              onClick={() => adjustDuration(true)}
-              className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
-            >
-              <Icons.Plus className="w-5 h-5 text-(--white)" />
-            </button>
-          </div>
-
-          <p className="widget-label-small text-gray-500 mb-4">
-            Hours : Minutes
-          </p>
-        </div>
-
-        <p className="widget-option-text text-center text-gray-400">
-          Adjustments vary ±30-minute increments
-        </p>
-
-        <div className="mt-4 pt-4 border-t border-gray-700">
-          <p className="widget-description text-gray-400 text-center">
-            Additional time charges
-          </p>
-          <p className="widget-price-large text-(--white) text-center">
-            £{additionalFare.toFixed(2)}
-          </p>
-        </div>
-      </div>
 
       <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
         <h2 className="widget-section-title text-gray-900 mb-6">
@@ -479,6 +457,119 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
             )}
           </div>
         )}
+      </div>
+
+      <div className="bg-gray-900 rounded-lg md:p-8 p-3 mb-6 relative">
+        {(googleDurationText || googleDistanceText) && (
+          <div className="flex items-center justify-center gap-4 mb-4">
+            {googleDistanceText && (
+              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
+                <Icons.MapPin className="w-3 h-3" />
+                Route: {googleDistanceText}
+              </span>
+            )}
+            {googleDurationText && (
+              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
+                <Icons.Clock className="w-3 h-3" />
+                Drive time: {googleDurationText}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="text-center mb-4">
+          <p className="widget-label-small text-gray-400 mb-6">
+            Estimated Duration
+          </p>
+
+          <div className="flex items-center justify-center gap-6 mb-6">
+            <button
+              onClick={() => adjustDuration(false)}
+              className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
+            >
+              <Icons.Minus className="w-5 h-5 text-(--white)" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
+                {String(estimatedHours).padStart(2, "0")}
+              </span>
+              <span className="widget-value-large text-6xl text-(--white)">
+                :
+              </span>
+              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
+                {String(estimatedMinutes).padStart(2, "0")}
+              </span>
+            </div>
+
+            <button
+              onClick={() => adjustDuration(true)}
+              className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
+            >
+              <Icons.Plus className="w-5 h-5 text-(--white)" />
+            </button>
+          </div>
+
+          <p className="widget-label-small text-gray-500 mb-4">
+            Hours : Minutes
+          </p>
+        </div>
+
+        <p className="widget-option-text text-center text-gray-400">
+          Adjustments vary ±30-minute increments
+        </p>
+
+        <div className="mt-6 pt-6 border-t border-gray-700 space-y-3">
+          <div className="flex justify-between items-center text-gray-400">
+            <span className="text-sm">Base Fare</span>
+            <span className="font-semibold text-(--white)">
+              {currencySymbol} {(widgetPricing.baseFare || 0).toFixed(2)}
+            </span>
+          </div>
+
+          {additionalFare > 0 && (
+            <div className="flex justify-between items-center text-gray-400">
+              <span className="text-sm">Additional Time Charge</span>
+              <span className="font-semibold text-(--white)">
+                {currencySymbol} {additionalFare.toFixed(2)}
+              </span>
+            </div>
+          )}
+
+          {floorCharges > 0 && (
+            <div className="flex justify-between items-center text-gray-400">
+              <span className="text-sm">Floor Level Charges</span>
+              <span className="font-semibold text-(--white)">
+                {currencySymbol} {floorCharges.toFixed(2)}
+              </span>
+            </div>
+          )}
+
+          {accessTypeCharges > 0 && (
+            <div className="flex justify-between items-center text-gray-400">
+              <span className="text-sm">Access Type Charges (Lift/Stairs)</span>
+              <span className="font-semibold text-(--white)">
+                {currencySymbol} {accessTypeCharges.toFixed(2)}
+              </span>
+            </div>
+          )}
+
+          {widgetPricing.extraHelp?.price > 0 && (
+            <div className="flex justify-between items-center text-gray-400">
+              <span className="text-sm">Extra Men Charges</span>
+              <span className="font-semibold text-(--white)">
+                {currencySymbol} {widgetPricing.extraHelp.price.toFixed(2)}
+              </span>
+            </div>
+          )}
+
+          <div className="pt-3 border-t border-gray-700 flex justify-between items-center">
+            <span className="text-gray-300 font-bold">Total Estimated Fare</span>
+            <span className="text-2xl font-bold text-(--white)">
+              {currencySymbol} {totalFare.toFixed(2)}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-end items-center gap-3">

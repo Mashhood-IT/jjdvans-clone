@@ -1,24 +1,21 @@
 import fetch from "node-fetch";
-import { google } from "googleapis";
 import BookingSetting from "../models/settings/bookingSettings.js";
 
 const getGoogleKeys = async (companyId) => {
-  let serverKey = process.env.GOOGLE_API_KEY || "";
-  let browserKey = process.env.GOOGLE_API_KEY || "";
+  let apiKey = "";
 
   if (companyId) {
     try {
       const settings = await BookingSetting.findOne({ companyId });
-      if (settings && settings.googleApiKeys) {
-        if (settings.googleApiKeys.server) serverKey = settings.googleApiKeys.server;
-        if (settings.googleApiKeys.browser) browserKey = settings.googleApiKeys.browser;
+      if (settings && settings.googleApiKey) {
+        apiKey = settings.googleApiKey;
       }
     } catch (err) {
-      console.error("Error fetching Google keys from DB:", err);
+      console.error("Error fetching Google key from DB:", err);
     }
   }
 
-  return { server: serverKey, browser: browserKey };
+  return { server: apiKey, browser: apiKey };
 };
 
 const airportTerminals = {

@@ -18,16 +18,6 @@ const CurrencySchema = new mongoose.Schema({
     }
 }, { _id: false });
 
-const GoogleApiKeysSchema = new mongoose.Schema({
-    browser: {
-        type: String,
-        default: ""
-    },
-    server: {
-        type: String,
-        default: ""
-    },
-}, { _id: false });
 
 const StripeKeysSchema = new mongoose.Schema({
     publishableKey: {
@@ -87,9 +77,9 @@ const BookingSettingSchema = new mongoose.Schema({
         default: "New Bookings Only"
     },
 
-    googleApiKeys: {
-        type: GoogleApiKeysSchema,
-        default: () => ({})
+    googleApiKey: {
+        type: String,
+        default: ""
     },
 
     stripeKeys: {
@@ -107,6 +97,19 @@ const BookingSettingSchema = new mongoose.Schema({
             value: 12,
             unit: "Hours"
         })
+    },
+
+    pricePerFloor: {
+        type: Number,
+        default: 0
+    },
+    priceForStairs: {
+        type: Number,
+        default: 0
+    },
+    priceForLift: {
+        type: Number,
+        default: 0
     },
 
 }, { timestamps: true });

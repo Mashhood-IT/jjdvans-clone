@@ -21,14 +21,14 @@ export const getBookingSetting = async (req, res) => {
                     symbol: "£"
                 }],
                 currencyApplication: "New Bookings Only",
-                googleApiKeys: {
-                    browser: "",
-                    server: "",
-                },
+                googleApiKey: "",
                 advanceBookingMin: {
                     value: 12,
                     unit: "Hours"
                 },
+                pricePerFloor: 0,
+                priceForStairs: 0,
+                priceForLift: 0,
             });
         }
 
@@ -50,10 +50,13 @@ export const updateBookingSetting = async (req, res) => {
         const {
             currency,
             currencyApplication,
-            googleApiKeys,
+            googleApiKey,
             stripeKeys,
             paypalKeys,
             advanceBookingMin,
+            pricePerFloor,
+            priceForStairs,
+            priceForLift,
         } = req.body;
 
         if (currency && (!Array.isArray(currency) || currency.length === 0)) {
@@ -78,10 +81,13 @@ export const updateBookingSetting = async (req, res) => {
             {
                 currency,
                 currencyApplication,
-                googleApiKeys,
+                googleApiKey,
                 stripeKeys,
                 paypalKeys,
                 advanceBookingMin,
+                pricePerFloor,
+                priceForStairs,
+                priceForLift,
             },
             { new: true, upsert: true, runValidators: true }
         );
@@ -161,6 +167,7 @@ export const getPublicBookingSetting = async (req, res) => {
             currency: setting.currency,
             currencyApplication: setting.currencyApplication,
             advanceBookingMin: setting.advanceBookingMin,
+            googleApiKey: setting.googleApiKey,
             stripeKeys: setting.stripeKeys ? {
                 publishableKey: setting.stripeKeys.publishableKey,
                 enabled: !!(setting.stripeKeys.publishableKey && setting.stripeKeys.secretKey)
@@ -169,6 +176,9 @@ export const getPublicBookingSetting = async (req, res) => {
                 clientId: setting.paypalKeys.clientId,
                 enabled: !!(setting.paypalKeys.clientId && setting.paypalKeys.clientSecret)
             } : null,
+            pricePerFloor: setting.pricePerFloor || 0,
+            priceForStairs: setting.priceForStairs || 0,
+            priceForLift: setting.priceForLift || 0,
         };
 
         res.status(200).json({ setting: publicSetting });

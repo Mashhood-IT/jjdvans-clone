@@ -41,7 +41,7 @@ const WidgetPaymentInformation = ({
     babySeat: "",
     carSeat: "",
     boosterSeat: "",
-    paymentMethod: "Cash",
+    paymentMethod: "",
   });
 
   const [localVehicle, setLocalVehicle] = useState(vehicle);
@@ -189,21 +189,27 @@ const WidgetPaymentInformation = ({
     const baseFare = Number(pricingData.baseFare || 0);
     const workersCharges = Number(pricingData.extraHelp?.price || 0);
     const extraTimeCharges = Number(inventoryData.additionalFare || 0);
+    const floorCharges = Number(inventoryData.floorCharges || 0);
+    const accessTypeCharges = Number(inventoryData.accessTypeCharges || 0);
 
     const childSeatCount = parseIntSafe(formData.childSeat || "0");
     const childSeatTotal = childSeatCount * childSeatUnitPrice;
 
-    const total = baseFare + workersCharges + extraTimeCharges + childSeatTotal;
+    const total = baseFare + workersCharges + extraTimeCharges + floorCharges + accessTypeCharges + childSeatTotal;
+    const depositAmount = total * 0.35;
 
     return {
       baseFare,
       workersCharges,
       extraTimeCharges,
+      floorCharges,
+      accessTypeCharges,
       childSeatTotal,
       total,
+      depositAmount,
       currencySymbol: pricingData.currencySymbol || currencySymbol
     };
-  }, [formData.childSeat, childSeatUnitPrice]);
+  }, [formData.childSeat, childSeatUnitPrice, currencySymbol]);
 
   const finalFare = pricingInfo.total;
 
@@ -212,7 +218,7 @@ const WidgetPaymentInformation = ({
       const initStripe = async () => {
         try {
           const res = await createPaymentIntent({
-            amount: finalFare,
+            amount: pricingInfo.depositAmount,
             currency: currencySetting.value || "GBP",
             companyId,
           }).unwrap();
@@ -236,12 +242,12 @@ const WidgetPaymentInformation = ({
 
   useEffect(() => {
     if (bookingSettingData?.setting) {
-      const allowedMethods = ["Cash"];
-      if (bookingSettingData.setting.stripeKeys?.enabled) allowedMethods.push("Stripe");
-      if (bookingSettingData.setting.paypalKeys?.enabled) allowedMethods.push("Paypal");
+      const allowedMethods = [];
+      if (bookingSettingData.setting.stripeKeys?.publishableKey) allowedMethods.push("Stripe");
+      if (bookingSettingData.setting.paypalKeys?.clientId) allowedMethods.push("Paypal");
 
-      if (!allowedMethods.includes(formData.paymentMethod)) {
-        setFormData(prev => ({ ...prev, paymentMethod: "Cash" }));
+      if (allowedMethods.length > 0 && !allowedMethods.includes(formData.paymentMethod)) {
+        setFormData(prev => ({ ...prev, paymentMethod: allowedMethods[0] }));
       }
     }
   }, [bookingSettingData, formData.paymentMethod]);
@@ -266,8 +272,11 @@ const WidgetPaymentInformation = ({
         baseFare: pricingInfo.baseFare,
         workersCharges: pricingInfo.workersCharges,
         extraTimeCharges: pricingInfo.extraTimeCharges,
+        floorCharges: pricingInfo.floorCharges,
+        accessTypeCharges: pricingInfo.accessTypeCharges,
         childSeatCharges: pricingInfo.childSeatTotal,
         total: pricingInfo.total,
+        depositPaid: pricingInfo.depositAmount,
       },
       currency: {
         symbol: currencySymbol,
@@ -464,15 +473,15 @@ const WidgetPaymentInformation = ({
             <div className="space-y-3 mb-6">
               <div className="flex justify-between widget-description">
                 <span className="text-(--dark-grey)">Base Fare</span>
-                <span className="widget-value-text text-(--dark-black)">
+                <span className="widget-value-text-sm text-(--dark-black)">
                   {pricingInfo.currencySymbol}
-                  {pricingInfo.baseFare.toFixed(2)}
+                  {Math.round(pricingInfo.baseFare)}
                 </span>
               </div>
               {pricingInfo.workersCharges > 0 && (
                 <div className="flex justify-between widget-description">
                   <span className="text-(--dark-grey)">Extra Workers</span>
-                  <span className="widget-value-text text-(--dark-black)">
+                  <span className="widget-value-text-sm text-(--dark-black)">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.workersCharges.toFixed(2)}
                   </span>
@@ -481,9 +490,27 @@ const WidgetPaymentInformation = ({
               {pricingInfo.extraTimeCharges > 0 && (
                 <div className="flex justify-between widget-description">
                   <span className="text-(--dark-grey)">Extra Time</span>
-                  <span className="widget-value-text text-(--dark-black)">
+                  <span className="widget-value-text-sm text-(--dark-black)">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.extraTimeCharges.toFixed(2)}
+                  </span>
+                </div>
+              )}
+              {pricingInfo.floorCharges > 0 && (
+                <div className="flex justify-between widget-description">
+                  <span className="text-(--dark-grey)">Floor Level</span>
+                  <span className="widget-value-text-sm text-(--dark-black)">
+                    +{pricingInfo.currencySymbol}
+                    {pricingInfo.floorCharges.toFixed(2)}
+                  </span>
+                </div>
+              )}
+              {pricingInfo.accessTypeCharges > 0 && (
+                <div className="flex justify-between widget-description">
+                  <span className="text-(--dark-grey)">Access (Lift/Stairs)</span>
+                  <span className="widget-value-text-sm text-(--dark-black)">
+                    +{pricingInfo.currencySymbol}
+                    {pricingInfo.accessTypeCharges.toFixed(2)}
                   </span>
                 </div>
               )}
@@ -498,19 +525,55 @@ const WidgetPaymentInformation = ({
               )}
             </div>
 
-            <div className="border-t border-(--light-gray) pt-4 mb-6">
-              <div className="widget-price-large text-3xl text-(--dark-black)">
-                {pricingInfo.currencySymbol}
-                {finalFare?.toFixed(2)}
+            <div className="border-t border-(--light-gray) pt-4 mb-3">
+              <div className="flex justify-between items-center">
+                <span className="widget-label-small text-(--dark-grey)">Total Estimated Fare</span>
+                <span className="widget-price-sm text-(--dark-black)">
+                  {pricingInfo.currencySymbol}
+                  {Math.round(pricingInfo.total)}
+                </span>
               </div>
             </div>
+
+            <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100 mb-6 group transition-all duration-300 hover:bg-gray-50">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm font-medium text-gray-600">Deposit at booking (35%)</span>
+                <span className="widget-value-text-sm text-(--dark-black)">
+                  {pricingInfo.currencySymbol}
+                  {Math.round(pricingInfo.depositAmount)}
+                </span>
+              </div>
+
+              <div className="space-y-2 border-t border-gray-100 pt-4">
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5" />
+                  <p className="text-[12px] text-gray-500 leading-tight">
+                    Pay <strong>35% deposit</strong> now via card to secure your professional transit
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5" />
+                  <p className="text-[12px] text-gray-500 leading-tight">
+                    The remaining <strong>65% balance</strong> is settled directly with your driver
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5" />
+                  <p className="text-[12px] text-gray-500 leading-tight">
+                    Secure, encrypted payments with instant confirmation
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="mt-8 space-y-4">
               {(() => {
-                const options = [{ label: "Cash", value: "Cash" }];
-                if (bookingSettingData?.setting?.stripeKeys?.enabled) {
+                const options = [];
+                // Check for keys as there is no 'enabled' field in schema
+                if (bookingSettingData?.setting?.stripeKeys?.publishableKey) {
                   options.push({ label: "Stripe", value: "Stripe" });
                 }
-                if (bookingSettingData?.setting?.paypalKeys?.enabled) {
+                if (bookingSettingData?.setting?.paypalKeys?.clientId) {
                   options.push({ label: "Paypal", value: "Paypal" });
                 }
 
@@ -542,7 +605,7 @@ const WidgetPaymentInformation = ({
                 >
                   <StripeCheckout
                     clientSecret={clientSecret}
-                    totalPrice={finalFare}
+                    totalPrice={pricingInfo.depositAmount}
                     currencySymbol={currencySymbol}
                     isProcessing={isProcessingStripe}
                     onPaymentError={(msg) => setStripeError(msg)}
@@ -555,7 +618,7 @@ const WidgetPaymentInformation = ({
                 <div className="mt-4">
                   <PayPalCheckout
                     companyId={companyId}
-                    amount={finalFare}
+                    amount={pricingInfo.depositAmount}
                     bookingId={booking?._id || "new-booking"}
                     onSuccess={() => onBookNowClick(formData)}
                     onError={(err) => {

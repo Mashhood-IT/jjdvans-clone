@@ -23,13 +23,6 @@ export const googleApi = apiSlice.injectEndpoints({
         params: { companyId },
       }),
     }),
-    searchPostcodeSuggestions: builder.query({
-      query: (params) => ({
-        url: "/google/postcode-suggestions",
-        method: "GET",
-        params: typeof params === 'string' ? { input: params } : params,
-      }),
-    }),
     geocode: builder.query({
       query: (params) => ({
         url: "/google/geocode",
@@ -37,25 +30,16 @@ export const googleApi = apiSlice.injectEndpoints({
         params: typeof params === 'string' ? { address: params } : params,
       }),
     }),
-    sendGoogleAuthLink: builder.mutation({
-      query: ({ email, role }) => ({
-        url: "/google/send-google-auth-link",
-        method: "POST",
-        body: { email, role },
-      }),
-    }),
+
   }),
   overrideExisting: false,
 });
 export const {
-  useSendGoogleAuthLinkMutation,
   useSearchGooglePlacesQuery,
   useLazySearchGooglePlacesQuery,
   useGetDistanceQuery,
   useLazyGetDistanceQuery,
   useGetMapKeyQuery,
-  useSearchPostcodeSuggestionsQuery,
-  useLazySearchPostcodeSuggestionsQuery,
   useGeocodeQuery,
   useLazyGeocodeQuery,
 } = googleApi;

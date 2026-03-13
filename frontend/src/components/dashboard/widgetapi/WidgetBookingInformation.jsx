@@ -11,6 +11,7 @@ import { useLazyGeocodeQuery, useLazyGetDistanceQuery } from '../../../redux/api
 import { useGetAllVehiclesQuery } from '../../../redux/api/vehicleApi';
 import { useGetPublicBookingSettingQuery } from '../../../redux/api/bookingSettingsApi';
 import { useLoading } from '../../common/LoadingProvider';
+import useDistanceSync from '../../../hooks/useDistanceSync';
 
 const WidgetBookingInformation = ({
   onNext,
@@ -28,22 +29,27 @@ const WidgetBookingInformation = ({
 
   const carList = vehicleResponse?.data || vehicleResponse || [];
 
-  const [actualMiles, setActualMiles] = useState(null);
-  const [selectedCarId, setSelectedCarId] = useState(null);
   const [formData, setFormData] = useState(null);
-  const [distanceText, setDistanceText] = useState(null);
-  const [durationText, setDurationText] = useState(null);
-  const [googleMinutes, setGoogleMinutes] = useState(0);
-  const [roundedGoogleMinutes, setRoundedGoogleMinutes] = useState(120);
+  const {
+    distanceText,
+    durationText,
+    miles: actualMiles,
+    googleMinutes,
+    roundedGoogleMinutes,
+    segments: segmentBreakdown,
+    calculateRoute,
+    loading: isDistanceLoading
+  } = useDistanceSync(companyId);
+
+  const [selectedCarId, setSelectedCarId] = useState(null);
+  const [matchedSurcharge, setMatchedSurcharge] = useState(0);
   const [matchedZonePrice, setMatchedZonePrice] = useState(null);
   const [matchedZoneToZonePrice, setMatchedZoneToZonePrice] = useState(null);
   const [fixedZonePrice, setFixedZonePrice] = useState(null);
   const [journeyDateTime, setJourneyDateTime] = useState(null);
-  const [matchedSurcharge, setMatchedSurcharge] = useState(0);
   const [matchedDiscount, setMatchedDiscount] = useState(0);
   const [calculatedTotalPrice, setCalculatedTotalPrice] = useState(0);
   const [extraHelpPrice, setExtraHelpPrice] = useState(0);
-  const [segmentBreakdown, setSegmentBreakdown] = useState([]);
   const [selectedHelpOption, setSelectedHelpOption] = useState(null);
   const postcodePrices = [];
   const zones = [];
@@ -54,12 +60,12 @@ const WidgetBookingInformation = ({
   };
 
   useEffect(() => {
-    if (isVehiclesLoading) {
+    if (isVehiclesLoading || isDistanceLoading) {
       showLoading()
     } else {
       hideLoading()
     }
-  }, [showLoading, hideLoading, isVehiclesLoading])
+  }, [showLoading, hideLoading, isVehiclesLoading, isDistanceLoading])
 
   const fixedPrices = [];
   const discounts = [];
@@ -405,193 +411,24 @@ const WidgetBookingInformation = ({
 
   useEffect(() => {
     const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-
     const delay = isEdit ? 200 : 0;
 
     const timer = setTimeout(() => {
       const storedForm = localStorage.getItem("bookingForm");
-
-      if (!storedForm) {
-        toast.error("No booking form found.");
-        return;
-      }
+      if (!storedForm) return;
 
       const data = JSON.parse(storedForm);
       setFormData(data);
 
-      if (data.segments && Array.isArray(data.segments) && data.segments.length > 0) {
-        setSegmentBreakdown(data.segments);
+      const allDropoffs = [
+        data.dropoff,
+        data.additionalDropoff1,
+        data.additionalDropoff2,
+        data.additionalDropoff3,
+        data.additionalDropoff4,
+      ].filter(Boolean);
 
-        const totalMiles = data.segments.reduce((sum, seg) => sum + seg.miles, 0);
-        setActualMiles(totalMiles);
-        setDistanceText(`${totalMiles.toFixed(2)} mi`);
-
-        const totalSeconds = data.segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
-        const rawMins = totalSeconds > 0 ? totalSeconds / 60 : 0;
-        setGoogleMinutes(rawMins);
-        
-        const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
-        setRoundedGoogleMinutes(roundedMins);
-
-        const hours = Math.floor(roundedMins / 60);
-        const mins = roundedMins % 60;
-        setDurationText(`${hours} hours ${mins} mins`);
-      }
-
-      const calculateMultiSegmentDistance = async () => {
-        const allDropoffs = [
-          data.dropoff,
-          data.additionalDropoff1,
-          data.additionalDropoff2,
-          data.additionalDropoff3,
-          data.additionalDropoff4,
-        ].filter(d => {
-          if (!d || !d.trim()) return false;
-          return d.includes(' - ') || d.includes(',') || d.split(' ').length >= 3;
-        });
-
-        const hasMultipleDropoffs = allDropoffs.length > 1;
-
-        const origin = data.pickup?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
-
-        if (!origin) {
-          toast.error("Invalid pickup location");
-          return;
-        }
-
-        try {
-          let totalMiles = 0;
-          let segments = [];
-
-          if (hasMultipleDropoffs) {
-
-            let currentOrigin = origin;
-            let currentOriginAddress = data.pickup;
-
-            for (let i = 0; i < allDropoffs.length; i++) {
-
-              const destinationAddress = allDropoffs[i];
-              const destination = destinationAddress.replace("Custom Input - ", "").split(" - ").pop()?.trim();
-
-              const res = await triggerDistance({ origin: currentOrigin, destination, companyId }).unwrap();
-
-              if (!res?.distanceText) {
-                console.error(`Failed to get distance for segment ${i + 1}`);
-                continue;
-              }
-
-              let segmentMiles = 0;
-              if (res.distanceValue) {
-                segmentMiles = parseFloat((res.distanceValue / 1609.344).toFixed(2));
-              } else if (res.distanceText.includes("km")) {
-                const km = parseFloat(res.distanceText.replace("km", "").trim());
-                segmentMiles = parseFloat((km * 0.621371).toFixed(2));
-              } else if (res.distanceText.includes("mi")) {
-                segmentMiles = parseFloat(res.distanceText.replace("mi", "").trim());
-              }
-
-              segments.push({
-                segmentNumber: i + 1,
-                from: currentOriginAddress,
-                to: destinationAddress,
-                miles: segmentMiles,
-                distanceText: res.distanceText,
-                durationText: res.durationText,
-                durationValue: res.durationValue,
-              });
-
-              totalMiles += segmentMiles;
-
-              currentOrigin = destination;
-              currentOriginAddress = destinationAddress;
-            }
-
-            setSegmentBreakdown(segments);
-            setActualMiles(totalMiles);
-            setDistanceText(`${totalMiles.toFixed(2)} mi`);
-
-            const totalSeconds = segments.reduce((sum, seg) => sum + (seg.durationValue || 0), 0);
-            const rawMins = totalSeconds / 60;
-            setGoogleMinutes(rawMins);
-
-            const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
-            setRoundedGoogleMinutes(roundedMins);
-
-            const hours = Math.floor(roundedMins / 60);
-            const mins = roundedMins % 60;
-            setDurationText(`${hours} hours ${mins} mins`);
-
-            const updatedData = { ...data, segments };
-            localStorage.setItem("bookingForm", JSON.stringify(updatedData));
-
-          } else {
-            const destination = allDropoffs[0]?.replace("Custom Input - ", "").split(" - ").pop()?.trim();
-
-            if (!destination) {
-              toast.error("Invalid dropoff location");
-              return;
-            }
-
-            const res = await triggerDistance({ origin, destination, companyId }).unwrap();
-
-            if (res.distanceValue) {
-              totalMiles = parseFloat((res.distanceValue / 1609.344).toFixed(2));
-              setDistanceText(`${totalMiles} mi`);
-              setActualMiles(totalMiles);
-            } else if (res?.distanceText?.includes("km")) {
-              const km = parseFloat(res.distanceText.replace("km", "").trim());
-              totalMiles = parseFloat((km * 0.621371).toFixed(2));
-              setDistanceText(`${totalMiles} mi`);
-              setActualMiles(totalMiles);
-            } else if (res?.distanceText?.includes("mi")) {
-              totalMiles = parseFloat(res.distanceText.replace("mi", "").trim());
-              setDistanceText(`${totalMiles} mi`);
-              setActualMiles(totalMiles);
-            }
-
-            const rawMins = (res?.durationValue || 0) / 60;
-            setGoogleMinutes(rawMins);
-
-            const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
-            setRoundedGoogleMinutes(roundedMins);
-
-            const hours = Math.floor(roundedMins / 60);
-            const mins = roundedMins % 60;
-            setDurationText(`${hours} hours ${mins} mins`);
-
-            const singleSegment = [{
-              segmentNumber: 1,
-              from: data.pickup,
-              to: allDropoffs[0],
-              miles: totalMiles,
-              distanceText: res?.distanceText || "",
-              durationText: res?.durationText || "",
-              durationValue: res?.durationValue || 0,
-            }];
-            setSegmentBreakdown(singleSegment);
-
-            const updatedData = { ...data, segments: singleSegment };
-            localStorage.setItem("bookingForm", JSON.stringify(updatedData));
-          }
-
-          const [pickupCoord, dropoffCoord] = await Promise.all([
-            getLatLng(origin),
-            getLatLng(allDropoffs[allDropoffs.length - 1]?.replace("Custom Input - ", "").split(" - ").pop()?.trim())
-          ]);
-
-          setFormData({
-            ...data,
-            pickupCoordinates: pickupCoord ? [pickupCoord] : [],
-            dropoffCoordinates: dropoffCoord ? [dropoffCoord] : [],
-          });
-
-        } catch (err) {
-          console.error('Distance calculation error:', err);
-          toast.warn("Distance calculation failed.");
-        }
-      };
-
-      calculateMultiSegmentDistance();
+      calculateRoute(data.pickup, allDropoffs);
 
       const pickupCode = extractPostcode(data.pickup);
       const dropoffCode = extractPostcode(data.dropoff);
@@ -600,7 +437,7 @@ const WidgetBookingInformation = ({
     }, delay);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [calculateRoute]);
 
   useEffect(() => {
     const allDropoffs = [

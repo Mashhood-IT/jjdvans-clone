@@ -5,6 +5,7 @@ import {
     useLazySearchGooglePlacesQuery,
 } from "../../../../redux/api/googleApi";
 import LocationMap from "./LocationMap";
+import useDistanceSync from "../../../../hooks/useDistanceSync";
 
 const SecondaryForm = ({
     formData,
@@ -35,69 +36,18 @@ const SecondaryForm = ({
         handleChange(e);
     };
 
-    const [distanceText, setDistanceText] = useState("");
+    const {
+        distanceText,
+        calculateRoute,
+    } = useDistanceSync(companyId);
 
     useEffect(() => {
-        const calculateDistance = async () => {
-            if (!window.google?.maps || !pickupCoords) {
-                setDistanceText("");
-                return;
-            }
-
-            const validDropoffs = Object.entries(dropoffCoords)
-                .sort(([keyA], [keyB]) => Number(keyA) - Number(keyB))
-                .filter(([_, coords]) => coords?.lat && coords?.lng)
-                .map(([_, coords]) => ({ lat: coords.lat, lng: coords.lng }));
-
-            if (validDropoffs.length === 0) {
-                setDistanceText("");
-                return;
-            }
-
-            try {
-                const directionsService = new window.google.maps.DirectionsService();
-
-                // Correct sequence: Pickup -> Dropoff 0 -> Dropoff 1 -> ... -> Dropoff N
-                // The last valid dropoff is the final destination
-                // All intermediate dropoffs (including the first one, if there are more) are waypoints
-                const destination = new window.google.maps.LatLng(
-                    validDropoffs[validDropoffs.length - 1].lat,
-                    validDropoffs[validDropoffs.length - 1].lng
-                );
-
-                const waypoints = validDropoffs.slice(0, -1).map(coords => ({
-                    location: new window.google.maps.LatLng(coords.lat, coords.lng),
-                    stopover: true
-                }));
-
-                const request = {
-                    origin: new window.google.maps.LatLng(pickupCoords.lat, pickupCoords.lng),
-                    destination: destination,
-                    waypoints: waypoints,
-                    travelMode: window.google.maps.TravelMode.DRIVING,
-                };
-
-                directionsService.route(request, (result, status) => {
-                    if (status === 'OK') {
-                        let totalDistanceMeters = 0;
-                        result.routes[0].legs.forEach(leg => {
-                            totalDistanceMeters += leg.distance.value;
-                        });
-                        const totalMiles = (totalDistanceMeters / 1609.344).toFixed(2);
-                        setDistanceText(`${totalMiles} mi`);
-                    } else {
-                        console.error('Directions request failed:', status);
-                        setDistanceText("");
-                    }
-                });
-            } catch (error) {
-                console.error('Error calculating distance:', error);
-                setDistanceText("");
-            }
-        };
-
-        calculateDistance();
-    }, [pickupCoords, dropoffCoords]);
+        const p = formData?.pickup;
+        const d = dropOffs.filter(Boolean);
+        if (p && d.length > 0) {
+            calculateRoute(p, d);
+        }
+    }, [formData?.pickup, JSON.stringify(dropOffs), calculateRoute]);
     useEffect(() => {
         const restoreMarkers = async () => {
             if (formData?.pickup && !pickupCoords) {

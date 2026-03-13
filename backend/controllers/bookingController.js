@@ -1,4 +1,5 @@
 import Booking from "../models/bookings.js";
+import User from "../models/User.js";
 import sendEmail from "../sendEmail.js";
 
 export const createBooking = async (req, res) => {
@@ -18,6 +19,40 @@ export const createBooking = async (req, res) => {
 
     const newBooking = new Booking(bookingData);
     await newBooking.save();
+
+    // Send Confirmation Emails
+    try {
+      const superadmin = await User.findOne({ companyId: bookingData.companyId, role: "superadmin" });
+      if (superadmin) {
+        const companyData = {
+          superadminCompanyName: superadmin.superadminCompanyName,
+          superadminCompanyLogo: superadmin.superadminCompanyLogo,
+          superadminCompanyEmail: superadmin.superadminCompanyEmail,
+          superadminCompanyPhoneNumber: superadmin.superadminCompanyPhoneNumber,
+          superadminCompanyAddress: superadmin.superadminCompanyAddress,
+        };
+
+        const passengerHtml = generateBookingEmailHTML(newBooking, companyData, "passenger");
+        const adminHtml = generateBookingEmailHTML(newBooking, companyData, "admin");
+
+        // Email to Passenger
+        await sendEmail(newBooking.passenger.email, `Booking Confirmation #${newBooking.bookingId}`, {
+          html: passengerHtml,
+          fromName: companyData.superadminCompanyName || "Booking Confirmation",
+        });
+
+        // Email to Admin
+        if (superadmin.email) {
+          await sendEmail(superadmin.email, `New Booking Received #${newBooking.bookingId}`, {
+            html: adminHtml,
+            fromName: "Booking System",
+          });
+        }
+      }
+    } catch (emailError) {
+      console.error("Email notification error:", emailError);
+      // We don't fail the request if email fails, but we log it
+    }
 
     res.status(201).json({
       success: true,
@@ -149,7 +184,7 @@ export const deleteBooking = async (req, res) => {
   }
 };
 
-const generateBookingEmailHTML = (booking, companyData = null) => {
+const generateBookingEmailHTML = (booking, companyData = null, type = "passenger") => {
   const formatDateTime = (dateStr, hour, minute) => {
     if (dateStr == null || hour == null || minute == null) return "N/A";
     const date = new Date(dateStr);
@@ -179,227 +214,148 @@ const generateBookingEmailHTML = (booking, companyData = null) => {
     return `${day}/${month}/${year}`;
   };
 
+  const title = type === "admin" ? "New Booking Notification" : "Booking Confirmation";
+  const subtitle = type === "admin" 
+    ? `A new booking has been placed (#${booking.bookingId})`
+    : `Thank you for booking with us! Your trip details are listed below.`;
+
+  const currencySymbol = booking?.currency?.symbol || "£";
+
   return `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking Confirmation</title>
+  <style>
+    .details-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+    .details-label { color: #6b7280; font-size: 13px; }
+    .details-value { color: #111827; font-size: 13px; font-weight: 600; text-align: right; }
+  </style>
 </head>
-<body style="margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f5f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f5f5f5;padding:15px 0;">
+<body style="margin:0;padding:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background-color:#ffffff;color:#111827;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f9fafb;padding:40px 0;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:650px;background-color:#ffffff;border-radius:6px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background-color:#ffffff;border:1px solid #e5e7eb;box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);">
           
           <!-- Header -->
           <tr>
-            <td style="padding:20px;background-color:#1f2937;border-radius:6px 6px 0 0;">
+            <td style="padding:32px;background-color:#1f2937;text-align:center;">
+              ${companyData?.superadminCompanyLogo 
+                ? `<img src="${companyData.superadminCompanyLogo}" alt="Logo" style="height:60px;margin-bottom:16px;display:inline-block;" />`
+                : ""
+              }
+              <h1 style="color:#ffffff;font-size:24px;margin:0;font-weight:700;">${companyData?.superadminCompanyName || "MTL Dispatch"}</h1>
+              <p style="color:rgba(255,255,255,0.7);font-size:14px;margin:8px 0 0 0;">${title}</p>
+            </td>
+          </tr>
+
+          <!-- Welcome Section -->
+          <tr>
+            <td style="padding:32px;border-bottom:1px solid #e5e7eb;">
+              <h2 style="font-size:18px;margin:0 0 12px 0;">Hello ${type === 'admin' ? 'Admin' : (booking?.passenger?.name || 'Valued Customer')},</h2>
+              <p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0;">${subtitle}</p>
+            </td>
+          </tr>
+
+          <!-- Journey Highlights -->
+          <tr>
+            <td style="padding:32px;background-color:#f9fafb;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  ${companyData?.superadminCompanyLogo
-      ? `
-                  <td style="width:50px;vertical-align:middle;padding-right:12px;">
-                    <img src="${companyData.superadminCompanyLogo}" alt="Logo" style="width:50px;height:50px;object-fit:contain;display:block;" />
+                  <td width="33%" style="padding-right:10px;">
+                    <p style="color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px 0;">Reference</p>
+                    <p style="font-size:14px;font-weight:700;margin:0;">#${booking.bookingId}</p>
                   </td>
-                  `
-      : ""
-    }
-                  <td style="vertical-align:middle;">
-                    <div style="color:#ffffff;font-size:18px;font-weight:700;margin:0;">${companyData?.superadminCompanyName || "Booking Confirmation"}</div>
-                    ${companyData?.superadminCompanyPhoneNumber ||
-      companyData?.superadminCompanyEmail
-      ? `
-                    <div style="color:rgba(255,255,255,0.8);font-size:12px;margin:4px 0 0 0;">
-                      ${companyData?.superadminCompanyPhoneNumber || ""} ${companyData?.superadminCompanyPhoneNumber && companyData?.superadminCompanyEmail ? "•" : ""} ${companyData?.superadminCompanyEmail || ""}
-                    </div>
-                    `
-      : ""
-    }
+                  <td width="33%" style="padding:0 10px;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;">
+                    <p style="color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px 0;">Date</p>
+                    <p style="font-size:14px;font-weight:700;margin:0;">${formatDate(booking.createdAt)}</p>
+                  </td>
+                  <td width="33%" style="padding-left:10px;text-align:right;">
+                    <p style="color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px 0;">Pickup Time</p>
+                    <p style="font-size:14px;font-weight:700;margin:0;">${pickupTime.split(' ')[1] || 'N/A'}</p>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Booking Info Banner -->
+          <!-- Addressing Details -->
           <tr>
-            <td style="padding:15px 20px;background-color:#f9fafb;border-bottom:1px solid #e5e7eb;">
+            <td style="padding:32px;">
+              <div style="margin-bottom:24px;">
+                <p style="color:#1f2937;font-size:14px;font-weight:700;margin:0 0-12px 0; border-left:4px solid #1f2937; padding-left:12px;">PICKUP LOCATION</p>
+                <p style="color:#4b5563;font-size:14px;line-height:1.5;margin:16px 0 0 16px;">
+                  ${booking.pickup}
+                  ${booking.pickupDoorNumber ? `<br><span style="font-size:12px;color:#9ca3af;">Door: ${booking.pickupDoorNumber}</span>` : ""}
+                  <br><span style="font-size:12px;color:#9ca3af;">${booking.pickupAccess} • Floor ${booking.pickupFloorNo || 0}</span>
+                </p>
+              </div>
+
+              <div style="margin-bottom:24px;">
+                <p style="color:#1f2937;font-size:14px;font-weight:700;margin:0 0-12px 0; border-left:4px solid #3b82f6; padding-left:12px;">DROP OFF LOCATION(S)</p>
+                <div style="margin:16px 0 0 16px;">
+                  ${[booking.dropoff, booking.additionalDropoff1, booking.additionalDropoff2, booking.additionalDropoff3, booking.additionalDropoff4]
+                    .filter(Boolean)
+                    .map((addr, idx) => {
+                      const access = idx === 0 ? booking.dropoffAccess : booking[`additionalDropoff${idx}Access`];
+                      const floor = idx === 0 ? booking.dropoffFloorNo : booking[`additionalDropoff${idx}FloorNo`];
+                      return `
+                        <p style="color:#4b5563;font-size:14px;line-height:1.5;margin:0 0 12px 0;">
+                          <strong>${idx === 0 ? 'Main' : `Stop ${idx}`}:</strong> ${addr}
+                          <br><span style="font-size:12px;color:#9ca3af;">${access || 'STAIRS'} • Floor ${floor || 0}</span>
+                        </p>
+                      `;
+                    }).join("")}
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Payment Breakdown -->
+          <tr>
+            <td style="padding:32px;background-color:#f8fafc;">
+              <h3 style="font-size:16px;margin:0 0 16px 0;font-weight:700;">Payment & Fare Breakdown</h3>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="font-size:14px;color:#111827;font-weight:600;">
-                    #${booking?.bookingId || "N/A"}
-                  </td>
-                  <td style="text-align:right;font-size:12px;color:#6b7280;">
-                    ${formatDate(booking?.createdAt)}
-                  </td>
+                   <td style="padding:8px 0;color:#64748b;font-size:14px;">Base Fare</td>
+                   <td style="padding:8px 0;text-align:right;color:#1e293b;font-size:14px;font-weight:600;">${currencySymbol}${Number(booking.fare || 0).toFixed(2)}</td>
+                </tr>
+                ${booking.additionalTimeFare > 0 ? `
+                <tr>
+                   <td style="padding:8px 0;color:#64748b;font-size:14px;">Additional Time</td>
+                   <td style="padding:8px 0;text-align:right;color:#1e293b;font-size:14px;font-weight:600;">+${currencySymbol}${Number(booking.additionalTimeFare).toFixed(2)}</td>
+                </tr>` : ""}
+                ${booking.workersCharges > 0 ? `
+                <tr>
+                   <td style="padding:8px 0;color:#64748b;font-size:14px;">Extra Men Charges</td>
+                   <td style="padding:8px 0;text-align:right;color:#1e293b;font-size:14px;font-weight:600;">+${currencySymbol}${Number(booking.workersCharges).toFixed(2)}</td>
+                </tr>` : ""}
+                <tr>
+                   <td style="padding:16px 0 8px 0;color:#1e293b;font-size:18px;font-weight:700;border-top:2px solid #e2e8f0;">Total Fare</td>
+                   <td style="padding:16px 0 8px 0;text-align:right;color:#1e293b;font-size:22px;font-weight:800;border-top:2px solid #e2e8f0;">${currencySymbol}${Number(booking.totalPrice || booking.fare).toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colspan="2" style="font-size:12px;color:#6b7280;padding-top:4px;">
-                    ${booking?.bookingType || "N/A"} • ${booking?.paymentMethod || "N/A"}
-                  </td>
+                   <td style="padding:4px 0;color:#64748b;font-size:12px;">Payment Method</td>
+                   <td style="padding:4px 0;text-align:right;color:#64748b;font-size:12px;">${booking.paymentMethod}</td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Main Content -->
+          <!-- Contact Footer -->
           <tr>
-            <td style="padding:20px;">
-              
-              <!-- Pick Up & Drop Off -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:15px;">
-                <tr>
-                  <td style="padding:15px;border-bottom:1px solid #e5e7eb;">
-                    <div style="font-size:13px;color:#111827;font-weight:600;margin-bottom:8px;">🚗 Pick Up</div>
-                    <div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Time:</strong> ${pickupTime}</div>
-                    <div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Address:</strong> ${booking?.pickup || "N/A"}</div>
-                    ${booking?.pickupDoorNumber ? `<div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Door:</strong> ${booking.pickupDoorNumber}</div>` : ""}
-                    <div style="font-size:12px;color:#374151;"><strong>Access:</strong> ${booking?.pickupAccess || "STAIRS"} • Floor ${booking?.pickupFloorNo || 0}</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:15px;">
-                    <div style="font-size:13px;color:#111827;font-weight:600;margin-bottom:8px;">📍 Drop Off</div>
-                    ${[0, 1, 2, 3, 4]
-      .map((idx) => {
-        const dropMap = [
-          booking?.dropoff,
-          booking?.additionalDropoff1,
-          booking?.additionalDropoff2,
-          booking?.additionalDropoff3,
-          booking?.additionalDropoff4,
-        ];
-        const drop = dropMap[idx];
-        if (!drop) return "";
-
-        const accessField =
-          idx === 0
-            ? "dropoffAccess"
-            : `additionalDropoff${idx}Access`;
-        const floorField =
-          idx === 0
-            ? "dropoffFloorNo"
-            : `additionalDropoff${idx}FloorNo`;
-
-        return `
-                        <div style="margin-bottom:${idx === 4 || !dropMap[idx + 1] ? "0" : "10px"};padding-bottom:${idx === 4 || !dropMap[idx + 1] ? "0" : "10px"};${idx === 4 || !dropMap[idx + 1] ? "" : "border-bottom:1px solid #f3f4f6;"}">
-                          <div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>${idx === 0 ? "Main" : `Stop ${idx}`}:</strong> ${drop}</div>
-                          ${booking?.[accessField] ? `<div style="font-size:12px;color:#374151;"><strong>Access:</strong> ${booking[accessField]} • Floor ${booking[floorField] || 0}</div>` : ""}
-                        </div>
-                        `;
-      })
-      .join("")}
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Passenger & Vehicle -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:15px;">
-                <tr>
-                  <td style="padding:15px;border-bottom:1px solid #e5e7eb;">
-                    <div style="font-size:13px;color:#111827;font-weight:600;margin-bottom:8px;">👤 Passenger</div>
-                    <div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Name:</strong> ${booking?.passenger?.name || "N/A"}</div>
-                    <div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Email:</strong> ${booking?.passenger?.email || "N/A"}</div>
-                    <div style="font-size:12px;color:#374151;"><strong>Phone:</strong> ${booking?.passenger?.phone || "N/A"}</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:15px;">
-                    <div style="font-size:13px;color:#111827;font-weight:600;margin-bottom:8px;">🚙 Vehicle</div>
-                    <div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Type:</strong> ${booking?.vehicle?.vehicleName || "N/A"}</div>
-                    <div style="font-size:12px;color:#374151;"><strong>Passengers:</strong> ${booking?.passengerCount || 0} • <strong>Luggage:</strong> ${booking?.inventoryItems || 0}</div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Journey Details (if exists) -->
-              ${booking?.notes ||
-      booking?.extraTime ||
-      booking?.durationText ||
-      booking?.distanceText
-      ? `
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:15px;">
-                <tr>
-                  <td style="padding:15px;">
-                    <div style="font-size:13px;color:#111827;font-weight:600;margin-bottom:8px;">ℹ️ Journey Info</div>
-                    ${booking?.notes ? `<div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Notes:</strong> ${booking.notes}</div>` : ""}
-                    ${booking?.durationText ? `<div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Duration:</strong> ${booking.durationText} (Est: ${booking?.estimatedDuration || 0} mins)</div>` : ""}
-                    ${booking?.distanceText ? `<div style="font-size:12px;color:#374151;margin-bottom:4px;"><strong>Distance:</strong> ${booking.distanceText}</div>` : ""}
-                    ${booking?.extraTime && Number(booking.extraTime) > 0 ? `<div style="font-size:12px;color:#374151;"><strong>Extra Time:</strong> ${booking.extraTime} mins</div>` : ""}
-                  </td>
-                </tr>
-              </table>
-              `
-      : ""
-    }
-
-              <!-- Fare -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#1f2937;border-radius:6px;">
-                <tr>
-                  <td style="padding:20px;">
-                    ${booking?.fare ||
-      booking?.additionalTimeFare ||
-      booking?.workersCharges
-      ? `
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1);">
-                      ${booking?.fare
-        ? `
-                      <tr>
-                        <td style="font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">Base Fare</td>
-                        <td style="text-align:right;font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">$${Number(booking.fare).toFixed(2)}</td>
-                      </tr>
-                      `
-        : ""
-      }
-                      ${booking?.additionalTimeFare > 0
-        ? `
-                      <tr>
-                        <td style="font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">Additional Time</td>
-                        <td style="text-align:right;font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">+$${Number(booking.additionalTimeFare).toFixed(2)}</td>
-                      </tr>
-                      `
-        : ""
-      }
-                      ${booking?.workersCharges > 0
-        ? `
-                      <tr>
-                        <td style="font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">Extra Men</td>
-                        <td style="text-align:right;font-size:12px;color:rgba(255,255,255,0.7);padding:3px 0;">+$${Number(booking.workersCharges).toFixed(2)}</td>
-                      </tr>
-                      `
-        : ""
-      }
-                    </table>
-                    `
-      : ""
-    }
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-size:16px;color:#ffffff;font-weight:600;">Total Fare</td>
-                        <td style="text-align:right;font-size:24px;color:#ffffff;font-weight:700;">$${Number(booking?.totalPrice || booking?.fare || 0).toFixed(2)}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="padding:20px;text-align:center;background-color:#f9fafb;border-radius:0 0 6px 6px;border-top:1px solid #e5e7eb;">
-              <p style="margin:0;font-size:11px;color:#6b7280;">This is an automated email. Please do not reply.</p>
-              ${companyData?.superadminCompanyEmail
-      ? `
-              <p style="margin:8px 0 0 0;font-size:11px;color:#6b7280;">
-                Contact: <a href="mailto:${companyData.superadminCompanyEmail}" style="color:#111827;text-decoration:none;font-weight:600;">${companyData.superadminCompanyEmail}</a>
+            <td style="padding:32px;text-align:center;font-size:13px;color:#94a3b8;">
+              <p style="margin:0 0 8px 0;">${companyData?.superadminCompanyName || ""}</p>
+              ${companyData?.superadminCompanyAddress ? `<p style="margin:0 0 8px 0;">${companyData.superadminCompanyAddress}</p>` : ""}
+              <p style="margin:0;">
+                ${companyData?.superadminCompanyPhoneNumber ? `<span style="padding:0 8px;">${companyData.superadminCompanyPhoneNumber}</span>` : ""}
+                ${companyData?.superadminCompanyEmail ? `<span style="padding:0 8px;border-left:1px solid #e2e8f0;"><a href="mailto:${companyData.superadminCompanyEmail}" style="color:#3b82f6;text-decoration:none;">${companyData.superadminCompanyEmail}</a></span>` : ""}
               </p>
-              `
-      : ""
-    }
+              <div style="margin-top:24px;padding-top:24px;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;font-size:11px;">This is an automated message. Please do not reply directly to this email.</p>
+              </div>
             </td>
           </tr>
 
@@ -442,7 +398,7 @@ export const sendBookingDetailsEmail = async (req, res) => {
       logo: req.user?.superadminCompanyLogo || "",
     };
 
-    const html = generateBookingEmailHTML(booking, companyData);
+    const html = generateBookingEmailHTML(booking, companyData, "passenger");
     await sendEmail(email, `Booking Details #${booking.bookingId}`, {
       html,
       fromName: "MTL Dispatch",

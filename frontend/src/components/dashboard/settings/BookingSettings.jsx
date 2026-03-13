@@ -24,12 +24,7 @@ const BookingSettings = () => {
   const [currency, setCurrencyState] = useState("GBP");
   const [currencyApplication, setCurrencyApplication] =
     useState("New Bookings Only");
-  const [googleApiKeys, setGoogleApiKeys] = useState({
-    browser: "",
-    server: "",
-    android: "",
-    ios: "",
-  });
+  const [googleApiKey, setGoogleApiKey] = useState("");
   const [stripeKeys, setStripeKeys] = useState({
     publishableKey: "",
     secretKey: "",
@@ -68,9 +63,7 @@ const BookingSettings = () => {
       setCurrencyApplication(setting.currencyApplication);
     }
 
-    setGoogleApiKeys({
-      browser: setting.googleApiKeys?.browser || "",
-    });
+    setGoogleApiKey(setting.googleApiKey || "");
 
     setStripeKeys({
       publishableKey: setting.stripeKeys?.publishableKey || "",
@@ -106,7 +99,7 @@ const BookingSettings = () => {
         ],
         currencyApplication: currencyApplication || "New Bookings Only",
 
-        googleApiKeys,
+        googleApiKey,
         stripeKeys,
         paypalKeys,
 
@@ -153,10 +146,8 @@ const BookingSettings = () => {
             <input
               type="text"
               className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-              value={googleApiKeys.browser}
-              onChange={(e) =>
-                setGoogleApiKeys((p) => ({ ...p, browser: e.target.value }))
-              }
+              value={googleApiKey}
+              onChange={(e) => setGoogleApiKey(e.target.value)}
             />
           </div>
           <div>

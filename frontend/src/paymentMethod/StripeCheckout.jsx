@@ -52,16 +52,11 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
     return (
         <form id="payment-form" onSubmit={handleSubmit} className="mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    Secure Card Payment
-                </h3>
-
                 <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
-
                 <div className="mt-6 pt-6 border-t border-gray-100">
                     <div className="flex justify-between items-center mb-4">
                         <span className="text-gray-500 text-sm">Amount to Pay</span>
-                        <span className="text-xl font-bold text-gray-900">{currencySymbol}{totalPrice}</span>
+                        <span className="text-xl font-bold text-gray-900">{currencySymbol}{Math.round(totalPrice)}</span>
                     </div>
 
                     <button

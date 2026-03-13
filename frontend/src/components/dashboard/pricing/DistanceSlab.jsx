@@ -10,7 +10,7 @@ import {
   useGetAllVehiclesQuery,
   useUpdateVehicleMutation,
 } from "../../../redux/api/vehicleApi";
-import { useGetBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
+import { useGetBookingSettingQuery, useUpdateBookingSettingMutation } from "../../../redux/api/bookingSettingsApi";
 import Icons from "../../../assets/icons";
 
 const DistanceSlab = () => {
@@ -27,7 +27,33 @@ const DistanceSlab = () => {
     },
   );
   const { data: settingsData } = useGetBookingSettingQuery();
+  const [updateBookingSetting] = useUpdateBookingSettingMutation();
   const currencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
+
+  const [floorPricing, setFloorPricing] = useState({
+    pricePerFloor: 0,
+    priceForStairs: 0,
+    priceForLift: 0,
+  });
+
+  useEffect(() => {
+    if (settingsData?.setting) {
+      setFloorPricing({
+        pricePerFloor: settingsData.setting.pricePerFloor || 0,
+        priceForStairs: settingsData.setting.priceForStairs || 0,
+        priceForLift: settingsData.setting.priceForLift || 0,
+      });
+    }
+  }, [settingsData]);
+
+  const handleFloorPricingChange = (e) => {
+    const { name, value } = e.target;
+    setFloorPricing((prev) => ({
+      ...prev,
+      [name]: value === "" ? "" : Number(value),
+    }));
+  };
+
   useEffect(() => {
     if (isLoading) {
       showLoading();
@@ -130,6 +156,7 @@ const DistanceSlab = () => {
 
   const handleSaveAll = async () => {
     try {
+      showLoading();
       await Promise.all(
         vehicleList.map(async (v) => {
           const vehicleSlabs = data.map((slab) => {
@@ -162,10 +189,16 @@ const DistanceSlab = () => {
           });
         }),
       );
-      toast.success("All Slabs Updated Successfully!");
+
+      // Update Floor Pricing
+      await updateBookingSetting(floorPricing).unwrap();
+
+      toast.success("All Slabs & Floor Pricing Updated Successfully!");
     } catch (err) {
       console.error("Error updating slabs:", err);
       toast.error("Error updating slabs");
+    } finally {
+      hideLoading();
     }
   };
 
@@ -282,6 +315,46 @@ const DistanceSlab = () => {
   return (
     <>
       <OutletHeading name="Mileage Slab" />
+
+      <div className="bg-(--white) border border-(--light-gray) rounded-2xl shadow-sm p-4 sm:p-6 mb-6">
+        <h3 className="text-lg font-bold text-(--dark-grey) mb-4">Floor & Access Type Pricing</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs sm:text-sm text-(--medium-grey) mb-1.5">Price Per Floor ({currencySymbol})</label>
+            <input
+              type="number"
+              name="pricePerFloor"
+              className="custom_input text-xs sm:text-sm"
+              value={floorPricing.pricePerFloor}
+              onChange={handleFloorPricingChange}
+              onWheel={(e) => e.target.blur()}
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-sm text-(--medium-grey) mb-1.5">Price For Stairs ({currencySymbol})</label>
+            <input
+              type="number"
+              name="priceForStairs"
+              className="custom_input text-xs sm:text-sm"
+              value={floorPricing.priceForStairs}
+              onChange={handleFloorPricingChange}
+              onWheel={(e) => e.target.blur()}
+            />
+          </div>
+          <div>
+            <label className="block text-xs sm:text-sm text-(--medium-grey) mb-1.5">Price For Lift ({currencySymbol})</label>
+            <input
+              type="number"
+              name="priceForLift"
+              className="custom_input text-xs sm:text-sm"
+              value={floorPricing.priceForLift}
+              onChange={handleFloorPricingChange}
+              onWheel={(e) => e.target.blur()}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="mb-4 sm:mb-5 md:mb-6">
         <button className="btn btn-primary px-6 sm:px-8 text-xs sm:text-sm" onClick={handleAddSlab}>
           Add Distance Slab

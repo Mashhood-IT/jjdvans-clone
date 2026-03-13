@@ -43,7 +43,6 @@ export const createPaymentIntent = async (req, res) => {
     }
 };
 
-// PayPal Helper: Get Access Token
 const getPayPalAccessToken = async (clientId, clientSecret) => {
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
     const response = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
@@ -94,6 +93,8 @@ export const createPayPalOrder = async (req, res) => {
             settings.paypalKeys.clientSecret
         );
 
+        const formattedAmount = Number(amount).toFixed(2);
+
         const response = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
             method: "POST",
             headers: {
@@ -106,7 +107,7 @@ export const createPayPalOrder = async (req, res) => {
                     {
                         amount: {
                             currency_code: currency.toUpperCase(),
-                            value: amount.toString(),
+                            value: formattedAmount,
                         },
                     },
                 ],
@@ -116,7 +117,7 @@ export const createPayPalOrder = async (req, res) => {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error("PayPal API Error:", data);
+            console.error("PayPal API Error Details:", JSON.stringify(data, null, 2));
             return res.status(response.status).json({
                 success: false,
                 message: data.message || "PayPal order creation failed",

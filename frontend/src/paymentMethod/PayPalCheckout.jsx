@@ -111,6 +111,10 @@ const PayPalCheckout = ({
             disabled={disabled || creating || capturing || !isAmountValid}
             forceReRender={[bookingId, ccy, display]}
             createOrder={async () => {
+              if (!isAmountValid) {
+                onError(new Error("Amount must be greater than 0"));
+                throw new Error("Invalid amount");
+              }
               try {
                 const res = await createOrder({
                   companyId,

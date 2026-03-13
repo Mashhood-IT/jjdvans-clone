@@ -15,7 +15,16 @@ const FloorAccessibility = ({
   additionalDropoffs,
   floorAccess,
   setFloorAccess,
+  pricePerFloor = 0,
+  priceForStairs = 0,
+  priceForLift = 0,
+  currencySymbol = "£",
 }) => {
+  const getSubtotal = (floor, access) => {
+    let total = (floor || 0) * pricePerFloor;
+    total += access === "STAIRS" ? priceForStairs : priceForLift;
+    return total;
+  };
   return (
     <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
       <h2 className="widget-section-title text-gray-900 mb-6">
@@ -24,10 +33,15 @@ const FloorAccessibility = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="border-r pr-6 border-(--light-gray)">
-          <div className="flex items-center gap-2 mb-4">
-            <Icons.MapPin className="w-4 h-4 text-(--medium-grey)" />
-            <span className="widget-label-small text-gray-700">
-              Pickup Location
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Icons.MapPin className="w-4 h-4 text-(--medium-grey)" />
+              <span className="widget-label-small text-gray-700">
+                Pickup Location
+              </span>
+            </div>
+            <span className="text-xs font-semibold px-2 py-0.5 bg-gray-900 text-(--white) rounded-full">
+              {currencySymbol}{getSubtotal(pickupFloor, pickupAccess).toFixed(2)}
             </span>
           </div>
 
@@ -40,7 +54,7 @@ const FloorAccessibility = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="mb-4 md:mb-0">
               <label className="block widget-label-text text-(--medium-grey) mb-2">
-                Floor Level
+                Floor Level <span className="text-[10px] opacity-70">(+{currencySymbol}{pricePerFloor}/floor)</span>
               </label>
               <div className="flex items-center gap-3">
                 <button
@@ -65,7 +79,7 @@ const FloorAccessibility = ({
 
             <div>
               <label className="block widget-label-text text-(--medium-grey) mb-2">
-                Access Type
+                Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
               </label>
               <div className="flex md:mt-0 mt-3 gap-2">
                 <button
@@ -93,10 +107,15 @@ const FloorAccessibility = ({
           </div>
         </div>
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Icons.MapPin className="w-4 h-4 text-(--medium-grey)" />
-            <span className="widget-label-small text-gray-700">
-              Drop-off Location
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Icons.MapPin className="w-4 h-4 text-(--medium-grey)" />
+              <span className="widget-label-small text-gray-700">
+                Drop-off Location
+              </span>
+            </div>
+            <span className="text-xs font-semibold px-2 py-0.5 bg-gray-900 text-(--white) rounded-full">
+              {currencySymbol}{getSubtotal(dropoffFloor, dropoffAccess).toFixed(2)}
             </span>
           </div>
 
@@ -109,7 +128,7 @@ const FloorAccessibility = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="mb-4 md:mb-0">
               <label className="block text-sm text-(--medium-grey) mb-2">
-                Floor Level
+                Floor Level <span className="text-[10px] opacity-70">(+{currencySymbol}{pricePerFloor}/floor)</span>
               </label>
               <div className="flex items-center gap-3">
                 <button
@@ -134,7 +153,7 @@ const FloorAccessibility = ({
 
             <div>
               <label className="block text-sm text-(--medium-grey) mb-2">
-                Access Type
+                Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
               </label>
               <div className="flex gap-2">
                 <button
@@ -170,10 +189,18 @@ const FloorAccessibility = ({
               ad.id % 2 === 1 ? "md:border-r md:pr-6 border-(--light-gray)" : ""
             }`}
           >
-            <div className="flex items-center gap-2 mb-4">
-              <Icons.MapPin className="w-4 h-4 text-(--medium-grey)" />
-              <span className="widget-label-small text-gray-700">
-                Additional Drop-off {ad.id}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Icons.MapPin className="w-4 h-4 text-(--medium-grey)" />
+                <span className="widget-label-small text-gray-700">
+                  Additional Drop-off {ad.id}
+                </span>
+              </div>
+              <span className="text-xs font-semibold px-2 py-0.5 bg-gray-900 text-(--white) rounded-full">
+                {currencySymbol}{getSubtotal(
+                  floorAccess[`additionalDropoff${ad.id}Floor`],
+                  floorAccess[`additionalDropoff${ad.id}Access`]
+                ).toFixed(2)}
               </span>
             </div>
 
@@ -184,7 +211,7 @@ const FloorAccessibility = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block widget-label-text text-(--medium-grey) mb-2">
-                  Floor Level
+                  Floor Level <span className="text-[10px] opacity-70">(+{currencySymbol}{pricePerFloor}/floor)</span>
                 </label>
                 <div className="flex items-center gap-3">
                   <button
@@ -223,7 +250,7 @@ const FloorAccessibility = ({
 
               <div>
                 <label className="block widget-label-text text-(--medium-grey) mb-2">
-                  Access Type
+                  Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
                 </label>
                 <div className="flex gap-2">
                   <button
