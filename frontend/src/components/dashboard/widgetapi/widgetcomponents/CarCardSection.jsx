@@ -57,14 +57,19 @@ const CarCardSection = ({
     setSelectedOptions(newOptions);
 
     if (carId === selectedCarId) {
-      onHelpSelect?.(option);
+      const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+      const totalPrice = option.price * durationUnits;
+      onHelpSelect?.({ ...option, totalPrice, unitPrice: option.price });
     }
   };
 
   const handleCarSelect = (carId) => {
     onSelect(carId);
     if (selectedOptions[carId]) {
-      onHelpSelect?.(selectedOptions[carId]);
+      const option = selectedOptions[carId];
+      const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+      const totalPrice = option.price * durationUnits;
+      onHelpSelect?.({ ...option, totalPrice, unitPrice: option.price });
     }
   };
 
@@ -116,7 +121,8 @@ const CarCardSection = ({
 
         const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
         const fullDurationCharge = durationUnits * (car.halfHourPrice || 0);
-        const currentTotalPrice = basePrice + fullDurationCharge + (activeOption?.price || 0);
+        const totalExtraHelpPrice = durationUnits * (activeOption?.price || 0);
+        const currentTotalPrice = basePrice + fullDurationCharge + totalExtraHelpPrice;
 
         return (
           <div

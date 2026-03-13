@@ -90,9 +90,13 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
 
   const totalFare = useMemo(() => {
     const base = widgetPricing.baseFare || 0;
-    const extraHelp = widgetPricing.extraHelp?.price || 0;
-    return base + additionalFare + floorCharges + accessTypeCharges + extraHelp;
-  }, [widgetPricing.baseFare, additionalFare, floorCharges, accessTypeCharges, widgetPricing.extraHelp?.price]);
+    const currentTotalMinutes = estimatedHours * 60 + estimatedMinutes;
+    const totalTimeUnits = Math.ceil(currentTotalMinutes / 30);
+    const extraHelpUnitPrice = widgetPricing.extraHelp?.unitPrice || 0;
+    const totalExtraHelpCharge = totalTimeUnits * extraHelpUnitPrice;
+
+    return base + additionalFare + floorCharges + accessTypeCharges + totalExtraHelpCharge;
+  }, [widgetPricing.baseFare, additionalFare, floorCharges, accessTypeCharges, widgetPricing.extraHelp?.unitPrice, estimatedHours, estimatedMinutes]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -251,6 +255,16 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
       floorAccess,
     };
     localStorage.setItem("widgetInventoryData", JSON.stringify(inventoryData));
+
+    // Update the main totalPrice in localStorage
+    const wp = JSON.parse(localStorage.getItem("widgetPricing") || "{}");
+    wp.totalPrice = totalFare;
+    if (wp.extraHelp) {
+      const currentTotalMinutes = estimatedHours * 60 + estimatedMinutes;
+      const totalTimeUnits = Math.ceil(currentTotalMinutes / 30);
+      wp.extraHelp.price = totalTimeUnits * (wp.extraHelp.unitPrice || 0);
+    }
+    localStorage.setItem("widgetPricing", JSON.stringify(wp));
 
     if (onContinue) {
       onContinue();
@@ -554,11 +568,11 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
             </div>
           )}
 
-          {widgetPricing.extraHelp?.price > 0 && (
+          {widgetPricing.extraHelp?.unitPrice > 0 && (
             <div className="flex justify-between items-center text-gray-400">
-              <span className="text-sm">Extra Men Charges</span>
+              <span className="text-sm">Extra Men Charges ({Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30)} × {currencySymbol}{widgetPricing.extraHelp.unitPrice})</span>
               <span className="font-semibold text-(--white)">
-                {currencySymbol} {widgetPricing.extraHelp.price.toFixed(2)}
+                {currencySymbol} {(Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30) * widgetPricing.extraHelp.unitPrice).toFixed(2)}
               </span>
             </div>
           )}

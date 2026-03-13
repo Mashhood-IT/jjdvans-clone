@@ -255,11 +255,12 @@ const WidgetBookingInformation = ({
           if (!rawPricing) return;
 
           const parsed = JSON.parse(rawPricing);
-          if (parsed.extraHelp && typeof parsed.extraHelp.price === "number") {
-            setExtraHelpPrice(parsed.extraHelp.price);
+          if (parsed.extraHelp && (typeof parsed.extraHelp.price === "number" || typeof parsed.extraHelp.unitPrice === "number")) {
+            setExtraHelpPrice(parsed.extraHelp.price || 0);
             setSelectedHelpOption({
-              label: parsed.extraHelp.label || parsed.extraHelp.label === "" ? parsed.extraHelp.label : "Self Load",
-              price: parsed.extraHelp.price,
+              label: parsed.extraHelp.label || (parsed.extraHelp.label === "" ? "" : "Self Load"),
+              price: parsed.extraHelp.price || 0,
+              unitPrice: parsed.extraHelp.unitPrice || 0
             });
           }
         } catch (err) {
@@ -274,11 +275,12 @@ const WidgetBookingInformation = ({
       if (!rawPricing) return;
 
       const parsed = JSON.parse(rawPricing);
-      if (parsed.extraHelp && typeof parsed.extraHelp.price === "number") {
-        setExtraHelpPrice(parsed.extraHelp.price);
+      if (parsed.extraHelp && (typeof parsed.extraHelp.price === "number" || typeof parsed.extraHelp.unitPrice === "number")) {
+        setExtraHelpPrice(parsed.extraHelp.price || 0);
         setSelectedHelpOption({
-          label: parsed.extraHelp.label || parsed.extraHelp.label === "" ? parsed.extraHelp.label : "Self Load",
-          price: parsed.extraHelp.price,
+          label: parsed.extraHelp.label || (parsed.extraHelp.label === "" ? "" : "Self Load"),
+          price: parsed.extraHelp.price || 0,
+          unitPrice: parsed.extraHelp.unitPrice || 0
         });
       }
     } catch (err) {
@@ -588,7 +590,8 @@ const WidgetBookingInformation = ({
       totalFare: calculatedTotalPrice,
       extraHelp: selectedHelpOption ? {
         label: selectedHelpOption.label,
-        price: selectedHelpOption.price
+        price: selectedHelpOption.price,
+        unitPrice: selectedHelpOption.unitPrice
       } : null
     };
 
@@ -661,7 +664,8 @@ const WidgetBookingInformation = ({
       segmentBreakdown,
       extraHelp: selectedHelpOption ? {
         label: selectedHelpOption.label,
-        price: selectedHelpOption.price
+        price: selectedHelpOption.price,
+        unitPrice: selectedHelpOption.unitPrice
       } : null
     };
     localStorage.setItem("widgetPricing", JSON.stringify(pricing));
@@ -751,7 +755,7 @@ const WidgetBookingInformation = ({
                 }}
                 onBook={handleSubmitBooking}
                 onHelpSelect={(option) => {
-                  setExtraHelpPrice(option.price);
+                  setExtraHelpPrice(option.totalPrice);
                   setSelectedHelpOption(option);
                 }}
                 calculatedTotalPrice={calculatedTotalPrice}

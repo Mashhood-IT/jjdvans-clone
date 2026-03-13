@@ -187,8 +187,13 @@ const WidgetPaymentInformation = ({
     const inventoryData = inventoryDataRaw ? JSON.parse(inventoryDataRaw) : {};
 
     const baseFare = Number(pricingData.baseFare || 0);
-    const workersCharges = Number(pricingData.extraHelp?.price || 0);
+    const extraHelpUnitPrice = Number(pricingData.extraHelp?.unitPrice || 0);
     const extraTimeCharges = Number(inventoryData.additionalFare || 0);
+
+    const totalMinutes = (inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0);
+    const totalTimeUnits = Math.ceil(totalMinutes / 30);
+    const workersCharges = totalTimeUnits * extraHelpUnitPrice;
+
     const floorCharges = Number(inventoryData.floorCharges || 0);
     const accessTypeCharges = Number(inventoryData.accessTypeCharges || 0);
 
@@ -480,7 +485,7 @@ const WidgetPaymentInformation = ({
               </div>
               {pricingInfo.workersCharges > 0 && (
                 <div className="flex justify-between widget-description">
-                  <span className="text-(--dark-grey)">Extra Workers</span>
+                  <span className="text-(--dark-grey)">Extra Men Charges ({Math.ceil(((localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedHours : 0) * 60 + (localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedMinutes : 0)) / 30)} × {pricingInfo.currencySymbol}{Math.round(pricingInfo.workersCharges / Math.ceil(((localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedHours : 0) * 60 + (localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedMinutes : 0)) / 30))})</span>
                   <span className="widget-value-text-sm text-(--dark-black)">
                     +{pricingInfo.currencySymbol}
                     {pricingInfo.workersCharges.toFixed(2)}
