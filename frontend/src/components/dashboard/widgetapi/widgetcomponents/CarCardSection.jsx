@@ -17,16 +17,38 @@ const CarCardSection = ({
   useEffect(() => {
     const defaults = { ...selectedOptions };
     let changed = false;
+    const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
 
     carList.forEach((car) => {
+      // If this is the selected car and we have a saved price to restore
       if (
         car._id === selectedCarId &&
         savedExtraHelpPrice !== null &&
-        savedExtraHelpPrice !== undefined
+        savedExtraHelpPrice !== undefined &&
+        !defaults[car._id]
       ) {
-        return;
+        // Build the same options list used in render to find the match
+        const carHelpOptions = car.extraHelp?.length
+          ? car.extraHelp.map((h, i) => ({ id: `help-${car._id}-${i}`, label: h.label, price: h.price }))
+          : [
+            { id: `help-${car._id}-self`, label: "Self Load", price: 0 },
+            { id: `help-${car._id}-driver`, label: "Driver help", price: 20 },
+            { id: `help-${car._id}-2men`, label: "2 Men Team", price: 50 },
+            { id: `help-${car._id}-3men`, label: "3 Men Team", price: 100 },
+          ];
+
+        // Find best match: unit price * units === saved total price
+        // Use a small epsilon if needed, but since we use Math.round/fixed elsewhere, exact match or close match should work
+        const match = carHelpOptions.find(opt => Math.round(opt.price * durationUnits) === Math.round(savedExtraHelpPrice));
+        
+        if (match) {
+          defaults[car._id] = match;
+          changed = true;
+          return;
+        }
       }
 
+      // Default initialization if not already set
       if (!defaults[car._id]) {
         const firstOption = car.extraHelp?.[0]
           ? { ...car.extraHelp[0], id: `help-${car._id}-0` }
@@ -44,10 +66,12 @@ const CarCardSection = ({
     if (changed) {
       setSelectedOptions(defaults);
       if (selectedCarId && defaults[selectedCarId]) {
-        onHelpSelect?.(defaults[selectedCarId]);
+        // Notify parent about the restored option
+        const opt = defaults[selectedCarId];
+        onHelpSelect?.({ ...opt, totalPrice: opt.price * durationUnits, unitPrice: opt.price });
       }
     }
-  }, [carList, selectedCarId, savedExtraHelpPrice]);
+  }, [carList, selectedCarId, savedExtraHelpPrice, roundedGoogleMinutes]);
 
   const handleHelpChange = (carId, option) => {
     const newOptions = {
@@ -97,13 +121,18 @@ const CarCardSection = ({
           ];
 
         let activeOption = selectedOptions[_id];
+        const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+
         if (
           _id === selectedCarId &&
           savedExtraHelpPrice !== null &&
           savedExtraHelpPrice !== undefined
         ) {
           const matchByPrice = helpOptions.find(
-            (opt) => Number(opt.price) === Number(savedExtraHelpPrice)
+            (opt) => {
+              const totalPriceForOpt = Number(opt.price) * durationUnits;
+              return Math.abs(totalPriceForOpt - Number(savedExtraHelpPrice)) < 0.01;
+            }
           );
           if (matchByPrice) {
             activeOption = matchByPrice;
@@ -119,7 +148,6 @@ const CarCardSection = ({
             };
         }
 
-        const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
         const fullDurationCharge = durationUnits * (car.halfHourPrice || 0);
         const totalExtraHelpPrice = durationUnits * (activeOption?.price || 0);
         const currentTotalPrice = basePrice + fullDurationCharge + totalExtraHelpPrice;
@@ -145,6 +173,13 @@ const CarCardSection = ({
                   }`}>
                   {isSelected ? "Selected" : "Available"}
                 </div>
+                {car.quantity !== undefined && (
+                  <div className="mt-2 text-right">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-600">
+                      QTY: {car.quantity}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -177,7 +212,7 @@ const CarCardSection = ({
 
               <div className="space-y-2">
                 <h4 className="widget-label-tiny flex items-center gap-2">
-                  <span className="w-4 h-px bg-gray-200" /> Who's helping with the move?
+                  Who's helping with the move?
                 </h4>
                 <div className={`grid gap-2 ${helpOptions.length === 1 ? "grid-cols-1 max-w-50 mx-auto" : "grid-cols-2"}`} onClick={(e) => e.stopPropagation()}>
                   {helpOptions.map((option) => (

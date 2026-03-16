@@ -251,11 +251,17 @@ const WidgetPaymentInformation = ({
       if (bookingSettingData.setting.stripeKeys?.publishableKey) allowedMethods.push("Stripe");
       if (bookingSettingData.setting.paypalKeys?.clientId) allowedMethods.push("Paypal");
 
-      if (allowedMethods.length > 0 && !allowedMethods.includes(formData.paymentMethod)) {
+      // If we're in edit mode, allow a manual/direct update without payment
+      if (isEdit) {
+        allowedMethods.unshift("Manual Update");
+      }
+
+      if (allowedMethods.length > 0 && (!formData.paymentMethod || !allowedMethods.includes(formData.paymentMethod))) {
+        // Only auto-select if no valid method is selected
         setFormData(prev => ({ ...prev, paymentMethod: allowedMethods[0] }));
       }
     }
-  }, [bookingSettingData, formData.paymentMethod]);
+  }, [bookingSettingData, formData.paymentMethod, isEdit]);
 
   const onBookNowClick = async (paymentData) => {
     if (!paymentData.paymentMethod) {
@@ -264,6 +270,7 @@ const WidgetPaymentInformation = ({
     }
 
     const bookingData = {
+      ...booking,
       passengerDetails: passengerDetails,
       passenger: passengerDetails,
       fare: finalFare,
@@ -310,7 +317,7 @@ const WidgetPaymentInformation = ({
   };
 
   return (
-    <div className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
+    <div className="px-4 md:px-8">
       <WidgetStepHeader
         step="4"
         title="Complete Your Booking"
@@ -370,13 +377,14 @@ const WidgetPaymentInformation = ({
                 <PhoneInput
                   country={"gb"}
                   value={passengerDetails.phone}
+
                   onChange={(phone) =>
                     setPassengerDetails({
                       ...passengerDetails,
                       phone: phone,
                     })
                   }
-                  inputClass="custom_input"
+                  inputClass="custom_input !w-full"
                 />
               </div>
             </div>
@@ -404,7 +412,7 @@ const WidgetPaymentInformation = ({
                           day: "numeric",
                           year: "numeric",
                         })
-                        : ""
+                        : "N/A"
                     }
                     readOnly
                     className="custom_input cursor-not-allowed"
@@ -419,9 +427,9 @@ const WidgetPaymentInformation = ({
                   <input
                     type="text"
                     value={
-                      booking?.hour !== undefined && booking?.minute !== undefined
-                        ? `${String(booking.hour).padStart(2, "0")} : ${String(booking.minute).padStart(2, "0")}`
-                        : ""
+                      booking?.hour !== undefined && booking?.minute !== undefined && booking?.hour !== "" && booking?.minute !== ""
+                        ? `${String(booking.hour).padStart(2, "0")}:${String(booking.minute).padStart(2, "0")}`
+                        : "N/A"
                     }
                     readOnly
                     className="custom_input cursor-not-allowed"
@@ -582,6 +590,7 @@ const WidgetPaymentInformation = ({
                   options.push({ label: "Paypal", value: "Paypal" });
                 }
 
+
                 return (
                   <SelectOption
                     label="Choose Payment Option"
@@ -639,16 +648,6 @@ const WidgetPaymentInformation = ({
                   {stripeError}
                 </div>
               )}
-              <div className="flex justify-center">
-                {formData.paymentMethod !== "Stripe" && formData.paymentMethod !== "Paypal" && (
-                  <button
-                    onClick={handleBookNow}
-                    className="btn btn-back mt-4"
-                  >
-                    {isEdit ? "Update Booking" : "Book Now"}
-                  </button>
-                )}
-              </div>
             </div>
           </div>
         </div>

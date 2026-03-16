@@ -8,7 +8,11 @@ const WidgetBookingDetails = ({
     onBack,
     companyId: parentCompanyId,
     data,
+    isEdit: isEditProp,
+    bookingId: bookingIdProp,
 }) => {
+    const isEdit = isEditProp || new URLSearchParams(window.location.search).get("isEdit") === "true";
+    const bookingId = bookingIdProp || new URLSearchParams(window.location.search).get("bookingId") || "";
     const companyId =
         parentCompanyId ||
         new URLSearchParams(window.location.search).get("company") ||
@@ -145,11 +149,6 @@ const WidgetBookingDetails = ({
 
         if (!formData.pickup || !dropOffs[0]?.trim()) {
             toast.error("Pickup and at least one Drop Off is required.");
-            return;
-        }
-
-        if (!formData.date || formData.hour === "" || formData.minute === "") {
-            toast.error("Please fill in date, hour, and minute.");
             return;
         }
 

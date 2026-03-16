@@ -15,7 +15,7 @@ const WidgetAPI = () => {
   id="mtlWidget"
   src="${BASE_URL}widget-form?company=${companyId}"
   style="width:100%;min-height:700px;border:none;overflow:hidden;"
-  title="MTL Dispatch Booking Widget"
+  title="Flexible Budget Removals Limited Booking Widget"
   loading="lazy"
   allowfullscreen
 ></iframe>

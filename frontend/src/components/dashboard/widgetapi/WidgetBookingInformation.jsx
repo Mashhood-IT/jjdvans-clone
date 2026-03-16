@@ -16,7 +16,13 @@ import useDistanceSync from '../../../hooks/useDistanceSync';
 const WidgetBookingInformation = ({
   onNext,
   dropOffPrice,
+  data,
+  isEdit: isEditProp,
+  bookingId: bookingIdProp,
 }) => {
+  const isEdit = isEditProp || new URLSearchParams(window.location.search).get("isEdit") === "true";
+  const bookingId = bookingIdProp || new URLSearchParams(window.location.search).get("bookingId") || "";
+
   const companyId = new URLSearchParams(window.location.search).get("company") || "";
   const { data: bookingSettingData } = useGetPublicBookingSettingQuery(companyId, {
     skip: !companyId
@@ -29,7 +35,7 @@ const WidgetBookingInformation = ({
 
   const carList = vehicleResponse?.data || vehicleResponse || [];
 
-  const [formData, setFormData] = useState(null);
+  const [formData, setFormData] = useState(data || {});
   const {
     distanceText,
     durationText,
@@ -157,144 +163,67 @@ const WidgetBookingInformation = ({
   const [matchedPostcodePrice, setMatchedPostcodePrice] = useState(null);
 
   useEffect(() => {
-    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-
-    if (isEdit) return;
-    const savedData = localStorage.getItem("bookingForm");
-    const parsed = JSON.parse(savedData);
-    setFormData((prev) => ({
-      ...prev, ...parsed
-    }));
-  }, []);
+    if (data && Object.keys(data).length > 0) {
+      setFormData(prev => ({ ...prev, ...data }));
+    } else {
+      const savedData = localStorage.getItem("bookingForm");
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setFormData((prev) => ({
+          ...prev, ...parsed
+        }));
+      }
+    }
+  }, [data]);
 
   useEffect(() => {
-    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
     if (isEdit) {
-      const timer = setTimeout(() => {
-        try {
-          const savedVehicle = localStorage.getItem("selectedVehicle");
-          if (!savedVehicle) return;
-
-          const parsed = JSON.parse(savedVehicle);
-
-          if (parsed.id) {
-            setSelectedCarId(parsed.id);
-            return;
-          }
-
-          if (parsed.vehicleName && Array.isArray(carList) && carList.length > 0) {
-            const match = carList.find(
-              (c) => c.vehicleName && c.vehicleName === parsed.vehicleName
-            );
-            if (match) {
-              setSelectedCarId(match._id);
-              localStorage.setItem(
-                "selectedVehicle",
-                JSON.stringify({
-                  ...parsed,
-                  id: match._id,
-                  vehicleName: match.vehicleName || parsed.vehicleName,
-                  image: match.image || parsed.image || IMAGES.profilecarimg,
-                  passengerSeats: match.passengerSeats || parsed.passengerSeats || 0,
-                  maxSeats: match.passengerSeats || parsed.passengerSeats || 0,
-                  halfHourPrice: match.halfHourPrice || parsed.halfHourPrice || 0,
-                })
-              );
-            }
-          }
-        } catch (err) {
-          console.error("Error restoring selectedVehicle from localStorage:", err);
-        }
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-
-    try {
       const savedVehicle = localStorage.getItem("selectedVehicle");
-      if (!savedVehicle) return;
+      if (savedVehicle && carList.length > 0) {
+        const parsed = JSON.parse(savedVehicle);
+        let found = false;
 
-      const parsed = JSON.parse(savedVehicle);
+        // Try to match by ID first
+        if (parsed.id) {
+          const match = carList.find(c => c._id === parsed.id);
+          if (match) {
+            setSelectedCarId(match._id);
+            found = true;
+          }
+        }
 
-      if (parsed.id) {
-        setSelectedCarId(parsed.id);
-        return;
-      }
-
-      if (parsed.vehicleName && Array.isArray(carList) && carList.length > 0) {
-        const match = carList.find(
-          (c) => c.vehicleName && c.vehicleName === parsed.vehicleName
-        );
-        if (match) {
-          setSelectedCarId(match._id);
-          localStorage.setItem(
-            "selectedVehicle",
-            JSON.stringify({
-              ...parsed,
-              id: match._id,
-              vehicleName: match.vehicleName || parsed.vehicleName,
-              image: match.image || parsed.image || IMAGES.profilecarimg,
-              passengerSeats: match.passengerSeats || parsed.passengerSeats || 0,
-              maxSeats: match.passengerSeats || parsed.passengerSeats || 0,
-              halfHourPrice: match.halfHourPrice || parsed.halfHourPrice || 0,
-            })
+        // Fallback: match by Name
+        if (!found && parsed.vehicleName) {
+          const match = carList.find(c =>
+            c.vehicleName?.trim().toLowerCase() === parsed.vehicleName?.trim().toLowerCase()
           );
+          if (match) setSelectedCarId(match._id);
         }
       }
-    } catch (err) {
-      console.error("Error restoring selectedVehicle from localStorage:", err);
-    }
-  }, [carList]);
 
-  useEffect(() => {
-    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-
-    if (isEdit) {
-      const timer = setTimeout(() => {
+      // Restore pricing/extraHelp
+      const rawPricing = localStorage.getItem("widgetPricing");
+      if (rawPricing) {
         try {
-          const rawPricing = localStorage.getItem("widgetPricing");
-          if (!rawPricing) return;
-
           const parsed = JSON.parse(rawPricing);
-          if (parsed.extraHelp && (typeof parsed.extraHelp.price === "number" || typeof parsed.extraHelp.unitPrice === "number")) {
+          if (parsed.extraHelp) {
             setExtraHelpPrice(parsed.extraHelp.price || 0);
             setSelectedHelpOption({
-              label: parsed.extraHelp.label || (parsed.extraHelp.label === "" ? "" : "Self Load"),
+              label: parsed.extraHelp.label || "Self Load",
               price: parsed.extraHelp.price || 0,
               unitPrice: parsed.extraHelp.unitPrice || 0
             });
           }
         } catch (err) {
-          console.error("Error restoring widgetPricing from localStorage:", err);
+          console.error("Error restoring pricing in edit mode:", err);
         }
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-
-    try {
-      const rawPricing = localStorage.getItem("widgetPricing");
-      if (!rawPricing) return;
-
-      const parsed = JSON.parse(rawPricing);
-      if (parsed.extraHelp && (typeof parsed.extraHelp.price === "number" || typeof parsed.extraHelp.unitPrice === "number")) {
-        setExtraHelpPrice(parsed.extraHelp.price || 0);
-        setSelectedHelpOption({
-          label: parsed.extraHelp.label || (parsed.extraHelp.label === "" ? "" : "Self Load"),
-          price: parsed.extraHelp.price || 0,
-          unitPrice: parsed.extraHelp.unitPrice || 0
-        });
       }
-    } catch (err) {
-      console.error("Error restoring widgetPricing from localStorage:", err);
     }
-  }, []);
-
-  const matchFixedPrice = () => {
+  }, [carList, isEdit]);
+  const matchFixedPrice = useCallback(() => {
     try {
       if (!Array.isArray(fixedPrices) || fixedPrices.length === 0) return null;
       if (!formData?.pickup || !formData?.dropoff) return null;
-
-      const pickupName = formData.pickup.toLowerCase();
-      const dropoffName = formData.dropoff.toLowerCase();
 
       const normalize = (text) =>
         text
@@ -303,52 +232,32 @@ const WidgetBookingInformation = ({
           .replace(/\s+/g, " ")
           .trim();
 
-      const normalizedPickup = normalize(pickupName);
-      const normalizedDropoff = normalize(dropoffName);
+      const normalizedPickup = normalize(formData.pickup);
+      const normalizedDropoff = normalize(formData.dropoff);
 
       const matchedZone = fixedPrices.find((zone) => {
         const from = normalize(zone.pickup);
         const to = normalize(zone.dropoff);
-
         return (
           (normalizedPickup.includes(from) && normalizedDropoff.includes(to)) ||
           (normalizedPickup.includes(to) && normalizedDropoff.includes(from))
         );
       });
 
-      if (matchedZone) {
-        return parseFloat(matchedZone.price || 0);
-      }
-
-      return null;
+      return matchedZone ? parseFloat(matchedZone.price || 0) : null;
     } catch (err) {
       return null;
     }
-  };
+  }, [formData?.pickup, formData?.dropoff, fixedPrices]);
 
   useEffect(() => {
-    if (!journeyDateTime || discounts.length === 0) return;
-
-    const match = discounts.find(d =>
-      d.status === 'Active' &&
-      d.category === 'Surcharge' &&
-      new Date(d.fromDate) <= journeyDateTime &&
-      new Date(d.toDate) >= journeyDateTime
-    );
-
-    setMatchedSurcharge(match?.surchargePrice || 0);
-  }, [journeyDateTime, discounts]);
-
-  useEffect(() => {
-    if (!journeyDateTime || discounts.length === 0) return;
-
+    if (!journeyDateTime || !discounts) return;
     const surchargeMatch = discounts.find(d =>
       d.status === 'Active' &&
       d.category === 'Surcharge' &&
       new Date(d.fromDate) <= journeyDateTime &&
       new Date(d.toDate) >= journeyDateTime
     );
-
     setMatchedSurcharge(surchargeMatch?.surchargePrice || 0);
 
     const discountMatch = discounts.find(d =>
@@ -357,7 +266,6 @@ const WidgetBookingInformation = ({
       new Date(d.fromDate) <= journeyDateTime &&
       new Date(d.toDate) >= journeyDateTime
     );
-
     setMatchedDiscount(discountMatch?.discountPrice || 0);
   }, [journeyDateTime, discounts]);
 
@@ -368,78 +276,45 @@ const WidgetBookingInformation = ({
       dt.setMinutes(Number(formData.minute));
       setJourneyDateTime(dt);
     }
-  }, [formData]);
+  }, [formData?.date, formData?.hour, formData?.minute]);
 
   useEffect(() => {
-    const price = matchFixedPrice();
-    setFixedZonePrice(price);
-  }, [formData?.pickup, formData?.dropoff, fixedPrices]);
+    setFixedZonePrice(matchFixedPrice());
+  }, [matchFixedPrice]);
 
   useEffect(() => {
     if (zones.length > 0 && formData?.pickup && formData?.dropoff) {
       const normalize = (str) => str?.toLowerCase().replace(/[^a-z0-9]/g, ' ').split(' ').filter(Boolean);
-
       const pickupWords = normalize(formData.pickup);
       const dropoffWords = normalize(formData.dropoff);
-
       const pickupMatch = zones.find(z => pickupWords.includes(z.zone.toLowerCase()));
       const dropoffMatch = zones.find(z => dropoffWords.includes(z.zone.toLowerCase()));
-
-      const matched = pickupMatch || dropoffMatch;
-
-      if (matched) {
-        setMatchedZonePrice(matched.price);
-      } else {
-        setMatchedZonePrice(null);
-      }
+      setMatchedZonePrice(pickupMatch?.price || dropoffMatch?.price || null);
     }
-  }, [zones, formData]);
-
-  useEffect(() => {
-    const sendHeight = () => {
-      const height = document.documentElement.scrollHeight;
-      window.parent.postMessage({ type: "setHeight", height }, "*");
-    };
-    sendHeight();
-    const resizeObserver = new ResizeObserver(sendHeight);
-    resizeObserver.observe(document.body);
-    return () => resizeObserver.disconnect();
-  }, []);
-
-  const getLatLng = async (address) => {
-    const res = await triggerGeocode({ address, companyId }).unwrap();
-    return res?.location || null;
-  };
+  }, [zones, formData?.pickup, formData?.dropoff]);
 
   useEffect(() => {
     const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
     const delay = isEdit ? 200 : 0;
-
     const timer = setTimeout(() => {
       const storedForm = localStorage.getItem("bookingForm");
-      if (!storedForm) return;
-
-      const data = JSON.parse(storedForm);
-      setFormData(data);
-
+      if (!storedForm && (!data || Object.keys(data).length === 0)) return;
+      const currentData = storedForm ? JSON.parse(storedForm) : data;
       const allDropoffs = [
-        data.dropoff,
-        data.additionalDropoff1,
-        data.additionalDropoff2,
-        data.additionalDropoff3,
-        data.additionalDropoff4,
+        currentData.dropoff,
+        currentData.additionalDropoff1,
+        currentData.additionalDropoff2,
+        currentData.additionalDropoff3,
+        currentData.additionalDropoff4,
       ].filter(Boolean);
-
-      calculateRoute(data.pickup, allDropoffs);
-
-      const pickupCode = extractPostcode(data.pickup);
-      const dropoffCode = extractPostcode(data.dropoff);
+      calculateRoute(currentData.pickup, allDropoffs);
+      const pickupCode = extractPostcode(currentData.pickup);
+      const dropoffCode = extractPostcode(currentData.dropoff);
       setPickupPostcode(pickupCode);
       setDropoffPostcode(dropoffCode);
     }, delay);
-
     return () => clearTimeout(timer);
-  }, [calculateRoute]);
+  }, [calculateRoute, data]);
 
   useEffect(() => {
     const allDropoffs = [
@@ -467,26 +342,23 @@ const WidgetBookingInformation = ({
     } else {
       setMatchedPostcodePrice(null);
     }
-  }, [pickupPostcode, dropoffPostcode, postcodePrices, formData]);
+  }, [pickupPostcode, dropoffPostcode, postcodePrices, formData?.dropoff, formData?.additionalDropoff1, formData?.additionalDropoff2, formData?.additionalDropoff3, formData?.additionalDropoff4]);
 
   useEffect(() => {
-    const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-
-    if (isEdit) return;
-    try {
-      const savedData = localStorage.getItem("bookingForm");
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        setFormData((prev) => ({
-          ...prev,
-          ...parsed,
-        }));
-      }
-    } catch (err) {
-      console.error("Error parsing bookingForm from localStorage:", err);
-    }
+    const sendHeight = () => {
+      const height = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: "setHeight", height }, "*");
+    };
+    sendHeight();
+    const resizeObserver = new ResizeObserver(sendHeight);
+    resizeObserver.observe(document.body);
+    return () => resizeObserver.disconnect();
   }, []);
 
+  const getLatLng = async (address) => {
+    const res = await triggerGeocode({ address, companyId }).unwrap();
+    return res?.location || null;
+  };
 
   const getActivePricingMode = () => {
     const allDropoffs = [
@@ -578,7 +450,6 @@ const WidgetBookingInformation = ({
       toast.error("Please select a vehicle to continue.");
       return;
     }
-
     const selectedCar = carList.find(car => car._id === selectedCarId);
     const primaryJourneyFare = computedPrimaryFare;
 
@@ -602,6 +473,7 @@ const WidgetBookingInformation = ({
       segmentBreakdown,
       googleMinutes,
       roundedGoogleMinutes,
+      bookingData: formData,
     });
   };
 
@@ -705,6 +577,66 @@ const WidgetBookingInformation = ({
             currencyCode={currencyCode}
             segmentBreakdown={segmentBreakdown}
           />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6 bg-(--lightest-gray) p-6 rounded-2xl shadow-lg">
+            <div className="relative">
+              <label className="block widget-label-text !text-(--dark-black) tracking-wider mb-2">Booking Date</label>
+              <input
+                type="date"
+                name="date"
+                value={formData?.date || ""}
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  setFormData(prev => ({ ...prev, date: newDate }));
+                  const saved = JSON.parse(localStorage.getItem("bookingForm") || "{}");
+                  localStorage.setItem("bookingForm", JSON.stringify({ ...saved, date: newDate }));
+                }}
+                className="custom_input w-full border-(--dark-grey) px-3 py-2 rounded-lg"
+              />
+            </div>
+            <div>
+              <label className="block widget-label-text !text-(--dark-black) tracking-wider mb-2">Hour</label>
+              <select
+                name="hour"
+                value={formData?.hour || ""}
+                onChange={(e) => {
+                  const newHour = e.target.value;
+                  setFormData(prev => ({ ...prev, hour: newHour }));
+                  const saved = JSON.parse(localStorage.getItem("bookingForm") || "{}");
+                  localStorage.setItem("bookingForm", JSON.stringify({ ...saved, hour: newHour }));
+                }}
+                className="custom_input w-full text-(--white) border-(--dark-grey) px-3 py-2 rounded-lg"
+              >
+                <option value="">HH</option>
+                {[...Array(24).keys()].map((h) => (
+                  <option key={h} value={h}>
+                    {h.toString().padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block widget-label-text !text-(--dark-black) tracking-wider mb-2">Minute</label>
+              <select
+                name="minute"
+                value={formData?.minute || ""}
+                onChange={(e) => {
+                  const newMinute = e.target.value;
+                  setFormData(prev => ({ ...prev, minute: newMinute }));
+                  const saved = JSON.parse(localStorage.getItem("bookingForm") || "{}");
+                  localStorage.setItem("bookingForm", JSON.stringify({ ...saved, minute: newMinute }));
+                }}
+                className="custom_input w-full  text-(--white) border-(--dark-grey) px-3 py-2 rounded-lg"
+              >
+                <option value="">MM</option>
+                {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
+                  <option key={m} value={m.toString().padStart(2, "0")}>
+                    {m.toString().padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           <div className='mt-6'>
             {carList.length > 0 ? (

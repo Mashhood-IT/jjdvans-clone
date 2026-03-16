@@ -49,6 +49,23 @@ const JourneySummaryCard = ({
 
   const primaryDistanceMiles = convertToMiles(distanceText);
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "Date not selected";
+    try {
+      // Expecting YYYY-MM-DD
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.toLocaleDateString("en-GB", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (err) {
+      return dateStr;
+    }
+  };
+
   return (
     <div className="bg-(--mate-color) rounded-2xl shadow-lg overflow-hidden w-full">
       <div className="flex flex-col lg:flex-row">
@@ -59,9 +76,9 @@ const JourneySummaryCard = ({
             </p>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-7 h-7 bg-(--light-green) rounded-full shrink-0">
-                <Icons.MapPin className="w-4 h-4 text-(--success-color)" />
+                <Icons.MapPin className="size-3.5 text-(--success-color)" />
               </div>
-              <p className="widget-value-text-sm text-(--white)">
+              <p className="widget-value-text-xs text-(--white)">
                 {formData?.pickup || "Pickup Location"}
               </p>
             </div>
@@ -74,9 +91,9 @@ const JourneySummaryCard = ({
               </p>
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
-                  <Icons.MapPin className="w-4 h-4 text-(--primary-dark-red)" />
+                  <Icons.MapPin className="size-3.5 text-(--primary-dark-red)" />
                 </div>
-                <p className="widget-value-text-sm text-(--white)">
+                <p className="widget-value-text-xs text-(--white)">
                   {dropList.filter(Boolean)[0]}
                 </p>
               </div>
@@ -91,7 +108,7 @@ const JourneySummaryCard = ({
               {dropList.filter(Boolean).slice(1).map((dropoff, idx) => (
                 <div key={idx} className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
-                    <Icons.MapPin className="w-4 h-4 text-(--primary-dark-red)" />
+                    <Icons.MapPin className="size-3.5 text-(--primary-dark-red)" />
                   </div>
                   <p className="widget-value-text-sm text-(--white)">
                     {dropoff}
@@ -103,30 +120,30 @@ const JourneySummaryCard = ({
         </div>
 
         <div className="flex flex-col items-start justify-between lg:min-w-95 bg-(--dark-gray) p-6">
-          <div className="space-y-5 text-start w-full">
-            <div>
+          <div className="space-y-5 flex items-start justify-between text-start w-full">
+            <div className="flex-1">
               <p className="widget-label-small text-(--white) mb-2">
                 TOTAL DISTANCE
               </p>
               <div className="flex items-center justify-start gap-2">
-                <Icons.MapPin className="w-6 h-6 text-(--primary-dark-red)" />
-                <p className="widget-value-large text-(--white)">
+                <Icons.MapPin className="size-3.5 text-(--white)" />
+                <p className="widget-value-sm text-(--white)">
                   {primaryDistanceMiles.replace(" mi", "")}
-                  <span className="widget-value-text ml-1">Miles</span>
+                  <span className="widget-value-sm ml-1">Miles</span>
                 </p>
               </div>
             </div>
 
-            <div>
+            <div className="flex-1">
               <p className="widget-label-small text-(--white) mb-2">
                 ESTIMATED TIME
               </p>
               <div className="flex items-center justify-start gap-2">
-                <Icons.Clock className="w-6 h-6 text-(--white)" />
-                <p className="widget-value-large text-(--white)">
+                <Icons.Clock className="size-3.5 text-(--white)" />
+                <p className="widget-value-sm text-(--white)">
                   {`${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`}
                 </p>
-                <span className="text-(--white) font-semibold mt-2">Hours</span>
+                <span className="text-(--white) widget-value-sm font-semibold">Hours</span>
               </div>
             </div>
           </div>
@@ -138,14 +155,7 @@ const JourneySummaryCard = ({
         <div className="flex items-center gap-2">
           <Icons.Calendar className="w-5 h-5 text-(--main-color)" />
           <span className="widget-value-text-sm text-(--light-gray)">
-            {formData?.date
-              ? new Date(formData.date).toLocaleDateString("en-UK", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })
-              : "Date not selected"}
+            {formatDate(formData?.date)}
           </span>
         </div>
 
@@ -164,4 +174,4 @@ const JourneySummaryCard = ({
   );
 };
 
-export default JourneySummaryCard;
+export default JourneySummaryCard;

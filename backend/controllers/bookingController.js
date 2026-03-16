@@ -186,18 +186,18 @@ export const deleteBooking = async (req, res) => {
 
 const generateBookingEmailHTML = (booking, companyData = null, type = "passenger") => {
   const formatDateTime = (dateStr, hour, minute) => {
-    if (dateStr == null || hour == null || minute == null) return "N/A";
-    const date = new Date(dateStr);
-    date.setHours(Number(hour));
-    date.setMinutes(Number(minute));
-    date.setSeconds(0);
-    date.setMilliseconds(0);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    const hh = String(date.getHours()).padStart(2, "0");
-    const min = String(date.getMinutes()).padStart(2, "0");
-    return `${day}/${month}/${year} ${hh}:${min}`;
+    if (!dateStr || hour === null || minute === null) return "N/A";
+
+    // dateStr is typically YYYY-MM-DD from <input type="date">
+    // Constructing new Date(YYYY, MM-1, DD) uses local time
+    const [year, month, day] = dateStr.split("-").map(Number);
+    if (!year || !month || !day) return "N/A";
+
+    const hh = String(hour).padStart(2, "0");
+    const min = String(minute).padStart(2, "0");
+
+    // Return formatted string directly to avoid Date object timezone manipulation
+    return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year} ${hh}:${min}`;
   };
 
   const pickupTime =
@@ -215,7 +215,7 @@ const generateBookingEmailHTML = (booking, companyData = null, type = "passenger
   };
 
   const title = type === "admin" ? "New Booking Notification" : "Booking Confirmation";
-  const subtitle = type === "admin" 
+  const subtitle = type === "admin"
     ? `A new booking has been placed (#${booking.bookingId})`
     : `Thank you for booking with us! Your trip details are listed below.`;
 
@@ -242,10 +242,10 @@ const generateBookingEmailHTML = (booking, companyData = null, type = "passenger
           <!-- Header -->
           <tr>
             <td style="padding:32px;background-color:#1f2937;text-align:center;">
-              ${companyData?.superadminCompanyLogo 
-                ? `<img src="${companyData.superadminCompanyLogo}" alt="Logo" style="height:60px;margin-bottom:16px;display:inline-block;" />`
-                : ""
-              }
+              ${companyData?.superadminCompanyLogo
+      ? `<img src="${companyData.superadminCompanyLogo}" alt="Logo" style="height:60px;margin-bottom:16px;display:inline-block;" />`
+      : ""
+    }
               <h1 style="color:#ffffff;font-size:24px;margin:0;font-weight:700;">${companyData?.superadminCompanyName || "MTL Dispatch"}</h1>
               <p style="color:rgba(255,255,255,0.7);font-size:14px;margin:8px 0 0 0;">${title}</p>
             </td>
@@ -297,17 +297,17 @@ const generateBookingEmailHTML = (booking, companyData = null, type = "passenger
                 <p style="color:#1f2937;font-size:14px;font-weight:700;margin:0 0-12px 0; border-left:4px solid #3b82f6; padding-left:12px;">DROP OFF LOCATION(S)</p>
                 <div style="margin:16px 0 0 16px;">
                   ${[booking.dropoff, booking.additionalDropoff1, booking.additionalDropoff2, booking.additionalDropoff3, booking.additionalDropoff4]
-                    .filter(Boolean)
-                    .map((addr, idx) => {
-                      const access = idx === 0 ? booking.dropoffAccess : booking[`additionalDropoff${idx}Access`];
-                      const floor = idx === 0 ? booking.dropoffFloorNo : booking[`additionalDropoff${idx}FloorNo`];
-                      return `
+      .filter(Boolean)
+      .map((addr, idx) => {
+        const access = idx === 0 ? booking.dropoffAccess : booking[`additionalDropoff${idx}Access`];
+        const floor = idx === 0 ? booking.dropoffFloorNo : booking[`additionalDropoff${idx}FloorNo`];
+        return `
                         <p style="color:#4b5563;font-size:14px;line-height:1.5;margin:0 0 12px 0;">
                           <strong>${idx === 0 ? 'Main' : `Stop ${idx}`}:</strong> ${addr}
                           <br><span style="font-size:12px;color:#9ca3af;">${access || 'STAIRS'} • Floor ${floor || 0}</span>
                         </p>
                       `;
-                    }).join("")}
+      }).join("")}
                 </div>
               </div>
             </td>
@@ -401,7 +401,7 @@ export const sendBookingDetailsEmail = async (req, res) => {
     const html = generateBookingEmailHTML(booking, companyData, "passenger");
     await sendEmail(email, `Booking Details #${booking.bookingId}`, {
       html,
-      fromName: "MTL Dispatch",
+      fromName: "Flexible Budget Removals Limited",
     });
 
     res.json({

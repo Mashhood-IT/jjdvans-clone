@@ -432,7 +432,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                 viewData?.workersCharges) && (
                   <div className="space-y-1 border-b border-gray-200 pb-2 mb-2">
                     <div className="flex justify-between text-xs text-(--dark-grey)">
-                      <span>Base Fare:</span>
+                      <span>Base Quote:</span>
                       <span>
                         {currencySymbol}
                         {Number(viewData?.fare || 0).toFixed(2)}
@@ -458,14 +458,32 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     )}
                   </div>
                 )}
-              <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium flex items-center justify-center">
-                <span className="text-(--dark-gray)">Total Fare:</span>
-                <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
-                  {currencySymbol}
-                  {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(
-                    2,
-                  )}
-                </span>
+              <div className="btn btn-back text-sm sm:text-base px-6 py-3 rounded-md font-medium flex-col items-center justify-center">
+                <div className="flex items-center">
+                  <span className="text-(--dark-gray)">Total Fare:</span>
+                  <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
+                    {currencySymbol}
+                    {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(
+                      2,
+                    )}
+                  </span>
+                </div>
+                <div className="flex flex-col w-full mt-2 border-t border-gray-200 pt-2 space-y-1">
+                  <div className="flex justify-between text-xs text-green-600">
+                    <span>Deposit Paid (35%):</span>
+                    <span className="font-semibold">
+                      {currencySymbol}
+                      {Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-blue-600">
+                    <span>Remaining Balance (65%):</span>
+                    <span className="font-semibold">
+                      {currencySymbol}
+                      {(Number(viewData?.totalPrice || viewData?.fare || 0) - Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35)).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -106,7 +106,7 @@ select:disabled {
   justify-content: center;
   gap: 8px;
   font-family: var(--app-font);
-  padding: 8px 24px;
+  padding: 6px 24px;
   letter-spacing: 0.3px;
   text-align: center;
   text-decoration: none;
@@ -156,6 +156,17 @@ select:disabled {
     font-size: 13px;
     padding: 6px 16px;
   }
+}
+
+.btn-blue {
+  background-color: var(--navy-blue);
+  color: var(--white);
+}
+
+.btn-blue:hover {
+  background-color: var(--navy-blue);
+  filter: brightness(1.1) saturate(1.1);
+  color: var(--white);
 }
 
 .btn-back {
@@ -364,11 +375,7 @@ input[type="date"]::-webkit-datetime-edit-text {
 }
 
 .widget-page-title {
-  @apply text-2xl md:text-4xl font-bold text-gray-900 leading-tight;
-}
-
-.widget-page-meta {
-  @apply text-sm font-medium tracking-wide uppercase text-gray-500;
+  @apply text-2xl md:text-3xl font-bold text-gray-900 leading-tight;
 }
 
 .widget-title {
@@ -423,6 +430,10 @@ input[type="date"]::-webkit-datetime-edit-text {
   @apply text-sm font-medium;
 }
 
+.widget-value-text-xs {
+  @apply text-xs font-medium;
+}
+
 .widget-meta-text {
   @apply text-xs font-medium;
 }
@@ -433,4 +444,8 @@ input[type="date"]::-webkit-datetime-edit-text {
 
 .widget-value-large {
   @apply text-4xl font-semibold;
+}
+
+.widget-value-sm {
+  @apply text-sm font-semibold;
 }

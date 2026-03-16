@@ -94,9 +94,6 @@ const WidgetMain = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (formData.isEdit) {
-      return;
-    }
     try {
       const bookingRaw = localStorage.getItem("bookingForm");
       const pricingRaw = localStorage.getItem("widgetPricing");
@@ -122,27 +119,27 @@ const WidgetMain = () => {
           ...prev.pricing,
           ...(storedPricing && Object.keys(storedPricing).length > 0
             ? {
-                totalPrice: storedPricing.totalPrice ?? prev.pricing.totalPrice,
-                baseFare: storedPricing.baseFare ?? prev.pricing.baseFare,
-                postcodePrice:
-                  storedPricing.postcodePrice ?? prev.pricing.postcodePrice,
-                dropOffPrice:
-                  storedPricing.dropOffPrice ?? prev.pricing.dropOffPrice,
-              }
+              totalPrice: storedPricing.totalPrice ?? prev.pricing.totalPrice,
+              baseFare: storedPricing.baseFare ?? prev.pricing.baseFare,
+              postcodePrice:
+                storedPricing.postcodePrice ?? prev.pricing.postcodePrice,
+              dropOffPrice:
+                storedPricing.dropOffPrice ?? prev.pricing.dropOffPrice,
+            }
             : {}),
         },
         payment: {
           ...prev.payment,
           ...(storedPayment &&
-          (storedPayment.passengerDetails || storedPayment.formData)
+            (storedPayment.passengerDetails || storedPayment.formData)
             ? {
-                paymentMethod:
-                  storedPayment.formData?.paymentMethod ??
-                  prev.payment.paymentMethod,
-                passengerDetails:
-                  storedPayment.passengerDetails ??
-                  prev.payment.passengerDetails,
-              }
+              paymentMethod:
+                storedPayment.formData?.paymentMethod ??
+                prev.payment.paymentMethod,
+              passengerDetails:
+                storedPayment.passengerDetails ??
+                prev.payment.passengerDetails,
+            }
             : {}),
         },
       }));
@@ -208,15 +205,15 @@ const WidgetMain = () => {
 
       const bookingFormRaw = localStorage.getItem("bookingForm");
       const bookingFormData = bookingFormRaw ? JSON.parse(bookingFormRaw) : {};
-      
+
       const distanceText = bookingFormData.distanceText || "";
       const durationText = bookingFormData.durationText || "";
 
       const rawAddedMinutes = Math.max(
         0,
         (inventoryData.estimatedHours || 0) * 60 +
-          (inventoryData.estimatedMinutes || 0) -
-          (inventoryData.initialGoogleMinutes || 0),
+        (inventoryData.estimatedMinutes || 0) -
+        (inventoryData.initialGoogleMinutes || 0),
       );
       const billableAddedMinutes = Math.ceil(rawAddedMinutes / 30) * 30;
 
@@ -283,7 +280,7 @@ const WidgetMain = () => {
       localStorage.removeItem("widgetInventoryData");
 
       localStorage.setItem("isWidgetFormFilled", "true");
-      
+
       if (!formData.isEdit) {
         toast.success(response.message || "Booking Request Received");
       }
@@ -344,8 +341,20 @@ const WidgetMain = () => {
       </div>
     );
   }
+  const getStepUrl = (path) => {
+    const params = new URLSearchParams();
+    params.set("company", companyId);
+    if (formData.isEdit) {
+      params.set("isEdit", "true");
+      if (formData.bookingId) {
+        params.set("bookingId", formData.bookingId);
+      }
+    }
+    return `${path}?${params.toString()}`;
+  };
+
   return (
-    <div className={`w-full h-full bg-transparent py-4 md:py-8`}>
+    <div className={`w-full h-fit bg-transparent py-4 md:py-8`}>
       <div>
         <BreadCrumbs />
         <Routes>
@@ -354,10 +363,12 @@ const WidgetMain = () => {
             element={
               <WidgetBooking
                 companyId={companyId}
+                isEdit={formData.isEdit}
+                bookingId={formData.bookingId}
                 data={formData.booking}
                 onSubmitSuccess={(data) => {
                   handleDataChange("booking", data);
-                  navigate(`/widget-form/widget-details?company=${companyId}`);
+                  navigate(getStepUrl("/widget-form/widget-details"));
                 }}
                 onChange={(data) => handleDataChange("booking", data)}
               />
@@ -369,16 +380,18 @@ const WidgetMain = () => {
             element={
               <WidgetBookingDetails
                 companyId={companyId}
+                isEdit={formData.isEdit}
+                bookingId={formData.bookingId}
                 data={formData.booking}
                 onSubmitSuccess={(data) => {
                   handleDataChange("booking", data);
                   handleDataChange("pricing", {
                     dropOffPrice: data.dropOffPrice || 0,
                   });
-                  navigate(`/widget-form/widget-vehicle?company=${companyId}`);
+                  navigate(getStepUrl("/widget-form/widget-vehicle"));
                 }}
                 onBack={() => {
-                  navigate(`/widget-form?company=${companyId}`);
+                  navigate(getStepUrl("/widget-form"));
                 }}
                 onChange={(data) => handleDataChange("booking", data)}
               />
@@ -390,10 +403,13 @@ const WidgetMain = () => {
             element={
               <WidgetBookingInformation
                 companyId={companyId}
+                isEdit={formData.isEdit}
+                bookingId={formData.bookingId}
+                data={formData.booking}
                 totalPrice={formData.pricing.totalPrice}
                 postcodePrice={formData.pricing.postcodePrice}
                 dropOffPrice={formData.pricing.dropOffPrice}
-                onNext={({ totalPrice, selectedCar }) => {
+                onNext={({ totalPrice, selectedCar, bookingData }) => {
                   handleDataChange("pricing", {
                     totalPrice,
                     oneWayFare: selectedCar.oneWayFare,
@@ -401,11 +417,10 @@ const WidgetMain = () => {
                   handleDataChange("vehicle", selectedCar);
                   handleDataChange("booking", {
                     ...formData.booking,
+                    ...bookingData,
                     vehicle: selectedCar,
                   });
-                  navigate(
-                    `/widget-form/widget-inventory?company=${companyId}`,
-                  );
+                  navigate(getStepUrl("/widget-form/widget-inventory"));
                 }}
               />
             }
@@ -418,8 +433,10 @@ const WidgetMain = () => {
                 items={items}
                 setItems={setItems}
                 companyId={companyId}
+                isEdit={formData.isEdit}
+                bookingId={formData.bookingId}
                 onContinue={() => {
-                  navigate(`/widget-form/widget-payment?company=${companyId}`);
+                  navigate(getStepUrl("/widget-form/widget-payment"));
                 }}
               />
             }
@@ -430,6 +447,7 @@ const WidgetMain = () => {
               <WidgetPaymentInformation
                 companyId={companyId}
                 isEdit={formData.isEdit}
+                bookingId={formData.bookingId}
                 loading={isLoading}
                 fare={formData.pricing.totalPrice || 0}
                 vehicle={{

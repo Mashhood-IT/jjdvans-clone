@@ -5,7 +5,11 @@ import PrimaryForm from "./widgetcomponents/PrimaryForm";
 const WidgetBooking = ({
   onSubmitSuccess,
   companyId: parentCompanyId,
+  isEdit: isEditProp,
+  bookingId: bookingIdProp,
 }) => {
+  const isEdit = isEditProp || new URLSearchParams(window.location.search).get("isEdit") === "true";
+  const bookingId = bookingIdProp || new URLSearchParams(window.location.search).get("bookingId") || "";
   const companyId =
     parentCompanyId ||
     new URLSearchParams(window.location.search).get("company") ||

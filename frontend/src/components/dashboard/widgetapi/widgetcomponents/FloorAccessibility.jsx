@@ -22,7 +22,10 @@ const FloorAccessibility = ({
 }) => {
   const getSubtotal = (floor, access) => {
     let total = (floor || 0) * pricePerFloor;
-    total += access === "STAIRS" ? priceForStairs : priceForLift;
+    if (floor > 0) {
+      if (access === "STAIRS") total += priceForStairs;
+      else if (access === "LIFT") total += priceForLift;
+    }
     return total;
   };
   return (
@@ -58,7 +61,11 @@ const FloorAccessibility = ({
               </label>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setPickupFloor(Math.max(0, pickupFloor - 1))}
+                  onClick={() => {
+                    const next = Math.max(0, pickupFloor - 1);
+                    setPickupFloor(next);
+                    if (next === 0) setPickupAccess(null);
+                  }}
                   className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                 >
                   <Icons.Minus className="w-4 h-4 text-(--medium-grey)" />
@@ -77,33 +84,35 @@ const FloorAccessibility = ({
               </div>
             </div>
 
-            <div>
-              <label className="block widget-label-text text-(--medium-grey) mb-2">
-                Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
-              </label>
-              <div className="flex md:mt-0 mt-3 gap-2">
-                <button
-                  onClick={() => setPickupAccess("LIFT")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                    pickupAccess === "LIFT"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
-                  }`}
-                >
-                  LIFT
-                </button>
-                <button
-                  onClick={() => setPickupAccess("STAIRS")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                    pickupAccess === "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
-                  }`}
-                >
-                  STAIRS
-                </button>
+            {pickupFloor > 0 && (
+              <div>
+                <label className="block widget-label-text text-(--medium-grey) mb-2">
+                  Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
+                </label>
+                <div className="flex md:mt-0 mt-3 gap-2">
+                  <button
+                    onClick={() => setPickupAccess("LIFT")}
+                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                      pickupAccess === "LIFT"
+                        ? "bg-gray-900 text-(--white)"
+                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    }`}
+                  >
+                    LIFT
+                  </button>
+                  <button
+                    onClick={() => setPickupAccess("STAIRS")}
+                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                      pickupAccess === "STAIRS"
+                        ? "bg-gray-900 text-(--white)"
+                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    }`}
+                  >
+                    STAIRS
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
         <div>
@@ -132,7 +141,11 @@ const FloorAccessibility = ({
               </label>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setDropoffFloor(Math.max(0, dropoffFloor - 1))}
+                  onClick={() => {
+                    const next = Math.max(0, dropoffFloor - 1);
+                    setDropoffFloor(next);
+                    if (next === 0) setDropoffAccess(null);
+                  }}
                   className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                 >
                   <Icons.Minus className="w-4 h-4 text-(--medium-grey)" />
@@ -151,33 +164,35 @@ const FloorAccessibility = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm text-(--medium-grey) mb-2">
-                Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
-              </label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setDropoffAccess("LIFT")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                    dropoffAccess === "LIFT"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
-                  }`}
-                >
-                  LIFT
-                </button>
-                <button
-                  onClick={() => setDropoffAccess("STAIRS")}
-                  className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                    dropoffAccess === "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
-                  }`}
-                >
-                  STAIRS
-                </button>
+            {dropoffFloor > 0 && (
+              <div>
+                <label className="block text-sm text-(--medium-grey) mb-2">
+                  Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setDropoffAccess("LIFT")}
+                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                      dropoffAccess === "LIFT"
+                        ? "bg-gray-900 text-(--white)"
+                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    }`}
+                  >
+                    LIFT
+                  </button>
+                  <button
+                    onClick={() => setDropoffAccess("STAIRS")}
+                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                      dropoffAccess === "STAIRS"
+                        ? "bg-gray-900 text-(--white)"
+                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    }`}
+                  >
+                    STAIRS
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -216,13 +231,14 @@ const FloorAccessibility = ({
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() =>
-                      setFloorAccess((prev) => ({
-                        ...prev,
-                        [`additionalDropoff${ad.id}Floor`]: Math.max(
-                          0,
-                          prev[`additionalDropoff${ad.id}Floor`] - 1,
-                        ),
-                      }))
+                      setFloorAccess((prev) => {
+                        const nextFloor = Math.max(0, (prev[`additionalDropoff${ad.id}Floor`] || 0) - 1);
+                        return {
+                          ...prev,
+                          [`additionalDropoff${ad.id}Floor`]: nextFloor,
+                          ...(nextFloor === 0 ? { [`additionalDropoff${ad.id}Access`]: null } : {})
+                        };
+                      })
                     }
                     className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
                   >
@@ -248,44 +264,46 @@ const FloorAccessibility = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block widget-label-text text-(--medium-grey) mb-2">
-                  Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() =>
-                      setFloorAccess((prev) => ({
-                        ...prev,
-                        [`additionalDropoff${ad.id}Access`]: "LIFT",
-                      }))
-                    }
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                      floorAccess[`additionalDropoff${ad.id}Access`] === "LIFT"
-                        ? "bg-gray-900 text-(--white)"
-                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
-                    }`}
-                  >
-                    LIFT
-                  </button>
-                  <button
-                    onClick={() =>
-                      setFloorAccess((prev) => ({
-                        ...prev,
-                        [`additionalDropoff${ad.id}Access`]: "STAIRS",
-                      }))
-                    }
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                      floorAccess[`additionalDropoff${ad.id}Access`] ===
-                      "STAIRS"
-                        ? "bg-gray-900 text-(--white)"
-                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
-                    }`}
-                  >
-                    STAIRS
-                  </button>
+              { (floorAccess[`additionalDropoff${ad.id}Floor`] || 0) > 0 && (
+                <div>
+                  <label className="block widget-label-text text-(--medium-grey) mb-2">
+                    Access Type <span className="text-[10px] opacity-70">(Lift: {currencySymbol}{priceForLift} | Stairs: {currencySymbol}{priceForStairs})</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() =>
+                        setFloorAccess((prev) => ({
+                          ...prev,
+                          [`additionalDropoff${ad.id}Access`]: "LIFT",
+                        }))
+                      }
+                      className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                        floorAccess[`additionalDropoff${ad.id}Access`] === "LIFT"
+                          ? "bg-gray-900 text-(--white)"
+                          : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                      }`}
+                    >
+                      LIFT
+                    </button>
+                    <button
+                      onClick={() =>
+                        setFloorAccess((prev) => ({
+                          ...prev,
+                          [`additionalDropoff${ad.id}Access`]: "STAIRS",
+                        }))
+                      }
+                      className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                        floorAccess[`additionalDropoff${ad.id}Access`] ===
+                        "STAIRS"
+                          ? "bg-gray-900 text-(--white)"
+                          : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                      }`}
+                    >
+                      STAIRS
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         ))}

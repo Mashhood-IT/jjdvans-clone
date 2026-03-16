@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (to, subject, payload = {}) => {
   const {
     html,
-    fromName = "MTL Dispatch",
+    fromName = "Flexible Budget Removals Limited",
     fromEmail = process.env.GMAIL_USER,
     replyTo = null,
   } = payload || {};

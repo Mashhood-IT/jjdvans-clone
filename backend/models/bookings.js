@@ -108,6 +108,16 @@ const BookingSchema = new mongoose.Schema({
     vehicle: VehicleSchema,
     currency: CurrencySchema,
     extraTime: String,
+    fareBreakdown: {
+        baseFare: Number,
+        workersCharges: Number,
+        extraTimeCharges: Number,
+        floorCharges: Number,
+        accessTypeCharges: Number,
+        childSeatCharges: Number,
+        total: Number,
+        depositPaid: Number,
+    },
     source: {
         type: String,
         enum: ["widget", "admin"],

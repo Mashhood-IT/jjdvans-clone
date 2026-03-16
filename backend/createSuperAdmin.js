@@ -19,10 +19,10 @@ const createSuperAdmin = async () => {
       role: "superadmin",
       companyId: new mongoose.Types.ObjectId(),
       superadminCompanyName:
-        process.env.SUPERADMIN_COMPANY_NAME || "Mega Transfers",
+        process.env.SUPERADMIN_COMPANY_NAME || "Flexible Budget Removals Limited",
       superadminCompanyAddress:
         process.env.SUPERADMIN_COMPANY_ADDRESS ||
-        " 1st Floor, 29 Minerva Road, London, England, NW10 6HJ VAT Number - 442612419",
+        " Witcombe Point, Yarnfield Square, London, SE15 5EJ",
       superadminCompanyLogo:
         "https://res.cloudinary.com/dyiadnfvr/image/upload/v1768302954/MTL-BOOKING-APP/user/newlogo-removebg-preview.png.png",
       superadminCompanyPhoneNumber:
@@ -31,7 +31,7 @@ const createSuperAdmin = async () => {
         process.env.SUPERADMIN_COMPANY_EMAIL || "megatransfer22@gmail.com",
       superadminCompanyWebsite:
         process.env.SUPERADMIN_COMPANY_WEBSITE ||
-        "https://mtl-dispatch-landing-page.vercel.app",
+        "https://jjdvans-clone.netlify.app/dashboard/my-dashboard",
     });
   }
 };

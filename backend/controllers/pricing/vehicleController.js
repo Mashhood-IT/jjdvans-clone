@@ -10,6 +10,7 @@ export const createVehicle = async (req, res) => {
       priority,
       priceType,
       percentageIncrease,
+      quantity,
       slabs: frontendSlabs,
     } = req.body;
 
@@ -63,6 +64,7 @@ export const createVehicle = async (req, res) => {
       slabs,
       extraHelp,
       image,
+      quantity: Number(quantity || 1),
     });
 
     const savedVehicle = await vehicle.save();
@@ -100,6 +102,7 @@ export const updateVehicle = async (req, res) => {
             halfHourPrice,
             priceType,
             percentageIncrease,
+            quantity,
             existingImage,
         } = req.body;
 
@@ -114,6 +117,7 @@ export const updateVehicle = async (req, res) => {
             priority: priority !== undefined ? Number(priority) : undefined,
             priceType,
             percentageIncrease: percentageIncrease !== undefined ? Number(percentageIncrease) : undefined,
+            quantity: quantity !== undefined ? Number(quantity) : undefined,
             slabs,
             extraHelp,
         };

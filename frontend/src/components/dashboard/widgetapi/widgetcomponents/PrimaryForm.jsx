@@ -150,172 +150,178 @@ const PrimaryForm = ({
   };
 
   return (
-    <div className="flex items-center justify-center lg:p-4 w-full px-4">
+    <div className="grid grid-cols-12 px-4 lg:px-6">
       <form
         onSubmit={handleSubmit}
-        className="bg-(--white) rounded-2xl shadow-lg pt-5 px-3 pb-3 border border-gray-200 w-full max-w-6xl"
+        className="col-span-12 lg:col-span-8 lg:col-start-3 bg-(--white) rounded-xl shadow-md border border-gray-200 overflow-visible"
       >
-        <div className="grid grid-cols-12 gap-4 items-end">
-          <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:pr-4">
+        <div className="bg-gray-900 rounded-t-xl px-5 py-3">
+          <h2 className="text-white text-sm font-semibold tracking-wide uppercase">
+            Journey Details
+          </h2>
+        </div>
+
+        <div className=" lg:grid-cols-12 lg:col-start-1 gap-0">
+
+          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5
+           relative" ref={serviceDropdownRef}
+            onMouseEnter={() => {
+              setIsHoveringService(true);
+              clearTimeout(serviceTimeoutRef.current);
+            }}
+            onMouseLeave={() => {
+              setIsHoveringService(false);
+              serviceTimeoutRef.current = setTimeout(() => {
+                setShowServiceDropdown(false);
+              }, 2000);
+            }}
+          >
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+              <Icons.Map size={13} />
+              Service Type
+            </label>
+
             <div
-              className="relative"
-              ref={serviceDropdownRef}
-              onMouseEnter={() => {
-                setIsHoveringService(true);
-                clearTimeout(serviceTimeoutRef.current);
+              className="custom_input flex items-center justify-between cursor-pointer bg-(--white)"
+              onClick={() => {
+                setShowServiceDropdown((prev) => {
+                  const next = !prev;
+                  if (next) {
+                    clearTimeout(serviceTimeoutRef.current);
+                    serviceTimeoutRef.current = setTimeout(() => {
+                      if (!isHoveringService) setShowServiceDropdown(false);
+                    }, 2000);
+                  }
+                  return next;
+                });
               }}
-              onMouseLeave={() => {
-                setIsHoveringService(false);
-
-                serviceTimeoutRef.current = setTimeout(() => {
-                  setShowServiceDropdown(false);
-                }, 2000);
-              }}
-            >           <div className="flex items-center gap-x-1 text-(--black) font-bold">
-                <Icons.Map size={15} />
-                <span>Service Type</span>
-              </div>
-              <div
-                className="w-full pl-2 pr-4 py-3 cursor-pointer text-(--dark-gray) bg-(--white)"
-                onClick={() => {
-                  setShowServiceDropdown((prev) => {
-                    const next = !prev;
-
-                    if (next) {
-                      clearTimeout(serviceTimeoutRef.current);
-                      serviceTimeoutRef.current = setTimeout(() => {
-                        if (!isHoveringService) {
-                          setShowServiceDropdown(false);
-                        }
-                      }, 2000);
-                    }
-
-                    return next;
-                  });
-                }}              >
+            >
+              <span className={`text-sm ${!formData.bookingType ? "text-gray-500" : "text-(--dark-black)"}`}>
                 {formData.bookingType
-                  ? REMOVAL_BOOKING_TYPES.find(opt => opt.value === formData.bookingType)?.label
-                  : "Select service"}
-              </div>
-
-              {showServiceDropdown && (
-                <div className="absolute z-50 w-full bg-(--white) border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                  {REMOVAL_BOOKING_TYPES.map(opt => (
-                    <div
-                      key={opt.value}
-                      className="px-2.5 py-1 cursor-pointer text-(--dark-gray) hover:bg-gray-100 transition-colors"
-                      onClick={() => {
-                        handleChange({ target: { name: "bookingType", value: opt.value } });
-                        setShowServiceDropdown(false);
-                      }}
-                    >
-                      {opt.label}
-                    </div>
-                  ))}
-                </div>
-              )}
+                  ? REMOVAL_BOOKING_TYPES.find((opt) => opt.value === formData.bookingType)?.label
+                  : "Select service…"}
+              </span>
+              <Icons.ChevronDown size={13} />
             </div>
-          </div>
-          <div className="col-span-12 md:col-span-3 relative md:border-r md:border-gray-300 md:px-4">
-            <div>
-              <div className="flex items-center gap-x-1 text-(--black) font-bold">
-                <Icons.MapPin size={15} />
-                <span>Pickup Address</span>
+
+            {showServiceDropdown && (
+              <div className="absolute z-50 left-5 right-5 top-full mt-1 bg-(--white) border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                {REMOVAL_BOOKING_TYPES.map((opt) => (
+                  <div
+                    key={opt.value}
+                    className={`px-3 py-2 cursor-pointer text-sm text-(--dark-gray) hover:bg-gray-50 transition-colors ${formData.bookingType === opt.value ? "bg-blue-50 font-medium" : ""}`}
+                    onClick={() => {
+                      handleChange({ target: { name: "bookingType", value: opt.value } });
+                      setShowServiceDropdown(false);
+                    }}
+                  >
+                    {opt.label}
+                  </div>
+                ))}
               </div>
-              <input
-                type="text"
-                name="pickup"
-                placeholder="Enter Pickup Address"
-                value={formData.pickup}
-                onChange={handlePickupChange}
-                className="w-full pl-2 pr-4 py-3 focus:outline-none placeholder:text-(--dark-gray) text-(--dark-gray)"
-              />
-              {pickupSuggestions.length > 0 && (
-                <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2 left-0 right-0">               <li
+            )}
+          </div>
+
+          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 relative">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+              <Icons.MapPin size={13} />
+              Pickup Address
+            </label>
+            <input
+              type="text"
+              name="pickup"
+              placeholder="Enter pickup address"
+              value={formData.pickup}
+              onChange={handlePickupChange}
+              className="custom_input text-sm"
+            />
+            {pickupSuggestions.length > 0 && (
+              <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-[calc(100%-2.5rem)] mt-1 left-5">
+                <li
                   onClick={() => {
                     const val = (formData.pickup || "").trim();
                     setFormData((prev) => ({ ...prev, pickup: val }));
                     setPickupSuggestions([]);
                   }}
-                  className="p-3 text-sm bg-blue-50 hover:bg-blue-100 cursor-pointer border-b transition-colors"
+                  className="p-2 border-(--medium-grey) text-sm bg-blue-50 hover:bg-blue-100 cursor-pointer border-b transition-colors font-medium"
                 >
                   ➕ Use: "{formData.pickup}"
                 </li>
-                  {pickupSuggestions.map((sug, idx) => (
-                    <li
-                      key={idx}
-                      onClick={() => handlePickupSelect(sug)}
-                      className="p-3 text-sm hover:bg-(--lighter-gray) cursor-pointer border-b last:border-0 transition-colors"
-                    >
-                      {sug.name} - {sug.formatted_address}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-
-          <div className="col-span-12 md:col-span-3 relative md:pl-4">
-            <div>
-              <div className="flex items-center gap-x-1 text-(--black) font-bold">
-                <Icons.MapPin size={15} />
-                <span>Drop-off Address</span>
-              </div>
-              <input
-                type="text"
-                value={dropOffs[0]}
-                placeholder="Enter Drop Off Address"
-                onChange={(e) => handleDropOffChange(0, e.target.value)}
-                className="w-full pl-2 pr-4 py-3 focus:outline-none placeholder:text-(--dark-gray) text-(--dark-gray)"
-              />
-              {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
-                <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-2">
+                {pickupSuggestions.map((sug, idx) => (
                   <li
-                    onClick={async () => {
-                      const val = (dropOffs[0] || "").trim();
-                      if (!val) return;
-                      setDropOffs([val, ...dropOffs.slice(1)]);
-                      setDropOffSuggestions([]);
-                      try {
-                        const g = await triggerGeocode({ address: val, companyId }).unwrap();
-                        if (g?.location) {
-                          setDropoffCoords(prev => ({ ...prev, 0: { lat: Number(g.location.lat), lng: Number(g.location.lng) } }));
-                        }
-                      } catch { }
-                    }}
-                    className="p-3 bg-blue-50 hover:bg-blue-100 cursor-pointer border-b text-sm transition-colors font-medium"
+                    key={idx}
+                    onClick={() => handlePickupSelect(sug)}
+                    className="p-2 border-(--medium-grey) text-sm hover:bg-(--lighter-gray) cursor-pointer border-b last:border-0 transition-colors"
                   >
-                    ➕ Use: "{dropOffs[0]}"
+                    {sug.name} – {sug.formatted_address}
                   </li>
-                  {dropOffSuggestions.map((sug, i) => (
-                    <li
-                      key={i}
-                      onClick={() => handleDropOffSelect(0, sug)}
-                      className="p-3 text-sm hover:bg-(--lighter-gray) cursor-pointer border-b last:border-0 transition-colors"
-                    >
-                      {sug.name} - {sug.formatted_address}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                ))}
+              </ul>
+            )}
           </div>
 
-          <div className="col-span-12 md:col-span-3">
+          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 relative">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+              <Icons.MapPin size={13} />
+              Drop-off Address
+            </label>
+            <input
+              type="text"
+              value={dropOffs[0]}
+              placeholder="Enter drop-off address"
+              onChange={(e) => handleDropOffChange(0, e.target.value)}
+              className="custom_input text-sm"
+            />
+            {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
+              <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-[calc(100%-2.5rem)] mt-1 left-5">
+                <li
+                  onClick={async () => {
+                    const val = (dropOffs[0] || "").trim();
+                    if (!val) return;
+                    setDropOffs([val, ...dropOffs.slice(1)]);
+                    setDropOffSuggestions([]);
+                    try {
+                      const g = await triggerGeocode({ address: val, companyId }).unwrap();
+                      if (g?.location) {
+                        setDropoffCoords((prev) => ({
+                          ...prev,
+                          0: { lat: Number(g.location.lat), lng: Number(g.location.lng) },
+                        }));
+                      }
+                    } catch { }
+                  }}
+                  className="p-2 bg-blue-50 hover:bg-blue-100 cursor-pointer border-b border-(--medium-grey) text-sm transition-colors font-medium"
+                >
+                  ➕ Use: "{dropOffs[0]}"
+                </li>
+                {dropOffSuggestions.map((sug, i) => (
+                  <li
+                    key={i}
+                    onClick={() => handleDropOffSelect(0, sug)}
+                    className="p-2 text-sm hover:bg-(--lighter-gray) cursor-pointer border-b border-(--medium-grey) last:border-0 transition-colors"
+                  >
+                    {sug.name} – {sug.formatted_address}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 flex items-center lg:justify-center lg:mt-6">
             <button
               type="submit"
-              className="w-full cursor-pointer bg-gray-900 hover:bg-gray-800 text-(--white) font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+              className="btn btn-blue w-full lg:w-auto"
             >
               Check prices
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <Icons.ChevronRight size={13} />
             </button>
           </div>
+
         </div>
       </form>
     </div>
   );
+
 };
 
 export default PrimaryForm;

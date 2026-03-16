@@ -16,20 +16,20 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
   const totalSeats = selectedVehicle.passengerSeats || 0;
   const [pickupFloor, setPickupFloor] = useState(0);
   const [dropoffFloor, setDropoffFloor] = useState(0);
-  const [pickupAccess, setPickupAccess] = useState("STAIRS");
-  const [dropoffAccess, setDropoffAccess] = useState("STAIRS");
+  const [pickupAccess, setPickupAccess] = useState(null);
+  const [dropoffAccess, setDropoffAccess] = useState(null);
   const [estimatedHours, setEstimatedHours] = useState(0);
   const [estimatedMinutes, setEstimatedMinutes] = useState(0);
   const [additionalDropoffs, setAdditionalDropoffs] = useState([]);
   const [floorAccess, setFloorAccess] = useState({
     additionalDropoff1Floor: 0,
-    additionalDropoff1Access: "STAIRS",
+    additionalDropoff1Access: null,
     additionalDropoff2Floor: 0,
-    additionalDropoff2Access: "STAIRS",
+    additionalDropoff2Access: null,
     additionalDropoff3Floor: 0,
-    additionalDropoff3Access: "STAIRS",
+    additionalDropoff3Access: null,
     additionalDropoff4Floor: 0,
-    additionalDropoff4Access: "STAIRS",
+    additionalDropoff4Access: null,
   });
   const [ridingAlong, setRidingAlong] = useState(false);
   const [passengerCount, setPassengerCount] = useState(0);
@@ -61,20 +61,28 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
     let totalFloor = 0;
     let totalAccess = 0;
 
+    // Helper to get access price
+    const getAccessPrice = (floor, access) => {
+      if (!floor || floor <= 0) return 0;
+      if (access === "STAIRS") return priceForStairs;
+      if (access === "LIFT") return priceForLift;
+      return 0;
+    };
+
     // Pickup
     totalFloor += (pickupFloor || 0) * pricePerFloor;
-    totalAccess += pickupAccess === "STAIRS" ? priceForStairs : priceForLift;
+    totalAccess += getAccessPrice(pickupFloor, pickupAccess);
 
     // Dropoff
     totalFloor += (dropoffFloor || 0) * pricePerFloor;
-    totalAccess += dropoffAccess === "STAIRS" ? priceForStairs : priceForLift;
+    totalAccess += getAccessPrice(dropoffFloor, dropoffAccess);
 
     // Additional Dropoffs
     additionalDropoffs.forEach((ad) => {
       const floor = floorAccess[`additionalDropoff${ad.id}Floor`] || 0;
-      const access = floorAccess[`additionalDropoff${ad.id}Access`] || "STAIRS";
+      const access = floorAccess[`additionalDropoff${ad.id}Access`];
       totalFloor += floor * pricePerFloor;
-      totalAccess += access === "STAIRS" ? priceForStairs : priceForLift;
+      totalAccess += getAccessPrice(floor, access);
     });
 
     return { floorCharges: totalFloor, accessTypeCharges: totalAccess };
@@ -289,7 +297,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
   };
 
   return (
-    <div ref={containerRef} className="px-4 md:px-8 2xl:max-w-7xl 2xl:mx-auto">
+    <div ref={containerRef} className="px-4 md:px-8">
       <WidgetStepHeader
         step="3"
         title="Inventory & Requirements"
@@ -324,7 +332,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
               />
               <button
                 onClick={handleAddItem}
-                className="px-4 py-2 cursor-pointer bg-(--dark-grey) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
+                className="btn btn-success"
               >
                 Add
               </button>
@@ -333,7 +341,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
                   setShowItemInput(false);
                   setCurrentItem("");
                 }}
-                className="px-4 cursor-pointer py-2 bg-(--light-gray) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
+                className="btn btn-back"
               >
                 Cancel
               </button>
@@ -473,115 +481,119 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
         )}
       </div>
 
-      <div className="bg-gray-900 rounded-lg md:p-8 p-3 mb-6 relative">
-        {(googleDurationText || googleDistanceText) && (
-          <div className="flex items-center justify-center gap-4 mb-4">
-            {googleDistanceText && (
-              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
-                <Icons.MapPin className="w-3 h-3" />
-                Route: {googleDistanceText}
-              </span>
-            )}
-            {googleDurationText && (
-              <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
-                <Icons.Clock className="w-3 h-3" />
-                Drive time: {googleDurationText}
-              </span>
-            )}
-          </div>
-        )}
+      <div className="bg-gray-900 grid grid-cols-12 rounded-lg md:p-8 p-3 mb-6 relative">
 
-        <div className="text-center mb-4">
-          <p className="widget-label-small text-gray-400 mb-6">
-            Estimated Duration
-          </p>
+        <div className="md:col-span-6 col-span-12 border-r border-(--lighter-gray)">
+          {(googleDurationText || googleDistanceText) && (
+            <div className="flex items-center justify-center gap-4 mb-4">
+              {googleDistanceText && (
+                <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
+                  <Icons.MapPin className="w-3 h-3" />
+                  Route: {googleDistanceText}
+                </span>
+              )}
+              {googleDurationText && (
+                <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
+                  <Icons.Clock className="w-3 h-3" />
+                  Drive time: {googleDurationText}
+                </span>
+              )}
+            </div>
+          )}
 
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <button
-              onClick={() => adjustDuration(false)}
-              className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
-            >
-              <Icons.Minus className="w-5 h-5 text-(--white)" />
-            </button>
+          <div className="text-center mb-4">
+            <p className="widget-label-small text-gray-400 mb-6">
+              Estimated Duration
+            </p>
 
-            <div className="flex items-center gap-2">
-              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
-                {String(estimatedHours).padStart(2, "0")}
-              </span>
-              <span className="widget-value-large text-6xl text-(--white)">
-                :
-              </span>
-              <span className="widget-value-large text-6xl text-(--white) tabular-nums">
-                {String(estimatedMinutes).padStart(2, "0")}
-              </span>
+            <div className="flex items-center justify-center gap-6 mb-6">
+              <button
+                onClick={() => adjustDuration(false)}
+                className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
+              >
+                <Icons.Minus className="w-5 h-5 text-(--white)" />
+              </button>
+
+              <div className="flex items-center gap-2">
+                <span className="widget-value-large text-6xl text-(--white) tabular-nums">
+                  {String(estimatedHours).padStart(2, "0")}
+                </span>
+                <span className="widget-value-large text-6xl text-(--white)">
+                  :
+                </span>
+                <span className="widget-value-large text-6xl text-(--white) tabular-nums">
+                  {String(estimatedMinutes).padStart(2, "0")}
+                </span>
+              </div>
+
+              <button
+                onClick={() => adjustDuration(true)}
+                className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
+              >
+                <Icons.Plus className="w-5 h-5 text-(--white)" />
+              </button>
             </div>
 
-            <button
-              onClick={() => adjustDuration(true)}
-              className="md:w-12 w-8 cursor-pointer md:h-12 h-8 flex items-center justify-center border-2 border-gray-700 rounded-full hover:border-gray-500 transition-colors"
-            >
-              <Icons.Plus className="w-5 h-5 text-(--white)" />
-            </button>
+            <p className="widget-label-small text-gray-500 mb-4">
+              Hours : Minutes
+            </p>
           </div>
 
-          <p className="widget-label-small text-gray-500 mb-4">
-            Hours : Minutes
+          <p className="widget-option-text text-center text-gray-400">
+            Adjustments vary ±30-minute increments
           </p>
         </div>
-
-        <p className="widget-option-text text-center text-gray-400">
-          Adjustments vary ±30-minute increments
-        </p>
-
-        <div className="mt-6 pt-6 border-t border-gray-700 space-y-3">
-          <div className="flex justify-between items-center text-gray-400">
-            <span className="text-sm">Base Fare</span>
-            <span className="font-semibold text-(--white)">
-              {currencySymbol} {(widgetPricing.baseFare || 0).toFixed(2)}
-            </span>
-          </div>
-
-          {additionalFare > 0 && (
+        <div className="md:col-span-6 col-span-12 md:pl-12 pl-0 md:mt-0 mt-8">
+          <div className="space-y-3">
             <div className="flex justify-between items-center text-gray-400">
-              <span className="text-sm">Additional Time Charge</span>
+              <span className="text-sm">Base Fare</span>
               <span className="font-semibold text-(--white)">
-                {currencySymbol} {additionalFare.toFixed(2)}
+                {currencySymbol} {(widgetPricing.baseFare || 0).toFixed(2)}
               </span>
             </div>
-          )}
 
-          {floorCharges > 0 && (
-            <div className="flex justify-between items-center text-gray-400">
-              <span className="text-sm">Floor Level Charges</span>
-              <span className="font-semibold text-(--white)">
-                {currencySymbol} {floorCharges.toFixed(2)}
+            {additionalFare > 0 && (
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="text-sm">Additional Time Charge</span>
+                <span className="font-semibold text-(--white)">
+                  {currencySymbol} {additionalFare.toFixed(2)}
+                </span>
+              </div>
+            )}
+
+            {floorCharges > 0 && (
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="text-sm">Floor Level Charges</span>
+                <span className="font-semibold text-(--white)">
+                  {currencySymbol} {floorCharges.toFixed(2)}
+                </span>
+              </div>
+            )}
+
+            {accessTypeCharges > 0 && (
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="text-sm">Access Type Charges (Lift/Stairs)</span>
+                <span className="font-semibold text-(--white)">
+                  {currencySymbol} {accessTypeCharges.toFixed(2)}
+                </span>
+              </div>
+            )}
+
+            {widgetPricing.extraHelp?.unitPrice > 0 && (
+              <div className="flex justify-between items-center text-gray-400">
+                <span className="text-sm">Extra Men Charges ({Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30)} × {currencySymbol}{widgetPricing.extraHelp.unitPrice})</span>
+                <span className="font-semibold text-(--white)">
+                  {currencySymbol} {(Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30) * widgetPricing.extraHelp.unitPrice).toFixed(2)}
+                </span>
+              </div>
+            )}
+
+            <div className="pt-3 border-t border-gray-700 flex justify-between items-center">
+              <span className="text-gray-300 font-bold">Total Estimated Fare</span>
+              <span className="text-2xl font-bold text-(--white)">
+                {currencySymbol} {totalFare.toFixed(2)}
               </span>
             </div>
-          )}
-
-          {accessTypeCharges > 0 && (
-            <div className="flex justify-between items-center text-gray-400">
-              <span className="text-sm">Access Type Charges (Lift/Stairs)</span>
-              <span className="font-semibold text-(--white)">
-                {currencySymbol} {accessTypeCharges.toFixed(2)}
-              </span>
-            </div>
-          )}
-
-          {widgetPricing.extraHelp?.unitPrice > 0 && (
-            <div className="flex justify-between items-center text-gray-400">
-              <span className="text-sm">Extra Men Charges ({Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30)} × {currencySymbol}{widgetPricing.extraHelp.unitPrice})</span>
-              <span className="font-semibold text-(--white)">
-                {currencySymbol} {(Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30) * widgetPricing.extraHelp.unitPrice).toFixed(2)}
-              </span>
-            </div>
-          )}
-
-          <div className="pt-3 border-t border-gray-700 flex justify-between items-center">
-            <span className="text-gray-300 font-bold">Total Estimated Fare</span>
-            <span className="text-2xl font-bold text-(--white)">
-              {currencySymbol} {totalFare.toFixed(2)}
-            </span>
           </div>
         </div>
       </div>

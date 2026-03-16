@@ -163,6 +163,7 @@ const VehiclePricing = () => {
     { label: <div className="flex items-center gap-1.5"> Pass. Seats</div>, key: "passengerSeats" },
     { label: <div className="flex items-center gap-1.5"> Description</div>, key: "description" },
     { label: <div className="flex items-center gap-1.5"> Markup (%)</div>, key: "percentageIncrease" },
+    { label: <div className="flex items-center gap-1.5"> Quantity</div>, key: "quantity" },
     { label: "Action", key: "actions" },
   ];
 
@@ -188,6 +189,9 @@ const VehiclePricing = () => {
       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-100">
         +{item.percentageIncrease}%
       </span>
+    ),
+    quantity: (
+      <span className="text-(--dark-grey)">{item.quantity || 0}</span>
     ),
     actions: (
       <div className="flex gap-2">
@@ -250,6 +254,7 @@ const VehiclePricing = () => {
             { label: "Description", key: "description" },
             { label: "Half Hour Price", key: "halfHourPrice" },
             { label: "Percentage Increase (%)", key: "percentageIncrease" },
+            { label: "Quantity", key: "quantity" },
           ].map((field) => (
             <div key={field.key}>
               <label className="flex items-center gap-1.5 text-xs sm:text-sm text-(--medium-grey) mb-1.5">

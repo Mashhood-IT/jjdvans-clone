@@ -311,52 +311,7 @@ const SecondaryForm = ({
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                        <div className="relative">
-                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Date</label>
-                            <div className="relative">
-                                <input
-                                    type="date"
-                                    name="date"
-                                    value={formData.date}
-                                    onChange={handleChangeWithValidation}
-                                    className="custom_input w-full pr-1 px-3 appearance-none"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Time</label>
-                            <select
-                                name="hour"
-                                value={formData.hour}
-                                onChange={handleChangeWithValidation}
-                                className="custom_input w-full"
-                            >
-                                <option value="">HH</option>
-                                {[...Array(24).keys()].map((h) => (
-                                    <option key={h} value={h}>
-                                        {h.toString().padStart(2, "0")}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Minute</label>
-                            <select
-                                name="minute"
-                                value={formData.minute}
-                                onChange={handleChangeWithValidation}
-                                className="custom_input w-full"
-                            >
-                                <option value="">MM</option>
-                                {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
-                                    <option key={m} value={m.toString().padStart(2, "0")}>
-                                        {m.toString().padStart(2, "0")}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
+
 
                     <div className="mb-6">
                         <label className="block widget-label-text text-(--dark-gray) mb-1">Additional Notes</label>
@@ -373,7 +328,7 @@ const SecondaryForm = ({
                     <div className="flex items-center pt-2">
                         <button
                             type="submit"
-                            className="btn btn-primary"
+                            className="btn btn-blue"
                         >
                             BOOK NOW
                         </button>

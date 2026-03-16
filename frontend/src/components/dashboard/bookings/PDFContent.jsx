@@ -336,6 +336,16 @@ const PDFContent = forwardRef(
               {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(2)}
               &nbsp; GBP
             </p>
+            <div style={{ marginTop: "8px", borderTop: "1px dashed #e5e7eb", paddingTop: "8px" }}>
+              <div style={{ fontSize: "11px", color: "#059669", marginBottom: "4px" }}>
+                <strong>Deposit Paid (35%):</strong> {currencySymbol}
+                {Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35).toFixed(2)}
+              </div>
+              <div style={{ fontSize: "11px", color: "#2563eb" }}>
+                <strong>Remaining Balance (65%):</strong> {currencySymbol}
+                {(Number(viewData?.totalPrice || viewData?.fare || 0) - Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35)).toFixed(2)}
+              </div>
+            </div>
           </div>
 
           <div
