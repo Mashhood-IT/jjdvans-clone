@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import CarCardSection from './widgetcomponents/CarCardSection';
-import JourneySummaryCard from './widgetcomponents/JourneySummaryCard';
-import WidgetStepHeader from './widgetcomponents/WidgetStepHeader';
 
 import { toast } from 'react-toastify';
 import IMAGES from '../../../assets/images';
@@ -12,9 +10,11 @@ import { useGetAllVehiclesQuery } from '../../../redux/api/vehicleApi';
 import { useGetPublicBookingSettingQuery } from '../../../redux/api/bookingSettingsApi';
 import { useLoading } from '../../common/LoadingProvider';
 import useDistanceSync from '../../../hooks/useDistanceSync';
+import JourneySummaryCard from './widgetcomponents/JourneySummaryCard';
 
 const WidgetBookingInformation = ({
   onNext,
+  onBack,
   dropOffPrice,
   data,
   isEdit: isEditProp,
@@ -177,49 +177,44 @@ const WidgetBookingInformation = ({
   }, [data]);
 
   useEffect(() => {
-    if (isEdit) {
-      const savedVehicle = localStorage.getItem("selectedVehicle");
-      if (savedVehicle && carList.length > 0) {
-        const parsed = JSON.parse(savedVehicle);
-        let found = false;
+    const savedVehicle = localStorage.getItem("selectedVehicle");
+    if (savedVehicle && carList.length > 0) {
+      const parsed = JSON.parse(savedVehicle);
+      let found = false;
 
-        // Try to match by ID first
-        if (parsed.id) {
-          const match = carList.find(c => c._id === parsed.id);
-          if (match) {
-            setSelectedCarId(match._id);
-            found = true;
-          }
-        }
-
-        // Fallback: match by Name
-        if (!found && parsed.vehicleName) {
-          const match = carList.find(c =>
-            c.vehicleName?.trim().toLowerCase() === parsed.vehicleName?.trim().toLowerCase()
-          );
-          if (match) setSelectedCarId(match._id);
+      if (parsed.id) {
+        const match = carList.find(c => c._id === parsed.id);
+        if (match) {
+          setSelectedCarId(match._id);
+          found = true;
         }
       }
 
-      // Restore pricing/extraHelp
-      const rawPricing = localStorage.getItem("widgetPricing");
-      if (rawPricing) {
-        try {
-          const parsed = JSON.parse(rawPricing);
-          if (parsed.extraHelp) {
-            setExtraHelpPrice(parsed.extraHelp.price || 0);
-            setSelectedHelpOption({
-              label: parsed.extraHelp.label || "Self Load",
-              price: parsed.extraHelp.price || 0,
-              unitPrice: parsed.extraHelp.unitPrice || 0
-            });
-          }
-        } catch (err) {
-          console.error("Error restoring pricing in edit mode:", err);
-        }
+      if (!found && parsed.vehicleName) {
+        const match = carList.find(c =>
+          c.vehicleName?.trim().toLowerCase() === parsed.vehicleName?.trim().toLowerCase()
+        );
+        if (match) setSelectedCarId(match._id);
       }
     }
-  }, [carList, isEdit]);
+
+    const rawPricing = localStorage.getItem("widgetPricing");
+    if (rawPricing) {
+      try {
+        const parsed = JSON.parse(rawPricing);
+        if (parsed.extraHelp) {
+          setExtraHelpPrice(parsed.extraHelp.price || 0);
+          setSelectedHelpOption({
+            label: parsed.extraHelp.label || "Self Load",
+            price: parsed.extraHelp.price || 0,
+            unitPrice: parsed.extraHelp.unitPrice || 0
+          });
+        }
+      } catch (err) {
+        console.error("Error restoring pricing:", err);
+      }
+    }
+  }, [carList]);
   const matchFixedPrice = useCallback(() => {
     try {
       if (!Array.isArray(fixedPrices) || fixedPrices.length === 0) return null;
@@ -445,31 +440,88 @@ const WidgetBookingInformation = ({
     extraHelpPrice
   ]);
 
-  const handleSubmitBooking = () => {
-    if (!selectedCarId || !formData) {
+  const handleSubmitBooking = (carId) => {
+    const effectiveCarId = carId || selectedCarId;
+    const effectiveCar = carList.find(car => car._id === effectiveCarId);
+
+    if (!effectiveCarId || !effectiveCar || !formData) {
       toast.error("Please select a vehicle to continue.");
       return;
     }
-    const selectedCar = carList.find(car => car._id === selectedCarId);
-    const primaryJourneyFare = computedPrimaryFare;
 
-    const vehiclePayload = {
-      vehicleName: selectedCar.vehicleName,
-      passengerSeats: selectedCar.passengerSeats || 0,
-      maxSeats: selectedCar.passengerSeats || 0,
-      baseFare: primaryJourneyFare,
-      totalFare: calculatedTotalPrice,
-      extraHelp: selectedHelpOption ? {
-        label: selectedHelpOption.label,
-        price: selectedHelpOption.price,
-        unitPrice: selectedHelpOption.unitPrice
-      } : null
-    };
+    if (effectiveCarId !== selectedCarId) {
+      setSelectedCarId(effectiveCarId);
+      localStorage.setItem("selectedVehicle", JSON.stringify({
+        id: effectiveCarId,
+        vehicleName: effectiveCar.vehicleName,
+        image: effectiveCar.image || IMAGES.dummyFile,
+        passengerSeats: effectiveCar.passengerSeats || 0,
+        maxSeats: effectiveCar.passengerSeats || 0,
+        halfHourPrice: effectiveCar.halfHourPrice,
+        extraHelp: selectedHelpOption
+      }));
+    }
+
+    const raw = effectiveCar.percentageIncrease ?? 0;
+    const cleanPercentage = typeof raw === "string" ? Number(raw.replace("%", "")) : Number(raw);
+    const percentage = isNaN(cleanPercentage) ? 0 : cleanPercentage;
+
+    let coreFare = 0;
+    switch (activePricingMode) {
+      case "postcode":
+        coreFare = matchedPostcodePrice?.price || 0;
+        break;
+      case "zone":
+        coreFare = fixedZonePrice !== null ? fixedZonePrice : matchedZoneToZonePrice || 0;
+        break;
+      default:
+        coreFare = getVehiclePriceForDistance(effectiveCar, actualMiles || 0);
+    }
+
+    const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+    const fullDurationCharge = durationUnits * (effectiveCar.halfHourPrice || 0);
+
+    const baseWithMarkup =
+      activePricingMode === "postcode" || activePricingMode === "zone"
+        ? coreFare + coreFare * (percentage / 100)
+        : coreFare;
+
+    const surchargeAmount = baseWithMarkup * (matchedSurcharge / 100);
+    const discountAmount = baseWithMarkup * (matchedDiscount / 100);
+    const primaryAirportFee = calculatePrimaryAirportFees();
+
+    const primaryJourneyFare = baseWithMarkup + fullDurationCharge;
+
+    const grandTotal = parseFloat(
+      (
+        baseWithMarkup +
+        surchargeAmount -
+        discountAmount +
+        (matchedZonePrice || 0) +
+        (dropOffPrice || 0) +
+        fullDurationCharge +
+        primaryAirportFee +
+        (extraHelpPrice || 0)
+      ).toFixed(2)
+    );
 
     onNext({
-      totalPrice: calculatedTotalPrice,
+      totalPrice: grandTotal,
       baseFare: primaryJourneyFare,
-      selectedCar: vehiclePayload,
+      selectedCar: {
+        vehicleName: effectiveCar.vehicleName,
+        passengerSeats: effectiveCar.passengerSeats || 0,
+        maxSeats: effectiveCar.passengerSeats || 0,
+        baseFare: primaryJourneyFare,
+        totalFare: grandTotal,
+        extraHelp: selectedHelpOption
+          ? {
+            label: selectedHelpOption.label,
+            price: selectedHelpOption.price,
+            unitPrice: selectedHelpOption.unitPrice,
+          }
+          : null,
+      },
       segmentBreakdown,
       googleMinutes,
       roundedGoogleMinutes,
@@ -530,7 +582,6 @@ const WidgetBookingInformation = ({
       totalPrice: Number(calculatedTotalPrice || 0),
       dropOffPrice: Number(formData?.dropOffPrice || 0),
       baseFare: Number(computedPrimaryFare || 0),
-      journeyType: "oneWay",
       currencyCode,
       currencySymbol,
       segmentBreakdown,
@@ -553,7 +604,7 @@ const WidgetBookingInformation = ({
     calculatedTotalPrice,
     selectedCarId,
     computedPrimaryFare,
-
+    selectedHelpOption,
     formData?.dropOffPrice,
     currencyCode,
     currencySymbol,
@@ -562,12 +613,24 @@ const WidgetBookingInformation = ({
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-8">
-        <div className="2xl:col-span-8 col-span-12 2xl:col-start-3 col-start-1 w-full">
-          <WidgetStepHeader
-            step="2"
-            title="Vehicle Selection"
-            description="Select the vehicle that best fits your requirements and budget for a seamless moving experience."
-          />
+        <div className="2xl:col-span-8 col-span-12 2xl:col-start-3 col-start-1 w-full relative">
+          <div className="mb-6">
+            <button
+              onClick={onBack}
+              className="btn btn-blue"
+            >
+
+              Go Back
+            </button>
+          </div>
+          <div className="mb-3">
+            <h1 className="text-2xl font-bold mb-1 text-(--dark-gray)">
+              Choose Your Vehicle
+            </h1>
+            <p className="widget-description leading-relaxed text-gray-600">
+              Select the vehicle that best matches your moving needs, item volume, and budget for a smooth and efficient move.
+            </p>
+          </div>
           <JourneySummaryCard
             formData={formData}
             actualMiles={actualMiles}
@@ -577,67 +640,6 @@ const WidgetBookingInformation = ({
             currencyCode={currencyCode}
             segmentBreakdown={segmentBreakdown}
           />
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6 bg-(--lightest-gray) p-6 rounded-2xl shadow-lg">
-            <div className="relative">
-              <label className="block widget-label-text !text-(--dark-black) tracking-wider mb-2">Booking Date</label>
-              <input
-                type="date"
-                name="date"
-                value={formData?.date || ""}
-                onChange={(e) => {
-                  const newDate = e.target.value;
-                  setFormData(prev => ({ ...prev, date: newDate }));
-                  const saved = JSON.parse(localStorage.getItem("bookingForm") || "{}");
-                  localStorage.setItem("bookingForm", JSON.stringify({ ...saved, date: newDate }));
-                }}
-                className="custom_input w-full border-(--dark-grey) px-3 py-2 rounded-lg"
-              />
-            </div>
-            <div>
-              <label className="block widget-label-text !text-(--dark-black) tracking-wider mb-2">Hour</label>
-              <select
-                name="hour"
-                value={formData?.hour || ""}
-                onChange={(e) => {
-                  const newHour = e.target.value;
-                  setFormData(prev => ({ ...prev, hour: newHour }));
-                  const saved = JSON.parse(localStorage.getItem("bookingForm") || "{}");
-                  localStorage.setItem("bookingForm", JSON.stringify({ ...saved, hour: newHour }));
-                }}
-                className="custom_input w-full text-(--white) border-(--dark-grey) px-3 py-2 rounded-lg"
-              >
-                <option value="">HH</option>
-                {[...Array(24).keys()].map((h) => (
-                  <option key={h} value={h}>
-                    {h.toString().padStart(2, "0")}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block widget-label-text !text-(--dark-black) tracking-wider mb-2">Minute</label>
-              <select
-                name="minute"
-                value={formData?.minute || ""}
-                onChange={(e) => {
-                  const newMinute = e.target.value;
-                  setFormData(prev => ({ ...prev, minute: newMinute }));
-                  const saved = JSON.parse(localStorage.getItem("bookingForm") || "{}");
-                  localStorage.setItem("bookingForm", JSON.stringify({ ...saved, minute: newMinute }));
-                }}
-                className="custom_input w-full  text-(--white) border-(--dark-grey) px-3 py-2 rounded-lg"
-              >
-                <option value="">MM</option>
-                {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
-                  <option key={m} value={m.toString().padStart(2, "0")}>
-                    {m.toString().padStart(2, "0")}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           <div className='mt-6'>
             {carList.length > 0 ? (
               <CarCardSection
@@ -681,7 +683,8 @@ const WidgetBookingInformation = ({
                       image: selectedCar.image || IMAGES.dummyFile,
                       passengerSeats: selectedCar.passengerSeats || 0,
                       maxSeats: selectedCar.passengerSeats || 0,
-                      halfHourPrice: selectedCar.halfHourPrice
+                      halfHourPrice: selectedCar.halfHourPrice,
+                      extraHelp: selectedHelpOption
                     }));
                   }
                 }}

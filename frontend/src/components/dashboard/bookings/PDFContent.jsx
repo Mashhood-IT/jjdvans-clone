@@ -240,7 +240,11 @@ const PDFContent = forwardRef(
               </p>
               <p style={{ margin: "4px 0" }}>
                 <strong style={{ color: "#6b7280" }}>Passengers:</strong>{" "}
-                {viewData?.vehicle?.passenger || 0}
+                {viewData?.passengerCount || 0}
+              </p>
+              <p style={{ margin: "4px 0" }}>
+                <strong style={{ color: "#6b7280" }}>Who's Helping?:</strong> &nbsp;
+                {viewData?.vehicle?.extraHelp?.label || "Self Load"}
               </p>
 
               <hr style={{ borderColor: "#e5e7eb", margin: "20px 0" }} />
@@ -307,8 +311,8 @@ const PDFContent = forwardRef(
                   marginBottom: "4px",
                 }}
               >
-                <strong>Extra Men:</strong> +$
-                {Number(viewData?.workersCharges).toFixed(2)}
+                <strong>Extra Time:</strong> +{currencySymbol}
+                {Number(viewData?.additionalTimeFare).toFixed(2)}
               </div>
             )}
             {viewData?.workersCharges > 0 && (
@@ -319,7 +323,7 @@ const PDFContent = forwardRef(
                   paddingBottom: "10px",
                 }}
               >
-                <strong>Extra Men:</strong> +$
+                <strong>Extra Men:</strong> +{currencySymbol}
                 {Number(viewData?.workersCharges).toFixed(2)}
               </div>
             )}

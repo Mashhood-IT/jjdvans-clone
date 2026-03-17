@@ -9,7 +9,6 @@ const CarCardSection = ({
   onHelpSelect,
   currencySymbol = "$",
   savedExtraHelpPrice = null,
-  googleMinutes = 0,
   roundedGoogleMinutes = 0,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -20,14 +19,12 @@ const CarCardSection = ({
     const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
 
     carList.forEach((car) => {
-      // If this is the selected car and we have a saved price to restore
       if (
         car._id === selectedCarId &&
         savedExtraHelpPrice !== null &&
         savedExtraHelpPrice !== undefined &&
         !defaults[car._id]
       ) {
-        // Build the same options list used in render to find the match
         const carHelpOptions = car.extraHelp?.length
           ? car.extraHelp.map((h, i) => ({ id: `help-${car._id}-${i}`, label: h.label, price: h.price }))
           : [
@@ -37,10 +34,8 @@ const CarCardSection = ({
             { id: `help-${car._id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
-        // Find best match: unit price * units === saved total price
-        // Use a small epsilon if needed, but since we use Math.round/fixed elsewhere, exact match or close match should work
         const match = carHelpOptions.find(opt => Math.round(opt.price * durationUnits) === Math.round(savedExtraHelpPrice));
-        
+
         if (match) {
           defaults[car._id] = match;
           changed = true;
@@ -48,7 +43,6 @@ const CarCardSection = ({
         }
       }
 
-      // Default initialization if not already set
       if (!defaults[car._id]) {
         const firstOption = car.extraHelp?.[0]
           ? { ...car.extraHelp[0], id: `help-${car._id}-0` }
@@ -66,7 +60,6 @@ const CarCardSection = ({
     if (changed) {
       setSelectedOptions(defaults);
       if (selectedCarId && defaults[selectedCarId]) {
-        // Notify parent about the restored option
         const opt = defaults[selectedCarId];
         onHelpSelect?.({ ...opt, totalPrice: opt.price * durationUnits, unitPrice: opt.price });
       }
@@ -104,11 +97,10 @@ const CarCardSection = ({
           _id,
           vehicleName = "Unnamed Vehicle",
           description = "",
-          passengerSeats = 0,
           price: basePrice = 0,
         } = car;
 
-        const validImage = car.image || car.profilecarimg || IMAGES.profilecarimg;
+        const validImage = car.image || car.profilecarimg || IMAGES.dummyVan;
         const isSelected = selectedCarId === _id;
 
         const helpOptions = car.extraHelp?.length
@@ -173,34 +165,28 @@ const CarCardSection = ({
                   }`}>
                   {isSelected ? "Selected" : "Available"}
                 </div>
-                {car.quantity !== undefined && (
-                  <div className="mt-2 text-right">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-600">
-                      QTY: {car.quantity}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
+            {car.quantity && (
+              <div className=" mt-2 ml-4 text-left">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-(--lighter-blue) text-(--navy-blue)">
+                  Available Drivers: {car.quantity}
+                </span>
+              </div>
+            )}
             <div className="p-4 flex flex-col grow">
               <div className="flex justify-between items-start mb-2 min-h-12.5">
                 <div>
                   <h3 className="widget-title text-gray-900">
                     {vehicleName}
                   </h3>
-                  <div className="flex gap-3 mt-1.5 widget-meta-text text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <div className="w-1 h-1 rounded-full bg-gray-300" /> {passengerSeats} Seats
-                    </span>
-
-                  </div>
                 </div>
                 <div className="text-right">
                   <div className="widget-price-large text-(--main-color)">
-                    {currencySymbol} {Math.round(currentTotalPrice)}
+                    {currencySymbol} {Math.round(Number(currentTotalPrice)).toFixed(2)}
                   </div>
-                  <p className="widget-label-tiny mt-0.5">Total Fare</p>
+                  <p className="text-(--medium-grey) text-xs mt-0.5">Min. 2 hours</p>
                 </div>
               </div>
 
@@ -241,7 +227,7 @@ const CarCardSection = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCarSelect(_id);
-                    onBook();
+                    onBook(_id);
                   }}
                   className={`btn ${isSelected
                     ? "btn-success"

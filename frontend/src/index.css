@@ -75,7 +75,7 @@ select:disabled {
   --medium-grey: #afafaf;
   --dark-grey: #595959;
   --dark-gray: #4b5563;
-  --cream: #eae0d5;
+  --cream: #c3bab1;
   --dark-black: #1e1e1e;
   --light-green: #dcfce7;
   --mid-green: #32ad32;
@@ -99,7 +99,7 @@ select:disabled {
 
 
 .btn {
-  border-radius: 8px !important;
+  border-radius: 5px !important;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -411,7 +411,7 @@ input[type="date"]::-webkit-datetime-edit-text {
 }
 
 .widget-price-large {
-  @apply text-2xl font-black;
+  @apply text-xl;
 }
 
 .widget-label-tiny {

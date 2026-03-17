@@ -409,7 +409,16 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                       </span>
                     </div>
 
-                    <div className="flex flex-col gap-1 col-span-2">
+                    <div className="flex flex-col gap-1">
+                      <strong className="text-(--dark-gray) text-xs">
+                        Who's Helping?:
+                      </strong>
+                      <span className="text-(--dark-grey) text-xs">
+                        {viewData?.vehicle?.extraHelp?.label || "Self Load"}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
                       <strong className="text-(--dark-gray) text-xs">
                         Luggage:
                       </strong>
@@ -435,7 +444,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                       <span>Base Quote:</span>
                       <span>
                         {currencySymbol}
-                        {Number(viewData?.fare || 0).toFixed(2)}
+                        {Math.round(Number(viewData?.fare || 0)).toFixed(2)}
                       </span>
                     </div>
                     {viewData?.additionalTimeFare > 0 && (
@@ -443,7 +452,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                         <span>Additional Time Charges:</span>
                         <span>
                           +{currencySymbol}
-                          {Number(viewData?.additionalTimeFare).toFixed(2)}
+                          {Math.round(Number(viewData?.additionalTimeFare)).toFixed(2)}
                         </span>
                       </div>
                     )}
@@ -452,7 +461,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                         <span>Extra Men Charges:</span>
                         <span>
                           +{currencySymbol}
-                          {Number(viewData?.workersCharges).toFixed(2)}
+                          {Math.round(Number(viewData?.workersCharges)).toFixed(2)}
                         </span>
                       </div>
                     )}
@@ -463,7 +472,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                   <span className="text-(--dark-gray)">Total Fare:</span>
                   <span className="ml-2 text-lg sm:text-xl font-semibold text-(--dark-grey)">
                     {currencySymbol}
-                    {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(
+                    {Math.round(Number(viewData?.totalPrice || viewData?.fare || 0)).toFixed(
                       2,
                     )}
                   </span>
@@ -473,14 +482,14 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     <span>Deposit Paid (35%):</span>
                     <span className="font-semibold">
                       {currencySymbol}
-                      {Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35).toFixed(2)}
+                      {Math.round(Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35)).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-xs text-blue-600">
                     <span>Remaining Balance (65%):</span>
                     <span className="font-semibold">
                       {currencySymbol}
-                      {(Number(viewData?.totalPrice || viewData?.fare || 0) - Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35)).toFixed(2)}
+                      {Math.round(Number(viewData?.totalPrice || viewData?.fare || 0) - Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35)).toFixed(2)}
                     </span>
                   </div>
                 </div>

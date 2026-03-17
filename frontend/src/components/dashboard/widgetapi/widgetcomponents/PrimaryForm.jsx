@@ -176,8 +176,8 @@ const PrimaryForm = ({
               }, 2000);
             }}
           >
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-              <Icons.Map size={13} />
+            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1.5 mt-4">
+              <Icons.Map size={17} />
               Service Type
             </label>
 
@@ -205,7 +205,7 @@ const PrimaryForm = ({
             </div>
 
             {showServiceDropdown && (
-              <div className="absolute z-50 left-5 right-5 top-full mt-1 bg-(--white) border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-50 left-5 right-5 top-full -mt-2 bg-(--white) border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
                 {REMOVAL_BOOKING_TYPES.map((opt) => (
                   <div
                     key={opt.value}
@@ -223,8 +223,8 @@ const PrimaryForm = ({
           </div>
 
           <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 relative">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-              <Icons.MapPin size={13} />
+            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1.5 mt-2">
+              <Icons.MapPin size={17} />
               Pickup Address
             </label>
             <input
@@ -261,8 +261,8 @@ const PrimaryForm = ({
           </div>
 
           <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 relative">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-              <Icons.MapPin size={13} />
+            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1.5 mt-2">
+              <Icons.MapPin size={17} />
               Drop-off Address
             </label>
             <input
@@ -307,13 +307,12 @@ const PrimaryForm = ({
             )}
           </div>
 
-          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 flex items-center lg:justify-center lg:mt-6">
+          <div className="px-5 py-2.5 flex items-center lg:justify-end mb-4">
             <button
               type="submit"
               className="btn btn-blue w-full lg:w-auto"
             >
-              Check prices
-              <Icons.ChevronRight size={13} />
+              Get Free Quote
             </button>
           </div>
 

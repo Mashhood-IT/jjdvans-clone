@@ -56,19 +56,20 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
                 <div className="mt-6 pt-6 border-t border-gray-100">
                     <div className="flex justify-between items-center mb-4">
                         <span className="text-gray-500 text-sm">Amount to Pay</span>
-                        <span className="text-xl font-bold text-gray-900">{currencySymbol}{Math.round(totalPrice)}</span>
+                        <span className="text-xl font-bold text-gray-900">{currencySymbol}{Math.round(Number(totalPrice)).toFixed(2)}</span>
                     </div>
-
-                    <button
-                        type="submit"
-                        disabled={localProcessing || !stripe}
-                        className={`btn w-full ${localProcessing || !stripe
-                            ? "btn-edit"
-                            : "btn-success"
-                            }`}
-                    >
-                        {localProcessing ? "Processing Payment..." : "Pay & Book Now"}
-                    </button>
+                    <div className="flex justify-end">
+                        <button
+                            type="submit"
+                            disabled={localProcessing || !stripe}
+                            className={`btn ${localProcessing || !stripe
+                                ? "btn-edit"
+                                : "btn-success"
+                                }`}
+                        >
+                            {localProcessing ? "Processing Payment..." : "Pay & Book Now"}
+                        </button>
+                    </div>
 
                 </div>
             </div>

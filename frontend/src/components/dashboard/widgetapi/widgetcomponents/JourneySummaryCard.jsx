@@ -110,7 +110,7 @@ const JourneySummaryCard = ({
                   <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
                     <Icons.MapPin className="size-3.5 text-(--primary-dark-red)" />
                   </div>
-                  <p className="widget-value-text-sm text-(--white)">
+                  <p className="text-sm text-(--white)">
                     {dropoff}
                   </p>
                 </div>
@@ -119,59 +119,82 @@ const JourneySummaryCard = ({
           )}
         </div>
 
-        <div className="flex flex-col items-start justify-between lg:min-w-95 bg-(--dark-gray) p-6">
-          <div className="space-y-5 flex items-start justify-between text-start w-full">
-            <div className="flex-1">
-              <p className="widget-label-small text-(--white) mb-2">
-                TOTAL DISTANCE
-              </p>
-              <div className="flex items-center justify-start gap-2">
-                <Icons.MapPin className="size-3.5 text-(--white)" />
-                <p className="widget-value-sm text-(--white)">
-                  {primaryDistanceMiles.replace(" mi", "")}
-                  <span className="widget-value-sm ml-1">Miles</span>
+        <div className="bg-(--dark-gray) p-5 shadow-lg sm:p-6 lg:min-w-95">
+          <div className="grid grid-cols-1 gap-6">
+            {/* Stats */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
+                <p className="widget-label-small mb-2 text-(--light-gray)">
+                  TOTAL DISTANCE
                 </p>
+                <div className="flex items-center gap-2">
+                  <Icons.MapPin className="h-4 w-4 shrink-0 text-(--main-color)" />
+                  <p className="text-sm text-(--white)">
+                    {primaryDistanceMiles.replace(" mi", "")}
+                    <span className="ml-1 text-(--light-gray)">miles</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
+                <p className="widget-label-small mb-2 text-(--light-gray)">
+                  ESTIMATED TIME
+                </p>
+                <div className="flex items-center gap-2">
+                  <Icons.Clock className="h-4 w-4 shrink-0 text-(--main-color)" />
+                  <p className="text-sm text-(--white)">
+                    {`${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`}
+                  </p>
+                  <span className="text-sm font-semibold text-(--light-gray)">
+                    hours
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex-1">
-              <p className="widget-label-small text-(--white) mb-2">
-                ESTIMATED TIME
-              </p>
-              <div className="flex items-center justify-start gap-2">
-                <Icons.Clock className="size-3.5 text-(--white)" />
-                <p className="widget-value-sm text-(--white)">
-                  {`${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
+                <p className="widget-label-small mb-2 text-(--light-gray)">
+                  BOOKING DATE
                 </p>
-                <span className="text-(--white) widget-value-sm font-semibold">Hours</span>
+                <div className="flex items-center gap-2">
+                  <Icons.Calendar className="h-4 w-4 shrink-0 text-(--main-color)" />
+                  <span className="text-sm text-(--light-gray)">
+                    {formatDate(formData?.date)}
+                  </span>
+                </div>
               </div>
+
+              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
+                <p className="widget-label-small mb-2 text-(--light-gray)">
+                  BOOKING TIME
+                </p>
+                <div className="flex items-center gap-2">
+                  <Icons.Clock className="h-4 w-4 shrink-0 text-(--main-color)" />
+                  <span className="text-sm text-(--light-gray)">
+                    {formData?.hour !== undefined && formData?.minute !== undefined
+                      ? `${String(formData.hour).padStart(2, "0")}:${String(
+                        formData.minute
+                      ).padStart(2, "0")} ${formData.hour < 12 ? "AM" : "PM"}`
+                      : "Time not set"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="btn btn-blue"
+              >
+                Edit Full Route
+              </button>
             </div>
           </div>
-          <button onClick={() => navigate(-1)} className="btn btn-primary mt-3">EDIT FULL ROUTE</button>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-6 px-6 py-4 border-t border-(--dark-grey)">
-        <div className="flex items-center gap-2">
-          <Icons.Calendar className="w-5 h-5 text-(--main-color)" />
-          <span className="widget-value-text-sm text-(--light-gray)">
-            {formatDate(formData?.date)}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Icons.Clock className="w-5 h-5 text-(--white)" />
-          <span className="widget-value-text-sm text-(--light-gray)">
-            {formData?.hour && formData?.minute
-              ? `${String(formData.hour).padStart(2, "0")}:${String(
-                formData.minute,
-              ).padStart(2, "0")} ${formData.hour < 12 ? "AM" : "PM"}`
-              : "Time not set"}
-          </span>
         </div>
       </div>
     </div>
   );
 };
 
-export default JourneySummaryCard;
+export default JourneySummaryCard;

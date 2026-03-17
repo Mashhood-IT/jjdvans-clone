@@ -220,7 +220,7 @@ const VehiclePricing = () => {
     <>
       <OutletHeading name="Vehicle Pricing" />
       <button
-        className="btn btn-primary mb-3 sm:mb-4 md:mb-5 px-6 sm:px-8 text-xs sm:text-sm flex items-center gap-2"
+        className="btn btn-blue mb-3 sm:mb-4 md:mb-5 px-6 sm:px-8 text-xs sm:text-sm flex items-center gap-2"
         onClick={() => handleEditModal({})}
       >
         <Icons.Plus className="size-4" />

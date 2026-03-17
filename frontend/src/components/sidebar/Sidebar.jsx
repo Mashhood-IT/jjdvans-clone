@@ -151,7 +151,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
           className={classNames(
             isOpen ? "w-64" : "w-16",
             isMobileView && "rounded-none",
-            "flex flex-col h-full bg-(--navy-blue) relative border-r border-(--light-gray) overflow-hidden",
+            "flex flex-col h-full bg-(--navy-blue) border-t relative border-r border-(--light-gray) overflow-hidden",
           )}
         >
           <div className="flex-1 overflow-y-auto pr-0.5 custom_scrollbar">

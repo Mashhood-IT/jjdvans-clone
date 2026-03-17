@@ -12,7 +12,6 @@ import WidgetBookingInformation from "./WidgetBookingInformation";
 import WidgetInventory from "./WidgetInventory";
 import WidgetBookingDetails from "./WidgetBookingDetails";
 import Icons from "../../../assets/icons";
-import BreadCrumbs from "./widgetcomponents/BreadCrumbs";
 
 const scrollToTop = () => {
   window.scrollTo({
@@ -354,9 +353,8 @@ const WidgetMain = () => {
   };
 
   return (
-    <div className={`w-full h-fit bg-transparent py-4 md:py-8`}>
+    <div className={`w-full h-fit bg-transparent`}>
       <div>
-        <BreadCrumbs />
         <Routes>
           <Route
             index
@@ -422,6 +420,9 @@ const WidgetMain = () => {
                   });
                   navigate(getStepUrl("/widget-form/widget-inventory"));
                 }}
+                onBack={() => {
+                  navigate(getStepUrl("/widget-form/widget-details"));
+                }}
               />
             }
           />
@@ -437,6 +438,9 @@ const WidgetMain = () => {
                 bookingId={formData.bookingId}
                 onContinue={() => {
                   navigate(getStepUrl("/widget-form/widget-payment"));
+                }}
+                onBack={() => {
+                  navigate(getStepUrl("/widget-form/widget-vehicle"));
                 }}
               />
             }
@@ -457,6 +461,9 @@ const WidgetMain = () => {
                   ),
                 }}
                 booking={formData.booking}
+                onBack={() => {
+                  navigate(getStepUrl("/widget-form/widget-inventory"));
+                }}
                 onBookNow={(bookingData) => {
                   const pricingDataRaw = localStorage.getItem("widgetPricing");
                   const pricingData = pricingDataRaw
@@ -487,10 +494,10 @@ const WidgetMain = () => {
                   const voucher = bookingData?.voucher || "";
                   const paymentMethod =
                     bookingData?.paymentMethod || "Payment Link";
-                  const selectedVehicle =
-                    bookingData?.selectedVehicle ||
-                    bookingData?.vehicle ||
-                    formData.vehicle;
+                  const selectedVehicle = {
+                    ...(bookingData?.selectedVehicle || bookingData?.vehicle || formData.vehicle),
+                    extraHelp: pricingData.extraHelp || null
+                  };
 
                   const childSeatCharges = bookingData?.childSeatCharges || 0;
                   const fareBreakdown = bookingData?.fareBreakdown || {};
@@ -559,10 +566,10 @@ const WidgetMain = () => {
                   const voucher = bookingData?.voucher || "";
                   const paymentMethod =
                     bookingData?.paymentMethod || "Payment Link";
-                  const selectedVehicle =
-                    bookingData?.selectedVehicle ||
-                    bookingData?.vehicle ||
-                    formData.vehicle;
+                  const selectedVehicle = {
+                    ...(bookingData?.selectedVehicle || bookingData?.vehicle || formData.vehicle),
+                    extraHelp: JSON.parse(localStorage.getItem("widgetPricing") || "{}").extraHelp || null
+                  };
                   const fare =
                     bookingData?.fare || formData.pricing.totalPrice || 0;
                   const childSeatCharges = bookingData?.childSeatCharges || 0;

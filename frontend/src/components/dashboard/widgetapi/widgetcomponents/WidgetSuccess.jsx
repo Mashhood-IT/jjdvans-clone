@@ -1,9 +1,14 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Icons from "../../../../assets/icons";
 
 const WidgetSuccess = ({ formData, companyId }) => {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate("/widget-form")
+    window.location.reload();
+  }
 
   const paymentMethod = formData?.payment?.paymentMethod || "";
   const isPaymentLink = paymentMethod === "Payment Link";
@@ -41,11 +46,9 @@ const WidgetSuccess = ({ formData, companyId }) => {
         )}
 
         <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to="/widget-form">
-            <button className="px-6 py-3 text-(--white) bg-(--success-color) hover:bg-(--dark-green) rounded-full widget-button-text transition">
-              Return to Home
-            </button>
-          </Link>
+          <button onClick={handleClick} className="px-6 cursor-pointer py-3 text-(--white) bg-(--success-color) hover:bg-(--dark-green) rounded-full widget-button-text transition">
+            Return to Home
+          </button>
         </div>
       </div>
     </div>

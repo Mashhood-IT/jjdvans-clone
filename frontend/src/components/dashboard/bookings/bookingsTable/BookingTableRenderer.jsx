@@ -30,7 +30,6 @@ const BookingTableRenderer = ({
   timezone,
 }) => {
   const location = useLocation()
-  console.log(location.pathname)
   const newStatus = location.pathname.includes("completed") ? "Completed" : "New";
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
@@ -219,7 +218,7 @@ const BookingTableRenderer = ({
             row[key] = item.vehicle?.vehicleName || "-";
             break;
           case "totalPrice":
-            row[key] = formatCurrency(item.totalPrice, item);
+            row[key] = formatCurrency(Math.round(Number(item.totalPrice)).toFixed(2), item);
             break;
           case "paymentMethod":
             row[key] = item.paymentMethod || "-";

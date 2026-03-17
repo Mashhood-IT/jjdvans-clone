@@ -30,13 +30,18 @@ const AuthLayout = () => {
           </h2>
           <Outlet />
           <div className="text-center mt-6">
-            <div className="flex items-center justify-center gap-2 text-(--dark-gray)">
-              <Icons.CarFront className="w-5 h-5" />
-              <span className="text-xl font-semibold uppercase">
-                {isLoading
-                  ? "Loading..."
-                  : "Flexible Budget Removals Limited"}
-              </span>
+            <div className="flex justify-center text-(--dark-gray)">
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-2">
+                  <Icons.CarFront className="w-5 h-5" />
+                  <h3 className="text-md font-semibold uppercase">
+                    {isLoading ? "Loading..." : "Flexible Budget Removals"}
+                  </h3>
+                </div>
+                <h3 className="text-md font-semibold uppercase">
+                  {isLoading ? "" : "Limited"}
+                </h3>
+              </div>
             </div>
           </div>
         </div>

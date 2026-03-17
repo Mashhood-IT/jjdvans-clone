@@ -5,7 +5,12 @@ const VehicleSchema = new mongoose.Schema({
     vehicleName: String,
     passenger: Number,
     maxSeats: Number,
-    description: String
+    description: String,
+    extraHelp: {
+        label: String,
+        price: Number,
+        unitPrice: Number
+    }
 }, { _id: false })
 
 const PassengerSchema = new mongoose.Schema({

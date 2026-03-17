@@ -11,7 +11,7 @@ import {
 } from "@stripe/react-stripe-js";
 import StripeCheckout from "../../../paymentMethod/StripeCheckout";
 import PayPalCheckout from "../../../paymentMethod/PayPalCheckout";
-import WidgetStepHeader from './widgetcomponents/WidgetStepHeader';
+import { useLoading } from "../../common/LoadingProvider";
 
 const WidgetPaymentInformation = ({
   companyId,
@@ -20,6 +20,7 @@ const WidgetPaymentInformation = ({
   vehicle = {},
   booking = {},
   loading = false,
+  onBack,
 }) => {
   const [passengerDetails, setPassengerDetails] = useState({
     email: "",
@@ -56,6 +57,27 @@ const WidgetPaymentInformation = ({
   const childSeatUnitPrice = useMemo(() => {
     return generalPricing?.childSeatPrice || 10.0;
   }, [generalPricing]);
+
+  const { showLoading, hideLoading } = useLoading();
+
+  useEffect(() => {
+    if (loading || isProcessingStripe) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+  }, [loading, isProcessingStripe, showLoading, hideLoading]);
+
+  useEffect(() => {
+    const sendHeight = () => {
+      const height = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: "setHeight", height }, "*");
+    };
+    sendHeight();
+    const resizeObserver = new ResizeObserver(sendHeight);
+    resizeObserver.observe(document.body);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -202,6 +224,7 @@ const WidgetPaymentInformation = ({
 
     const total = baseFare + workersCharges + extraTimeCharges + floorCharges + accessTypeCharges + childSeatTotal;
     const depositAmount = total * 0.35;
+    const driverAmount = total - depositAmount;
 
     return {
       baseFare,
@@ -212,6 +235,8 @@ const WidgetPaymentInformation = ({
       childSeatTotal,
       total,
       depositAmount,
+      driverAmount,
+      extraHelp: pricingData.extraHelp,
       currencySymbol: pricingData.currencySymbol || currencySymbol
     };
   }, [formData.childSeat, childSeatUnitPrice, currencySymbol]);
@@ -277,8 +302,11 @@ const WidgetPaymentInformation = ({
       childSeats: Number(formData.childSeat) || 0,
       paymentMethod: paymentData.paymentMethod,
       selectedVehicle: {
+        ...localVehicle,
+        ...vehicle,
         vehicleName: vehicle.vehicleName || localVehicle.vehicleName,
         passenger: Number(formData.passenger) || 0,
+        extraHelp: pricingInfo.extraHelp || (localVehicle.extraHelp || vehicle.extraHelp)
       },
       fareBreakdown: {
         baseFare: pricingInfo.baseFare,
@@ -289,6 +317,7 @@ const WidgetPaymentInformation = ({
         childSeatCharges: pricingInfo.childSeatTotal,
         total: pricingInfo.total,
         depositPaid: pricingInfo.depositAmount,
+        extraHelp: pricingInfo.extraHelp
       },
       currency: {
         symbol: currencySymbol,
@@ -317,26 +346,36 @@ const WidgetPaymentInformation = ({
   };
 
   return (
-    <div className="px-4 md:px-8">
-      <WidgetStepHeader
-        step="4"
-        title="Complete Your Booking"
-        description="Verify your relocation details and passenger requirements to finalize your professional service estimate."
-      />
+    <div className="px-4 md:px-8 relative">
+      <div className="mb-6">
+        <button
+          onClick={onBack}
+          className="btn btn-blue px-8"
+        >
+          Go Back
+        </button>
+      </div>
+      <div className="mb-3">
+        <h1 className="text-2xl font-bold mb-1 text-(--dark-gray)">
+          Complete Your Booking
+        </h1>
+        <p className="widget-description leading-relaxed text-gray-600">
+          Verify your relocation details and passenger requirements to finalize your professional service estimate.        </p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-(--white) rounded-lg shadow-sm p-6">
+      <div className="grid grid-cols-12 gap-8">
+        <div className="lg:col-span-6 space-y-6">
+          <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
                 01
               </div>
-              <h2 className="widget-title text-(--dark-black)">Client Profile</h2>
+              <h2 className="widget-title text-(--dark-gray)">Client Profile</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block widget-label-small text-(--dark-grey) mb-2">
+                <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
                   First Name
                 </label>
                 <input
@@ -353,7 +392,7 @@ const WidgetPaymentInformation = ({
                 />
               </div>
               <div>
-                <label className="block widget-label-small text-(--dark-grey) mb-2">
+                <label className="block widget-label-small !capitalize  text-(--dark-grey) mb-2">
                   Email Address
                 </label>
                 <input
@@ -370,7 +409,7 @@ const WidgetPaymentInformation = ({
                 />
               </div>
               <div>
-                <label className="block widget-label-small text-(--dark-grey) mb-2">
+                <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
                   Phone
                 </label>
 
@@ -389,17 +428,19 @@ const WidgetPaymentInformation = ({
               </div>
             </div>
           </div>
-          <div className="bg-(--white) rounded-lg shadow-sm p-6">
+        </div>
+        <div className="lg:col-span-6">
+          <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
                 02
               </div>
-              <h2 className="widget-title text-(--dark-black)">Service Requirements</h2>
+              <h2 className="widget-title text-(--dark-gray)">Service Requirements</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block widget-label-small text-(--dark-grey) mb-2">
+                <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
                   Moving Date
                 </label>
                 <div>
@@ -420,7 +461,7 @@ const WidgetPaymentInformation = ({
                 </div>
               </div>
               <div>
-                <label className="block widget-label-small text-(--dark-grey) mb-2">
+                <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
                   Moving Time
                 </label>
                 <div>
@@ -438,7 +479,7 @@ const WidgetPaymentInformation = ({
               </div>
 
               <div className="md:col-span-1">
-                <label className="block widget-label-small text-(--dark-grey) mb-2">
+                <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
                   Pickup Address
                 </label>
                 <div>
@@ -462,8 +503,8 @@ const WidgetPaymentInformation = ({
                 .filter(Boolean)
                 .map((dropoff, idx) => (
                   <div key={idx} className="md:col-span-1">
-                    <label className="block widget-label-small text-(--dark-grey) mb-2">
-                      {idx === 0 ? "DROPOFF ADDRESS" : `Additional Drop-off ${idx}`}
+                    <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
+                      {idx === 0 ? "Dropoff Address" : `Additional Drop-off ${idx}`}
                     </label>
                     <div>
                       <input
@@ -479,176 +520,126 @@ const WidgetPaymentInformation = ({
             </div>
           </div>
         </div>
-        <div className="lg:col-span-1">
-          <div className="bg-(--white) rounded-lg shadow-sm p-6 sticky top-8">
-            <h3 className="widget-title text-(--dark-black) mb-6">Price Estimate</h3>
+      </div>
+      <div className="bg-(--lightest-gray) lg:col-span-6 rounded-lg shadow-sm p-6 mt-12">
+        <h3 className="widget-title text-(--dark-gray) mb-6">Price Estimate</h3>
 
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between widget-description">
-                <span className="text-(--dark-grey)">Base Fare</span>
-                <span className="widget-value-text-sm text-(--dark-black)">
-                  {pricingInfo.currencySymbol}
-                  {Math.round(pricingInfo.baseFare)}
-                </span>
-              </div>
-              {pricingInfo.workersCharges > 0 && (
-                <div className="flex justify-between widget-description">
-                  <span className="text-(--dark-grey)">Extra Men Charges ({Math.ceil(((localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedHours : 0) * 60 + (localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedMinutes : 0)) / 30)} × {pricingInfo.currencySymbol}{Math.round(pricingInfo.workersCharges / Math.ceil(((localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedHours : 0) * 60 + (localStorage.getItem("widgetInventoryData") ? JSON.parse(localStorage.getItem("widgetInventoryData")).estimatedMinutes : 0)) / 30))})</span>
-                  <span className="widget-value-text-sm text-(--dark-black)">
-                    +{pricingInfo.currencySymbol}
-                    {pricingInfo.workersCharges.toFixed(2)}
-                  </span>
-                </div>
-              )}
-              {pricingInfo.extraTimeCharges > 0 && (
-                <div className="flex justify-between widget-description">
-                  <span className="text-(--dark-grey)">Extra Time</span>
-                  <span className="widget-value-text-sm text-(--dark-black)">
-                    +{pricingInfo.currencySymbol}
-                    {pricingInfo.extraTimeCharges.toFixed(2)}
-                  </span>
-                </div>
-              )}
-              {pricingInfo.floorCharges > 0 && (
-                <div className="flex justify-between widget-description">
-                  <span className="text-(--dark-grey)">Floor Level</span>
-                  <span className="widget-value-text-sm text-(--dark-black)">
-                    +{pricingInfo.currencySymbol}
-                    {pricingInfo.floorCharges.toFixed(2)}
-                  </span>
-                </div>
-              )}
-              {pricingInfo.accessTypeCharges > 0 && (
-                <div className="flex justify-between widget-description">
-                  <span className="text-(--dark-grey)">Access (Lift/Stairs)</span>
-                  <span className="widget-value-text-sm text-(--dark-black)">
-                    +{pricingInfo.currencySymbol}
-                    {pricingInfo.accessTypeCharges.toFixed(2)}
-                  </span>
-                </div>
-              )}
-              {pricingInfo.childSeatTotal > 0 && (
-                <div className="flex justify-between widget-description">
-                  <span className="text-(--medium-grey)">Child Seats</span>
-                  <span className="widget-value-text text-(--dark-black)">
-                    +{pricingInfo.currencySymbol}
-                    {pricingInfo.childSeatTotal.toFixed(2)}
-                  </span>
-                </div>
-              )}
-            </div>
+        <div className="mb-3">
+          <div className="flex justify-between items-center">
+            <span className="widget-label-small text-(--dark-grey)">Total Fare</span>
+            <span className="widget-price-sm text-(--dark-black)">
+              {pricingInfo.currencySymbol}
+              {Math.round(Number(pricingInfo.total)).toFixed(2)}
+            </span>
+          </div>
+        </div>
 
-            <div className="border-t border-(--light-gray) pt-4 mb-3">
-              <div className="flex justify-between items-center">
-                <span className="widget-label-small text-(--dark-grey)">Total Estimated Fare</span>
-                <span className="widget-price-sm text-(--dark-black)">
-                  {pricingInfo.currencySymbol}
-                  {Math.round(pricingInfo.total)}
-                </span>
-              </div>
-            </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-100 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-medium text-gray-600">
+              Deposit at booking (35%)
+            </span>
+            <span className="widget-value-text-sm text-(--dark-black)">
+              {pricingInfo.currencySymbol}
+              {Math.round(Number(pricingInfo.depositAmount)).toFixed(2)}
+            </span>
+          </div>
 
-            <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100 mb-6 group transition-all duration-300 hover:bg-gray-50">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm font-medium text-gray-600">Deposit at booking (35%)</span>
-                <span className="widget-value-text-sm text-(--dark-black)">
-                  {pricingInfo.currencySymbol}
-                  {Math.round(pricingInfo.depositAmount)}
-                </span>
-              </div>
+          <ul className="list-disc pl-5 space-y-2 text-[12px] text-gray-500 border-t border-gray-100 pt-4 marker:text-gray-400">
+            <li>
+              Pay <strong>35% deposit</strong> now via card to secure your professional transit
+            </li>
+            <li>
+              The remaining <strong>65% balance</strong> is settled directly with your driver &nbsp;
+              <span className="font-semibold">
+                {pricingInfo?.currencySymbol}
+                {Math.round(pricingInfo?.driverAmount)}
+              </span>
+            </li>
+            <li>
+              Secure, encrypted payments with instant confirmation
+            </li>
+          </ul>
+        </div>
 
-              <div className="space-y-2 border-t border-gray-100 pt-4">
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5" />
-                  <p className="text-[12px] text-gray-500 leading-tight">
-                    Pay <strong>35% deposit</strong> now via card to secure your professional transit
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5" />
-                  <p className="text-[12px] text-gray-500 leading-tight">
-                    The remaining <strong>65% balance</strong> is settled directly with your driver
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5" />
-                  <p className="text-[12px] text-gray-500 leading-tight">
-                    Secure, encrypted payments with instant confirmation
-                  </p>
-                </div>
-              </div>
-            </div>
+        <div className="mt-8 space-y-4">
+          {(() => {
+            const options = [];
+            // Check for keys as there is no 'enabled' field in schema
+            if (bookingSettingData?.setting?.stripeKeys?.publishableKey) {
+              options.push({ label: "Stripe", value: "Stripe" });
+            }
+            if (bookingSettingData?.setting?.paypalKeys?.clientId) {
+              options.push({ label: "Paypal", value: "Paypal" });
+            }
 
-            <div className="mt-8 space-y-4">
-              {(() => {
-                const options = [];
-                // Check for keys as there is no 'enabled' field in schema
-                if (bookingSettingData?.setting?.stripeKeys?.publishableKey) {
-                  options.push({ label: "Stripe", value: "Stripe" });
+
+            return (
+              <SelectOption
+                label="Choose Payment Option"
+                value={formData.paymentMethod}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, paymentMethod: e.target.value }))
                 }
-                if (bookingSettingData?.setting?.paypalKeys?.clientId) {
-                  options.push({ label: "Paypal", value: "Paypal" });
-                }
+                options={options}
+              />
+            );
+          })()}
 
+          {formData.paymentMethod === "Stripe" && stripePromise && clientSecret && (
+            <Elements
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: "stripe",
+                  variables: {
+                    colorPrimary: "#1f2937",
+                    borderRadius: "12px",
+                  },
+                },
+              }}
+            >
+              <StripeCheckout
+                clientSecret={clientSecret}
+                totalPrice={pricingInfo.depositAmount}
+                currencySymbol={currencySymbol}
+                isProcessing={isProcessingStripe}
+                onPaymentError={(msg) => setStripeError(msg)}
+                onPaymentSuccess={() => onBookNowClick(formData)}
+              />
+            </Elements>
+          )}
 
-                return (
-                  <SelectOption
-                    label="Choose Payment Option"
-                    value={formData.paymentMethod}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, paymentMethod: e.target.value }))
-                    }
-                    options={options}
-                  />
-                );
-              })()}
-
-              {formData.paymentMethod === "Stripe" && stripePromise && clientSecret && (
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    clientSecret,
-                    appearance: {
-                      theme: "stripe",
-                      variables: {
-                        colorPrimary: "#1f2937",
-                        borderRadius: "12px",
-                      },
-                    },
-                  }}
-                >
-                  <StripeCheckout
-                    clientSecret={clientSecret}
-                    totalPrice={pricingInfo.depositAmount}
-                    currencySymbol={currencySymbol}
-                    isProcessing={isProcessingStripe}
-                    onPaymentError={(msg) => setStripeError(msg)}
-                    onPaymentSuccess={() => onBookNowClick(formData)}
-                  />
-                </Elements>
-              )}
-
-              {formData.paymentMethod === "Paypal" && (
-                <div className="mt-4">
-                  <PayPalCheckout
-                    companyId={companyId}
-                    amount={pricingInfo.depositAmount}
-                    bookingId={booking?._id || "new-booking"}
-                    onSuccess={() => onBookNowClick(formData)}
-                    onError={(err) => {
-                      console.error("PayPal Error:", err);
-                      toast.error("PayPal payment failed. Please try again.");
-                    }}
-                  />
-                </div>
-              )}
-
-              {stripeError && (
-                <div className="p-4 bg-(--light-red) border border-(--light-red) widget-error-text rounded-xl animate-in fade-in duration-300">
-                  {stripeError}
-                </div>
-              )}
+          {formData.paymentMethod === "Paypal" && (
+            <div className="mt-4">
+              <PayPalCheckout
+                companyId={companyId}
+                amount={pricingInfo.depositAmount}
+                bookingId={booking?._id || "new-booking"}
+                onSuccess={() => onBookNowClick(formData)}
+                onError={(err) => {
+                  console.error("PayPal Error:", err);
+                  toast.error("PayPal payment failed. Please try again.");
+                }}
+              />
             </div>
+          )}
+
+          {stripeError && (
+            <div className="p-4 bg-(--light-red) border border-(--light-red) widget-error-text rounded-xl animate-in fade-in duration-300">
+              {stripeError}
+            </div>
+          )}
+          <div className="mt-8 flex justify-center items-center gap-4">
+            {formData.paymentMethod !== "Stripe" && (
+              <button
+                onClick={handleBookNow}
+                className="btn btn-blue px-8"
+              >
+                {isEdit ? "Confirm Update" : "Book Now"}
+              </button>
+            )}
           </div>
         </div>
       </div>

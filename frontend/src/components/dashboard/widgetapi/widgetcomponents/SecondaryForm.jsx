@@ -6,6 +6,7 @@ import {
 } from "../../../../redux/api/googleApi";
 import LocationMap from "./LocationMap";
 import useDistanceSync from "../../../../hooks/useDistanceSync";
+import Icons from "../../../../assets/icons";
 
 const SecondaryForm = ({
     formData,
@@ -179,27 +180,72 @@ const SecondaryForm = ({
         <div className="grid grid-cols-12 p-7 gap-6">
             <form
                 onSubmit={handleSubmit}
-                className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 pt-3 pb-6 widget-base-text text-(--dark-grey) transition duration-300 hover:shadow-xl"
+                className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 widget-base-text text-(--dark-grey) transition duration-300 hover:shadow-xl"
             >
                 <div>
-                    <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4 pt-6">
                         <div>
-                            <h2 className="text-xl font-bold text-(--dark-gray) mb-2 flex items-center gap-2">Booking Details<span className="text-xs">{distanceText && `(${distanceText})`} </span>
+                            <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-(--dark-gray)">
+                                Booking Details
                             </h2>
-                            <div className="h-1 w-12 bg-(--widgetBtnBg) rounded-full"></div>
+                            <div className="mt-2 h-1 w-14 rounded-full bg-(--widgetBtnBg)"></div>
                         </div>
-                        <button
-                            type="button"
-                            onClick={onBack}
-                            className="btn btn-back"
-                        >
-                            ← Go Back
-                        </button>
+
+                        <div className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
+                            Distance {distanceText && <span className="text-(--dark-gray)">({distanceText})</span>}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="relative">
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Date</label>
+                            <div className="relative">
+                                <input
+                                    type="date"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleChangeWithValidation}
+                                    className="custom_input w-full pr-1 px-3 appearance-none"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Time</label>
+                            <select
+                                name="hour"
+                                value={formData.hour}
+                                onChange={handleChangeWithValidation}
+                                className="custom_input w-full"
+                            >
+                                <option value="">HH</option>
+                                {[...Array(24).keys()].map((h) => (
+                                    <option key={h} value={h}>
+                                        {h.toString().padStart(2, "0")}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Minute</label>
+                            <select
+                                name="minute"
+                                value={formData.minute}
+                                onChange={handleChangeWithValidation}
+                                className="custom_input w-full"
+                            >
+                                <option value="">MM</option>
+                                {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
+                                    <option key={m} value={m.toString().padStart(2, "0")}>
+                                        {m.toString().padStart(2, "0")}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="space-y-4 mb-6 transition-all duration-300">
                         <div className="flex gap-6 items-center justify-center" >
-                            <div className="relative group w-full">
+                            <div className="relative group w-full mt-6">
                                 <label className="block widget-label-text text-(--dark-gray) mb-1">
                                     Pickup Address
                                 </label>
@@ -228,7 +274,7 @@ const SecondaryForm = ({
                                 </div>
                             </div>
 
-                            <div className="relative group w-full">
+                            <div className="relative group w-full mt-6">
                                 <label className="block widget-label-text text-(--dark-gray) mb-1">
                                     Dropoff Address
                                 </label>
@@ -268,9 +314,9 @@ const SecondaryForm = ({
                                         <button
                                             type="button"
                                             onClick={() => removeDropOff(idx)}
-                                            className="text-red-500 cursor-pointer hover:text-red-700 text-lg leading-none"
+                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 transition hover:bg-red-200 hover:text-red-700"
                                         >
-                                            &times;
+                                            <Icons.X size={16} strokeWidth={2.5} />
                                         </button>
                                     </div>
                                     <div className="relative">
@@ -303,17 +349,15 @@ const SecondaryForm = ({
                             <button
                                 type="button"
                                 onClick={addDropOff}
-                                className="flex items-center cursor-pointer gap-2 text-sm font-medium text-(--widgetBtnBg) hover:brightness-110 transition-all"
+                                className="flex items-center cursor-pointer gap-1 text-sm font-medium text-(--widgetBtnBg) hover:brightness-110 transition-all"
                             >
-                                <span className="flex items-center justify-center w-5 h-5 rounded-full border border-(--widgetBtnBg) text-xs">+</span>
+                                <Icons.CirclePlus size={19} className="" />
                                 Add Another Drop Off
                             </button>
                         )}
                     </div>
 
-
-
-                    <div className="mb-6">
+                    <div className="mb-2 mt-4">
                         <label className="block widget-label-text text-(--dark-gray) mb-1">Additional Notes</label>
                         <textarea
                             name="notes"
@@ -325,13 +369,27 @@ const SecondaryForm = ({
                         />
                     </div>
 
-                    <div className="flex items-center pt-2">
-                        <button
-                            type="submit"
-                            className="btn btn-blue"
-                        >
-                            BOOK NOW
-                        </button>
+                    <div className="flex justify-between items-center mt-2 mb-4">
+                        <div className="flex items-center lg:justify-end">
+                            <button
+                                type="button"
+                                onClick={onBack}
+
+                                className="btn btn-back w-full lg:w-auto"
+                            >
+
+                                Go Back
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-center">
+                            <button
+                                type="submit"
+                                className="btn btn-blue"
+                            >
+                                Get Quote
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form >

@@ -356,7 +356,7 @@ const DistanceSlab = () => {
       </div>
 
       <div className="mb-4 sm:mb-5 md:mb-6">
-        <button className="btn btn-primary px-6 sm:px-8 text-xs sm:text-sm" onClick={handleAddSlab}>
+        <button className="btn btn-blue px-6 sm:px-8 text-xs sm:text-sm" onClick={handleAddSlab}>
           Add Distance Slab
         </button>
       </div>

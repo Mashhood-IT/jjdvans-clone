@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 import FloorAccessibility from "./widgetcomponents/FloorAccessibility";
 import Icons from "../../../assets/icons";
 import { toast } from "react-toastify";
 import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
+import { useLoading } from "../../common/LoadingProvider";
 
-const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoogleMinutes, roundedGoogleMinutes: passedRoundedMinutes }) => {
+const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: passedGoogleMinutes, roundedGoogleMinutes: passedRoundedMinutes }) => {
   const containerRef = useRef(null);
   const selectedVehicle = JSON.parse(
     localStorage.getItem("selectedVehicle") || "{}",
@@ -44,9 +44,19 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
 
   const companyId =
     new URLSearchParams(window.location.search).get("company") || "";
-  const { data: settingsData } = useGetPublicBookingSettingQuery(companyId, {
+  const { data: settingsData, isLoading: isSettingsLoading } = useGetPublicBookingSettingQuery(companyId, {
     skip: !companyId,
   });
+
+  const { showLoading, hideLoading } = useLoading();
+
+  useEffect(() => {
+    if (isSettingsLoading) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+  }, [isSettingsLoading, showLoading, hideLoading]);
 
   const currencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
 
@@ -61,7 +71,6 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
     let totalFloor = 0;
     let totalAccess = 0;
 
-    // Helper to get access price
     const getAccessPrice = (floor, access) => {
       if (!floor || floor <= 0) return 0;
       if (access === "STAIRS") return priceForStairs;
@@ -69,19 +78,22 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
       return 0;
     };
 
-    // Pickup
-    totalFloor += (pickupFloor || 0) * pricePerFloor;
+    const getFloorPrice = (floor, access) => {
+      if (!floor || floor <= 0) return 0;
+      if (access === "LIFT") return 0;
+      return floor * pricePerFloor;
+    };
+
+    totalFloor += getFloorPrice(pickupFloor, pickupAccess);
     totalAccess += getAccessPrice(pickupFloor, pickupAccess);
 
-    // Dropoff
-    totalFloor += (dropoffFloor || 0) * pricePerFloor;
+    totalFloor += getFloorPrice(dropoffFloor, dropoffAccess);
     totalAccess += getAccessPrice(dropoffFloor, dropoffAccess);
 
-    // Additional Dropoffs
     additionalDropoffs.forEach((ad) => {
       const floor = floorAccess[`additionalDropoff${ad.id}Floor`] || 0;
       const access = floorAccess[`additionalDropoff${ad.id}Access`];
-      totalFloor += floor * pricePerFloor;
+      totalFloor += getFloorPrice(floor, access);
       totalAccess += getAccessPrice(floor, access);
     });
 
@@ -264,7 +276,6 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
     };
     localStorage.setItem("widgetInventoryData", JSON.stringify(inventoryData));
 
-    // Update the main totalPrice in localStorage
     const wp = JSON.parse(localStorage.getItem("widgetPricing") || "{}");
     wp.totalPrice = totalFare;
     if (wp.extraHelp) {
@@ -297,21 +308,32 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
   };
 
   return (
-    <div ref={containerRef} className="px-4 md:px-8">
-      <WidgetStepHeader
-        step="3"
-        title="Inventory & Requirements"
-        description="Survey your moving scope and our availability"
-      />
+    <div ref={containerRef} className="px-4 md:px-8 pb-8 relative">
+      <div className="mb-6">
+        <button
+          onClick={onBack}
+          className="btn btn-blue"
+        >
+          Go Back
+        </button>
+      </div>
+      <div className="mb-3">
+        <h1 className="text-2xl font-bold mb-2 text-(--dark-gray)">
+          Inventory & Requirements
+        </h1>
+        <p className="widget-description leading-relaxed text-gray-600">
+          Survey your moving scope and our availability.
+        </p>
+      </div>
 
-      <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="widget-section-title text-(--dark-gray)">
             Item Inventory
           </h2>
           <button
             onClick={() => setShowItemInput(!showItemInput)}
-            className="flex cursor-pointer items-center gap-2 px-3 py-1.5 bg-(--mate-color) text-(--white) rounded-lg hover:bg-(--dark-grey) transition-colors"
+            className="btn btn-blue"
           >
             <Icons.Plus className="w-4 h-4" />
             <span>Add Item</span>
@@ -327,14 +349,14 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
                 onChange={(e) => setCurrentItem(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Enter item name (press Enter to add)"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="flex-1 px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 autoFocus
               />
               <button
                 onClick={handleAddItem}
                 className="btn btn-success"
               >
-                Add
+                <Icons.Plus className="w-4 h-4" />
               </button>
               <button
                 onClick={() => {
@@ -343,7 +365,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
                 }}
                 className="btn btn-back"
               >
-                Cancel
+                <Icons.X className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -351,17 +373,21 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
 
         {items.length > 0 && (
           <div className="space-y-2">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between px-4 py-3 bg-(--lightest-gray) border border-gray-200 rounded-lg"
-              >
-                <span className="widget-value-text-sm text-gray-900">
-                  {item.name}
-                </span>
+            {items.map((item, index) => (
+              <div key={item.id} className="flex items-stretch gap-2">
+                <div className="flex w-6 items-center justify-center text-sm font-medium text-gray-900">
+                  {index + 1}.
+                </div>
+
+                <div className="flex-1 flex items-center px-4 py-2 bg-(--lightest-gray) border border-gray-200 rounded-md">
+                  <span className="widget-value-text-sm text-gray-900">
+                    {item.name}
+                  </span>
+                </div>
+
                 <button
                   onClick={() => handleRemoveItem(item.id)}
-                  className="text-red-600 cursor-pointer hover:text-red-800 transition-colors"
+                  className="btn btn-cancel px-4 rounded-md h-auto self-stretch flex items-center justify-center"
                 >
                   <Icons.Minus className="w-4 h-4" />
                 </button>
@@ -371,7 +397,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
         )}
 
         {items.length === 0 && !showItemInput && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center text-gray-500">
             <p className="widget-description">
               No items added yet. Click "Add Item" to get started.
             </p>
@@ -400,7 +426,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
         currencySymbol={currencySymbol}
       />
 
-      <div className="bg-(--white) rounded-lg shadow-sm p-6 mb-6">
+      <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6 mb-6">
         <h2 className="widget-section-title text-gray-900 mb-6">
           Travel Preference
         </h2>
@@ -540,7 +566,10 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
           </div>
 
           <p className="widget-option-text text-center text-gray-400">
-            Adjustments vary ±30-minute increments
+            Adjustments vary ±30 - minute increments
+          </p>
+          <p className="widget-option-text text-center mt-2 px-2 text-gray-400">
+            Non booked time will cost {currencySymbol}{(Math.round((selectedVehicle?.halfHourPrice || 0) * 1.05)).toFixed(2)} per half hour. Book in advance your total time and Save up to 5%
           </p>
         </div>
         <div className="md:col-span-6 col-span-12 md:pl-12 pl-0 md:mt-0 mt-8">
@@ -548,7 +577,7 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
             <div className="flex justify-between items-center text-gray-400">
               <span className="text-sm">Base Fare</span>
               <span className="font-semibold text-(--white)">
-                {currencySymbol} {(widgetPricing.baseFare || 0).toFixed(2)}
+                {currencySymbol} {Math.round(Number(widgetPricing.baseFare || 0)).toFixed(2)}
               </span>
             </div>
 
@@ -589,17 +618,18 @@ const WidgetInventory = ({ onContinue, items, setItems, googleMinutes: passedGoo
             )}
 
             <div className="pt-3 border-t border-gray-700 flex justify-between items-center">
-              <span className="text-gray-300 font-bold">Total Estimated Fare</span>
+              <span className="text-gray-300 font-bold">Total Fare</span>
               <span className="text-2xl font-bold text-(--white)">
-                {currencySymbol} {totalFare.toFixed(2)}
+                {currencySymbol} {Math.round(Number(totalFare)).toFixed(2)}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end items-center gap-3">
-        <button onClick={handleContinue} className="btn btn-primary">
+      <div className="flex justify-center gap-3">
+
+        <button onClick={handleContinue} className="btn btn-blue">
           Continue to Payment
         </button>
       </div>

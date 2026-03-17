@@ -52,9 +52,13 @@ import {
   ListCheck,
   HelpCircle,
   ArrowLeft,
+  ArrowRight,
+  CirclePlus,
 } from "lucide-react";
 
 const Icons = {
+  CirclePlus,
+  ArrowRight,
   CalendarPlus,
   AlertCircle,
   ArrowLeft,

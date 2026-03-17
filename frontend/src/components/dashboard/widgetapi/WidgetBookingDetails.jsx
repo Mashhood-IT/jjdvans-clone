@@ -204,31 +204,33 @@ const WidgetBookingDetails = ({
     };
 
     return (
-        <SecondaryForm
-            pickupCoords={pickupCoords}
-            setPickupCoords={setPickupCoords}
-            dropoffCoords={dropoffCoords}
-            setDropoffCoords={setDropoffCoords}
-            companyId={companyId}
-            formData={formData}
-            handleSubmit={handleSubmit}
-            dropOffs={dropOffs}
-            setDropOffs={setDropOffs}
-            dropOffSuggestions={dropOffSuggestions}
-            setDropOffSuggestions={setDropOffSuggestions}
-            activeDropIndex={activeDropIndex}
-            setActiveDropIndex={setActiveDropIndex}
-            handleDropOffChange={handleDropOffChange}
-            handleDropOffSelect={handleDropOffSelect}
-            pickupSuggestions={pickupSuggestions}
-            setPickupSuggestions={setPickupSuggestions}
-            handlePickupSelect={handlePickupSelect}
-            removeDropOff={removeDropOff}
-            addDropOff={addDropOff}
-            handleChange={handleChange}
-            setFormData={setFormData}
-            onBack={onBack}
-        />
+        <>
+            <SecondaryForm
+                pickupCoords={pickupCoords}
+                setPickupCoords={setPickupCoords}
+                dropoffCoords={dropoffCoords}
+                setDropoffCoords={setDropoffCoords}
+                companyId={companyId}
+                formData={formData}
+                handleSubmit={handleSubmit}
+                dropOffs={dropOffs}
+                setDropOffs={setDropOffs}
+                dropOffSuggestions={dropOffSuggestions}
+                setDropOffSuggestions={setDropOffSuggestions}
+                activeDropIndex={activeDropIndex}
+                setActiveDropIndex={setActiveDropIndex}
+                handleDropOffChange={handleDropOffChange}
+                handleDropOffSelect={handleDropOffSelect}
+                pickupSuggestions={pickupSuggestions}
+                setPickupSuggestions={setPickupSuggestions}
+                handlePickupSelect={handlePickupSelect}
+                removeDropOff={removeDropOff}
+                addDropOff={addDropOff}
+                handleChange={handleChange}
+                setFormData={setFormData}
+                onBack={onBack}
+            />
+        </>
     );
 };
 
