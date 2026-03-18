@@ -29,14 +29,14 @@ const App = () => {
       <LoadingProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          {/* Auth Routes */}
+
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/new-password" element={<ResetPassword />} />
           </Route>
           <Route path="/widget-form/*" element={<WidgetMain />} />
-          {/* Protected Routes */}
+
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route path="my-dashboard" index element={<Dashboard />} />

@@ -17,7 +17,6 @@ dotenv.config();
 
 await connectDB();
 
-
 const allowedOriginsRaw = process.env.BASE_URL_FRONTEND || "";
 const origins = allowedOriginsRaw
   .split(",")
