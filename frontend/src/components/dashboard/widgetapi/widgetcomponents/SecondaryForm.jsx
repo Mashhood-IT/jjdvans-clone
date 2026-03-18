@@ -183,15 +183,14 @@ const SecondaryForm = ({
                 className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 widget-base-text text-(--dark-grey) transition duration-300 hover:shadow-xl"
             >
                 <div>
-                    <div className="flex items-center justify-between gap-4 pt-6">
+                    <div className="flex md:flex-row flex-col md:items-center items-start justify-between gap-4 pt-6">
                         <div>
                             <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight text-(--dark-gray)">
                                 Booking Details
                             </h2>
-                            <div className="mt-2 h-1 w-14 rounded-full bg-(--widgetBtnBg)"></div>
                         </div>
 
-                        <div className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
+                        <div className="rounded-full md:mb-0 mb-5 border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
                             Distance {distanceText && <span className="text-(--dark-gray)">({distanceText})</span>}
                         </div>
                     </div>
