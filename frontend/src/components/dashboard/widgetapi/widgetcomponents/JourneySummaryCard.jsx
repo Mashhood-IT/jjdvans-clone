@@ -1,6 +1,7 @@
 import React from "react";
 import Icons from "../../../../assets/icons";
 import { useNavigate } from "react-router-dom";
+import { formatMinutesToHM, parseDurationToMinutes } from "../../../../utils/durationHelper";
 
 const JourneySummaryCard = ({
   formData,
@@ -27,25 +28,8 @@ const JourneySummaryCard = ({
       : `${value.toFixed(2)} mi`;
   };
 
-  const getTotalDuration = (text) => {
-    if (!text) return { hours: 0, minutes: 0 };
-    const segments = text.split("+").map((t) => t.trim());
-    let totalMinutes = 0;
-
-    segments.forEach((seg) => {
-      const hrMatch = seg.match(/(\d+)\s*hour/i);
-      const minMatch = seg.match(/(\d+)\s*min/i);
-      if (hrMatch) totalMinutes += parseInt(hrMatch[1]) * 60;
-      if (minMatch) totalMinutes += parseInt(minMatch[1]);
-    });
-
-    return {
-      hours: Math.floor(totalMinutes / 60),
-      minutes: totalMinutes % 60
-    };
-  };
-
-  const { hours, minutes } = getTotalDuration(durationText);
+  const totalMinutes = parseDurationToMinutes(durationText);
+  const { hours, minutes } = formatMinutesToHM(totalMinutes);
 
   const primaryDistanceMiles = convertToMiles(distanceText);
 
@@ -78,7 +62,7 @@ const JourneySummaryCard = ({
               <div className="flex items-center justify-center w-7 h-7 bg-(--light-green) rounded-full shrink-0">
                 <Icons.MapPin className="size-3.5 text-(--success-color)" />
               </div>
-              <p className="widget-value-text-xs text-(--white)">
+              <p className="widget-value-text-sm text-(--white)">
                 {formData?.pickup || "Pickup Location"}
               </p>
             </div>
@@ -93,7 +77,7 @@ const JourneySummaryCard = ({
                 <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
                   <Icons.MapPin className="size-3.5 text-(--primary-dark-red)" />
                 </div>
-                <p className="widget-value-text-xs text-(--white)">
+                <p className="widget-value-text-sm text-(--white)">
                   {dropList.filter(Boolean)[0]}
                 </p>
               </div>
@@ -110,7 +94,7 @@ const JourneySummaryCard = ({
                   <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
                     <Icons.MapPin className="size-3.5 text-(--primary-dark-red)" />
                   </div>
-                  <p className="text-sm text-(--white)">
+                  <p className="widget-value-text-sm text-(--white)">
                     {dropoff}
                   </p>
                 </div>

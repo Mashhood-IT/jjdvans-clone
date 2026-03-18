@@ -146,7 +146,10 @@ const WidgetBookingDetails = ({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        if (!formData.date || !formData.hour || !formData.minute) {
+            toast.error("Please select a date and time.");
+            return;
+        }
         if (!formData.pickup || !dropOffs[0]?.trim()) {
             toast.error("Pickup and at least one Drop Off is required.");
             return;

@@ -3,7 +3,7 @@ import IMAGES from "../../../assets/images";
 
 import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
 
-const BASE_API_URL = "http://localhost:5000/api";
+const BASE_API_URL = "http://localhost:5002/api";
 const PDFContent = forwardRef(
   ({ viewData = {}, companyData = {}, companyLogo = null }, ref) => {
     const isAirport = (s = "") => s.toLowerCase().includes("airport");

@@ -364,7 +364,7 @@ const WidgetPaymentInformation = ({
       </div>
 
       <div className="grid grid-cols-12 gap-8">
-        <div className="lg:col-span-6 space-y-6">
+        <div className="md:col-span-6 col-span-12 space-y-6">
           <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
@@ -429,7 +429,7 @@ const WidgetPaymentInformation = ({
             </div>
           </div>
         </div>
-        <div className="lg:col-span-6">
+        <div className="md:col-span-6 col-span-12">
           <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
@@ -524,10 +524,10 @@ const WidgetPaymentInformation = ({
       <div className="bg-(--lightest-gray) lg:col-span-6 rounded-lg shadow-sm p-6 mt-12">
         <h3 className="widget-title text-(--dark-gray) mb-6">Price Estimate</h3>
 
-        <div className="mb-3">
+        <div className="mb-3 px-6">
           <div className="flex justify-between items-center">
-            <span className="widget-label-small text-(--dark-grey)">Total Fare</span>
-            <span className="widget-price-sm text-(--dark-black)">
+            <span className="text-sm font-medium text-(--dark-grey)">Total Fare</span>
+            <span className="widget-value-text-sm text-(--dark-black)">
               {pricingInfo.currencySymbol}
               {Math.round(Number(pricingInfo.total)).toFixed(2)}
             </span>
@@ -536,7 +536,7 @@ const WidgetPaymentInformation = ({
 
         <div className="bg-white p-6 rounded-xl border border-gray-100 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-sm font-medium text-gray-600">
+            <span className="text-sm font-medium text-(--dark-grey)">
               Deposit at booking (35%)
             </span>
             <span className="widget-value-text-sm text-(--dark-black)">
@@ -553,7 +553,7 @@ const WidgetPaymentInformation = ({
               The remaining <strong>65% balance</strong> is settled directly with your driver &nbsp;
               <span className="font-semibold">
                 {pricingInfo?.currencySymbol}
-                {Math.round(pricingInfo?.driverAmount)}
+                {Math.round(Number(pricingInfo?.driverAmount)).toFixed(2)}
               </span>
             </li>
             <li>
@@ -565,7 +565,6 @@ const WidgetPaymentInformation = ({
         <div className="mt-8 space-y-4">
           {(() => {
             const options = [];
-            // Check for keys as there is no 'enabled' field in schema
             if (bookingSettingData?.setting?.stripeKeys?.publishableKey) {
               options.push({ label: "Stripe", value: "Stripe" });
             }

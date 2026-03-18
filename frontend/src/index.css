@@ -169,6 +169,15 @@ select:disabled {
   color: var(--white);
 }
 
+.btn-mate {
+  background-color: var(--mate-color);
+  color: var(--white);
+}
+
+.btn-mate:hover {
+  background-color: var(--mate-color);
+}
+
 .btn-back {
   background-color: var(--cream);
   color: var(--dark-black);
@@ -410,9 +419,6 @@ input[type="date"]::-webkit-datetime-edit-text {
   @apply text-sm text-(--dark-grey);
 }
 
-.widget-price-large {
-  @apply text-xl;
-}
 
 .widget-label-tiny {
   @apply text-[10px] font-bold uppercase tracking-widest text-gray-400;

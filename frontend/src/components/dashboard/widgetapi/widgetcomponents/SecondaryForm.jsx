@@ -314,7 +314,7 @@ const SecondaryForm = ({
                                         <button
                                             type="button"
                                             onClick={() => removeDropOff(idx)}
-                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 transition hover:bg-red-200 hover:text-red-700"
+                                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-100 text-red-600 transition hover:bg-red-200 hover:text-red-700"
                                         >
                                             <Icons.X size={16} strokeWidth={2.5} />
                                         </button>

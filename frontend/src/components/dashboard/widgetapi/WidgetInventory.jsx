@@ -4,6 +4,7 @@ import Icons from "../../../assets/icons";
 import { toast } from "react-toastify";
 import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
 import { useLoading } from "../../common/LoadingProvider";
+import { formatMinutesToHM } from "../../../utils/durationHelper";
 
 const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: passedGoogleMinutes, roundedGoogleMinutes: passedRoundedMinutes }) => {
   const containerRef = useRef(null);
@@ -179,8 +180,9 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
           const roundedVal = data.roundedGoogleMinutes || passedRoundedMinutes || 120;
           setInitialGoogleMinutes(roundedVal);
-          setEstimatedHours(Math.floor(roundedVal / 60));
-          setEstimatedMinutes(roundedVal % 60);
+          const hm = formatMinutesToHM(roundedVal);
+          setEstimatedHours(hm.hours);
+          setEstimatedMinutes(hm.minutes);
 
           const ad = [
             { id: 1, address: data.additionalDropoff1 },
@@ -221,19 +223,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     initialGoogleMinutes,
     selectedVehicle.halfHourPrice,
   ]);
-
-  const parseDurationToMinutes = (text) => {
-    if (!text) return 0;
-    let minutes = 0;
-
-    const hourMatch = text.match(/(\d+)\s*hour/i);
-    if (hourMatch) minutes += parseInt(hourMatch[1]) * 60;
-
-    const minMatch = text.match(/(\d+)\s*min/i);
-    if (minMatch) minutes += parseInt(minMatch[1]);
-
-    return minutes;
-  };
 
   const adjustDuration = (increment) => {
     let totalMinutes = estimatedHours * 60 + estimatedMinutes;
@@ -509,7 +498,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
       <div className="bg-gray-900 grid grid-cols-12 rounded-lg md:p-8 p-3 mb-6 relative">
 
-        <div className="md:col-span-6 col-span-12 border-r border-(--lighter-gray)">
+        <div className="md:col-span-6 col-span-12 lg:border-r lg:border-(--lighter-gray)">
           {(googleDurationText || googleDistanceText) && (
             <div className="flex items-center justify-center gap-4 mb-4">
               {googleDistanceText && (
@@ -610,7 +599,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
             {widgetPricing.extraHelp?.unitPrice > 0 && (
               <div className="flex justify-between items-center text-gray-400">
-                <span className="text-sm">Extra Men Charges ({Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30)} × {currencySymbol}{widgetPricing.extraHelp.unitPrice})</span>
+                <span className="text-sm">Extra Men Charges</span>
                 <span className="font-semibold text-(--white)">
                   {currencySymbol} {(Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30) * widgetPricing.extraHelp.unitPrice).toFixed(2)}
                 </span>

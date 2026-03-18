@@ -21,12 +21,17 @@ const FloorAccessibility = ({
   currencySymbol = "£",
 }) => {
   const getSubtotal = (floor, access) => {
-    let total = (floor || 0) * pricePerFloor;
-    if (floor > 0) {
-      if (access === "STAIRS") total += priceForStairs;
-      else if (access === "LIFT") total += priceForLift;
+    let floorPrice = 0;
+    if (access !== "LIFT") {
+      floorPrice = (floor || 0) * pricePerFloor;
     }
-    return total;
+
+    let accessPrice = 0;
+    if (floor > 0) {
+      if (access === "STAIRS") accessPrice = priceForStairs;
+      else if (access === "LIFT") accessPrice = priceForLift;
+    }
+    return floorPrice + accessPrice;
   };
   return (
     <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6 mb-6">
@@ -35,7 +40,7 @@ const FloorAccessibility = ({
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="border-r pr-6 border-(--light-gray)">
+        <div className="md:border-r md:pr-6 md:border-(--light-gray)">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Icons.MapPin className="w-4 h-4 text-(--medium-grey)" />
@@ -44,7 +49,7 @@ const FloorAccessibility = ({
               </span>
             </div>
             <span className="text-xs font-semibold px-2 py-0.5 bg-gray-900 text-(--white) rounded-full">
-              {currencySymbol}{getSubtotal(pickupFloor, pickupAccess).toFixed(2)}
+              {currencySymbol}{Math.round(getSubtotal(pickupFloor, pickupAccess)).toFixed(2)}
             </span>
           </div>
 
@@ -66,20 +71,20 @@ const FloorAccessibility = ({
                     setPickupFloor(next);
                     if (next === 0) setPickupAccess(null);
                   }}
-                  className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
+                  className="btn btn-mate"
                 >
-                  <Icons.Minus className="w-4 h-4 text-(--mate-color)" />
+                  <Icons.Minus className="w-4 h-4" />
                 </button>
                 <div className="flex-1 text-center">
-                  <span className="widget-price-large text-(--dark-grey)">
+                  <span className="text-(--dark-grey)">
                     {pickupFloor}
                   </span>
                 </div>
                 <button
                   onClick={() => setPickupFloor(pickupFloor + 1)}
-                  className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
+                  className="btn btn-mate"
                 >
-                  <Icons.Plus className="w-4 h-4 text-(--mate-color)" />
+                  <Icons.Plus className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -92,18 +97,18 @@ const FloorAccessibility = ({
                 <div className="flex md:mt-0 mt-3 gap-2">
                   <button
                     onClick={() => setPickupAccess("LIFT")}
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "LIFT"
-                      ? "bg-blue-500 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    className={`btn ${pickupAccess === "LIFT"
+                      ? "btn-mate"
+                      : "btn-back"
                       }`}
                   >
                     LIFT
                   </button>
                   <button
                     onClick={() => setPickupAccess("STAIRS")}
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${pickupAccess === "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    className={`btn ${pickupAccess === "STAIRS"
+                      ? "btn-mate"
+                      : "btn-back"
                       }`}
                   >
                     STAIRS
@@ -122,7 +127,7 @@ const FloorAccessibility = ({
               </span>
             </div>
             <span className="text-xs font-semibold px-2 py-0.5 bg-gray-900 text-(--white) rounded-full">
-              {currencySymbol}{getSubtotal(dropoffFloor, dropoffAccess).toFixed(2)}
+              {currencySymbol}{Math.round(getSubtotal(dropoffFloor, dropoffAccess)).toFixed(2)}
             </span>
           </div>
 
@@ -144,9 +149,9 @@ const FloorAccessibility = ({
                     setDropoffFloor(next);
                     if (next === 0) setDropoffAccess(null);
                   }}
-                  className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
+                  className="btn btn-mate"
                 >
-                  <Icons.Minus className="w-4 h-4 text-(--mate-color)" />
+                  <Icons.Minus className="w-4 h-4" />
                 </button>
                 <div className="flex-1 text-center">
                   <span className="text-xl text-(--dark-grey)">
@@ -155,9 +160,9 @@ const FloorAccessibility = ({
                 </div>
                 <button
                   onClick={() => setDropoffFloor(dropoffFloor + 1)}
-                  className="w-10 cursor-pointer h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
+                  className="btn btn-mate"
                 >
-                  <Icons.Plus className="w-4 h-4 text-(--mate-color)" />
+                  <Icons.Plus className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -170,18 +175,18 @@ const FloorAccessibility = ({
                 <div className="flex gap-2">
                   <button
                     onClick={() => setDropoffAccess("LIFT")}
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "LIFT"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    className={`btn ${dropoffAccess === "LIFT"
+                      ? "btn-mate"
+                      : "btn-back"
                       }`}
                   >
                     LIFT
                   </button>
                   <button
                     onClick={() => setDropoffAccess("STAIRS")}
-                    className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${dropoffAccess === "STAIRS"
-                      ? "bg-gray-900 text-(--white)"
-                      : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                    className={`btn ${dropoffAccess === "STAIRS"
+                      ? "btn-mate"
+                      : "btn-back"
                       }`}
                   >
                     STAIRS
@@ -207,10 +212,10 @@ const FloorAccessibility = ({
                 </span>
               </div>
               <span className="text-xs font-semibold px-2 py-0.5 bg-gray-900 text-(--white) rounded-full">
-                {currencySymbol}{getSubtotal(
+                {currencySymbol}{Math.round(getSubtotal(
                   floorAccess[`additionalDropoff${ad.id}Floor`],
                   floorAccess[`additionalDropoff${ad.id}Access`]
-                ).toFixed(2)}
+                )).toFixed(2)}
               </span>
             </div>
 
@@ -235,9 +240,9 @@ const FloorAccessibility = ({
                         };
                       })
                     }
-                    className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
+                    className="btn btn-mate"
                   >
-                    <Icons.Minus className="w-4 h-4 text-(--mate-color)" />
+                    <Icons.Minus className="w-4 h-4" />
                   </button>
                   <div className="flex-1 text-center">
                     <span className="widget-price-large text-(--dark-grey)">
@@ -252,9 +257,9 @@ const FloorAccessibility = ({
                           (prev[`additionalDropoff${ad.id}Floor`] || 0) + 1,
                       }))
                     }
-                    className="w-10 h-10 cursor-pointer flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors"
+                    className="btn btn-mate"
                   >
-                    <Icons.Plus className="w-4 h-4 text-(--mate-color)" />
+                    <Icons.Plus className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -272,9 +277,9 @@ const FloorAccessibility = ({
                           [`additionalDropoff${ad.id}Access`]: "LIFT",
                         }))
                       }
-                      className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] === "LIFT"
-                        ? "bg-gray-900 text-(--white)"
-                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                      className={`btn ${floorAccess[`additionalDropoff${ad.id}Access`] === "LIFT"
+                        ? "btn-mate"
+                        : "btn-back"
                         }`}
                     >
                       LIFT
@@ -286,10 +291,10 @@ const FloorAccessibility = ({
                           [`additionalDropoff${ad.id}Access`]: "STAIRS",
                         }))
                       }
-                      className={`flex-1 cursor-pointer px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${floorAccess[`additionalDropoff${ad.id}Access`] ===
+                      className={`btn ${floorAccess[`additionalDropoff${ad.id}Access`] ===
                         "STAIRS"
-                        ? "bg-gray-900 text-(--white)"
-                        : "bg-gray-100 text-(--medium-grey) hover:bg-gray-200"
+                        ? "btn-mate"
+                        : "btn-back"
                         }`}
                     >
                       STAIRS

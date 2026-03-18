@@ -46,6 +46,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
       distanceText: b.distanceText || "",
       durationText: b.durationText || "",
       passengerCount: b.passengerCount || "",
+      roundedGoogleMinutes: b.estimatedDuration || 120,
     };
     localStorage.setItem("bookingForm", JSON.stringify(bookingForm));
 
@@ -98,7 +99,15 @@ const NewBooking = ({ onClose, editBookingData }) => {
 
     const pricingData = {
       baseFare: b.fare || 0,
-      extraHelp: { price: b.workersCharges || 0 },
+      extraHelp: b.vehicle?.extraHelp ? {
+        label: b.vehicle.extraHelp.label || "Self Load",
+        price: b.workersCharges || 0,
+        unitPrice: b.vehicle.extraHelp.unitPrice || b.vehicle.extraHelp.price || 0
+      } : {
+        label: "Self Load",
+        price: b.workersCharges || 0,
+        unitPrice: 0
+      },
     };
     localStorage.setItem("widgetPricing", JSON.stringify(pricingData));
 

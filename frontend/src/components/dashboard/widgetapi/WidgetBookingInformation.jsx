@@ -440,16 +440,17 @@ const WidgetBookingInformation = ({
     extraHelpPrice
   ]);
 
-  const handleSubmitBooking = (carId) => {
+  const handleSubmitBooking = (carId, explicitExtraHelp = null) => {
     const effectiveCarId = carId || selectedCarId;
     const effectiveCar = carList.find(car => car._id === effectiveCarId);
+    const effectiveHelpOption = explicitExtraHelp || selectedHelpOption;
 
     if (!effectiveCarId || !effectiveCar || !formData) {
       toast.error("Please select a vehicle to continue.");
       return;
     }
 
-    if (effectiveCarId !== selectedCarId) {
+    if (effectiveCarId !== selectedCarId || explicitExtraHelp) {
       setSelectedCarId(effectiveCarId);
       localStorage.setItem("selectedVehicle", JSON.stringify({
         id: effectiveCarId,
@@ -458,7 +459,7 @@ const WidgetBookingInformation = ({
         passengerSeats: effectiveCar.passengerSeats || 0,
         maxSeats: effectiveCar.passengerSeats || 0,
         halfHourPrice: effectiveCar.halfHourPrice,
-        extraHelp: selectedHelpOption
+        extraHelp: effectiveHelpOption
       }));
     }
 
@@ -501,7 +502,7 @@ const WidgetBookingInformation = ({
         (dropOffPrice || 0) +
         fullDurationCharge +
         primaryAirportFee +
-        (extraHelpPrice || 0)
+        (effectiveHelpOption?.totalPrice || (Number(effectiveHelpOption?.price || 0) * durationUnits) || 0)
       ).toFixed(2)
     );
 
@@ -514,11 +515,11 @@ const WidgetBookingInformation = ({
         maxSeats: effectiveCar.passengerSeats || 0,
         baseFare: primaryJourneyFare,
         totalFare: grandTotal,
-        extraHelp: selectedHelpOption
+        extraHelp: effectiveHelpOption
           ? {
-            label: selectedHelpOption.label,
-            price: selectedHelpOption.price,
-            unitPrice: selectedHelpOption.unitPrice,
+            label: effectiveHelpOption.label,
+            price: Number(effectiveHelpOption.totalPrice || effectiveHelpOption.price || 0),
+            unitPrice: Number(effectiveHelpOption.unitPrice || effectiveHelpOption.price || 0),
           }
           : null,
       },
@@ -587,8 +588,8 @@ const WidgetBookingInformation = ({
       segmentBreakdown,
       extraHelp: selectedHelpOption ? {
         label: selectedHelpOption.label,
-        price: selectedHelpOption.price,
-        unitPrice: selectedHelpOption.unitPrice
+        price: Number(extraHelpPrice || 0), // Explicitly store total price here
+        unitPrice: Number(selectedHelpOption.unitPrice || 0)
       } : null
     };
     localStorage.setItem("widgetPricing", JSON.stringify(pricing));
@@ -613,7 +614,7 @@ const WidgetBookingInformation = ({
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-8">
-        <div className="2xl:col-span-8 col-span-12 2xl:col-start-3 col-start-1 w-full relative">
+        <div className="2xl:col-span-12 col-span-12 col-start-1 w-full relative">
           <div className="mb-6">
             <button
               onClick={onBack}
@@ -671,6 +672,7 @@ const WidgetBookingInformation = ({
                 selectedCarId={selectedCarId}
                 formData={formData}
                 savedExtraHelpPrice={extraHelpPrice}
+                savedExtraHelpLabel={selectedHelpOption?.label}
                 googleMinutes={googleMinutes}
                 roundedGoogleMinutes={roundedGoogleMinutes}
                 onSelect={(id) => {

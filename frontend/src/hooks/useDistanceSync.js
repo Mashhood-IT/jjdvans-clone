@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useLazyGetDistanceQuery } from '../redux/api/googleApi';
+import { formatMinutesToHM } from '../utils/durationHelper';
 
 const useDistanceSync = (companyId) => {
   const [triggerDistance] = useLazyGetDistanceQuery();
@@ -60,8 +61,7 @@ const useDistanceSync = (companyId) => {
       const rawMins = totalSeconds / 60;
       const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
 
-      const hours = Math.floor(roundedMins / 60);
-      const mins = roundedMins % 60;
+      const { hours, minutes: mins } = formatMinutesToHM(roundedMins);
 
       const newInfo = {
         distanceText: `${totalMiles.toFixed(2)} mi`,

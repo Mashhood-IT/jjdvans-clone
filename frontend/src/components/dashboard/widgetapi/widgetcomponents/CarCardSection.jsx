@@ -9,6 +9,7 @@ const CarCardSection = ({
   onHelpSelect,
   currencySymbol = "$",
   savedExtraHelpPrice = null,
+  savedExtraHelpLabel = null,
   roundedGoogleMinutes = 0,
 }) => {
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -19,11 +20,12 @@ const CarCardSection = ({
     const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
 
     carList.forEach((car) => {
+      const isSelected = car._id === selectedCarId;
+
+      // If we have saved data and it's the selected car, try to match
       if (
-        car._id === selectedCarId &&
-        savedExtraHelpPrice !== null &&
-        savedExtraHelpPrice !== undefined &&
-        !defaults[car._id]
+        isSelected &&
+        (savedExtraHelpPrice !== null || savedExtraHelpLabel)
       ) {
         const carHelpOptions = car.extraHelp?.length
           ? car.extraHelp.map((h, i) => ({ id: `help-${car._id}-${i}`, label: h.label, price: h.price }))
@@ -34,15 +36,31 @@ const CarCardSection = ({
             { id: `help-${car._id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
-        const match = carHelpOptions.find(opt => Math.round(opt.price * durationUnits) === Math.round(savedExtraHelpPrice));
+        // Try matching by label first if available
+        let match = null;
+        if (savedExtraHelpLabel) {
+          match = carHelpOptions.find(opt =>
+            opt.label?.toLowerCase() === savedExtraHelpLabel.toLowerCase()
+          );
+        }
+
+        // Fallback to price matching
+        if (!match && savedExtraHelpPrice !== null) {
+          match = carHelpOptions.find(opt =>
+            Math.round(opt.price * durationUnits) === Math.round(savedExtraHelpPrice)
+          );
+        }
 
         if (match) {
-          defaults[car._id] = match;
-          changed = true;
-          return;
+          // Only update if it's different to avoid infinite loops
+          if (!defaults[car._id] || defaults[car._id].label !== match.label) {
+            defaults[car._id] = match;
+            changed = true;
+          }
         }
       }
 
+      // Default fallback for any car not yet in defaults
       if (!defaults[car._id]) {
         const firstOption = car.extraHelp?.[0]
           ? { ...car.extraHelp[0], id: `help-${car._id}-0` }
@@ -64,7 +82,7 @@ const CarCardSection = ({
         onHelpSelect?.({ ...opt, totalPrice: opt.price * durationUnits, unitPrice: opt.price });
       }
     }
-  }, [carList, selectedCarId, savedExtraHelpPrice, roundedGoogleMinutes]);
+  }, [carList, selectedCarId, savedExtraHelpPrice, savedExtraHelpLabel, roundedGoogleMinutes]);
 
   const handleHelpChange = (carId, option) => {
     const newOptions = {
@@ -112,33 +130,13 @@ const CarCardSection = ({
             { id: `help-${_id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
-        let activeOption = selectedOptions[_id];
+        if (!_id) return null; // Defensive check
+        const activeOption = selectedOptions[_id] || helpOptions[0] || {
+          id: `help-${_id}-self`,
+          label: "Self Load",
+          price: 0,
+        };
         const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
-
-        if (
-          _id === selectedCarId &&
-          savedExtraHelpPrice !== null &&
-          savedExtraHelpPrice !== undefined
-        ) {
-          const matchByPrice = helpOptions.find(
-            (opt) => {
-              const totalPriceForOpt = Number(opt.price) * durationUnits;
-              return Math.abs(totalPriceForOpt - Number(savedExtraHelpPrice)) < 0.01;
-            }
-          );
-          if (matchByPrice) {
-            activeOption = matchByPrice;
-          }
-        }
-
-        if (!activeOption) {
-          activeOption =
-            helpOptions[0] || {
-              id: `help-${_id}-self`,
-              label: "Self Load",
-              price: 0,
-            };
-        }
 
         const fullDurationCharge = durationUnits * (car.halfHourPrice || 0);
         const totalExtraHelpPrice = durationUnits * (activeOption?.price || 0);
@@ -178,12 +176,12 @@ const CarCardSection = ({
             <div className="p-4 flex flex-col grow">
               <div className="flex justify-between items-start mb-2 min-h-12.5">
                 <div>
-                  <h3 className="widget-title text-gray-900">
+                  <h3 className="widget-title text-(--dark-grey)">
                     {vehicleName}
                   </h3>
                 </div>
                 <div className="text-right">
-                  <div className="widget-price-large text-(--main-color)">
+                  <div className="text-(--main-color)">
                     {currencySymbol} {Math.round(Number(currentTotalPrice)).toFixed(2)}
                   </div>
                   <p className="text-(--medium-grey) text-xs mt-0.5">Min. 2 hours</p>
@@ -227,7 +225,7 @@ const CarCardSection = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     handleCarSelect(_id);
-                    onBook(_id);
+                    onBook(_id, activeOption);
                   }}
                   className={`btn ${isSelected
                     ? "btn-success"

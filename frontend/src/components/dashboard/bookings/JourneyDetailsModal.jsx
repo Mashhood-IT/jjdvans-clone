@@ -363,15 +363,15 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
                       Name:
                     </strong>
-                    <span className="text-(--dark-grey) text-xs wrap-break-word">
+                    <span className="text-(--dark-grey)">
                       {viewData?.passenger?.name || "N/A"}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <strong className="text-(--dark-gray) text-xs">
+                    <strong className="text-(--dark-gray)">
                       Email:
                     </strong>
-                    <span className="text-(--dark-grey) text-xs break-all">
+                    <span className="text-(--dark-grey) break-all">
                       {viewData?.passenger?.email || "N/A"}
                     </span>
                   </div>
@@ -386,8 +386,8 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                 </div>
               </div>
 
-              <div className="text-sm">
-                <strong className="text-(--dark-grey) font-semibold block mb-2">
+              <div>
+                <strong className="text-(--dark-grey) mt-3 font-semibold block mb-2">
                   Vehicle Details:
                 </strong>
                 <div className="ml-0 sm:ml-1 mt-2 bg-(--lightest-gray)  p-3 sm:p-4 rounded-md border border-(--lightest-gray)">

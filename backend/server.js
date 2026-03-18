@@ -71,7 +71,7 @@ app.use("/api/payment", paymentRoutes);
 
 app.use(errorHandler);
 
-const PORT = 5000;
+const PORT = 5002;
 
 app.listen(PORT, async () => {
   console.log("SERVER STARTED SUCCESSFULLY");
