@@ -344,7 +344,7 @@ const WidgetPaymentInformation = ({
   };
 
   return (
-    <div className="px-4 md:px-8 relative">
+    <div className="px-4 md:px-8 pt-8 relative">
       <div className="mb-6">
         <button
           onClick={onBack}
@@ -358,7 +358,7 @@ const WidgetPaymentInformation = ({
           Complete Your Booking
         </h1>
         <p className="widget-description leading-relaxed text-gray-600">
-          Verify your relocation details and passenger requirements to finalize your professional service estimate.        </p>
+          Verify your relocation details and passenger requirements to finalize your professional service estimate.</p>
       </div>
 
       <div className="grid grid-cols-12 gap-8">

@@ -34,7 +34,7 @@ const FloorAccessibility = ({
     return floorPrice + accessPrice;
   };
   return (
-    <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6 mb-6">
+    <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6  mb-6">
       <h1 className="text-xl font-bold mb-6 text-(--dark-gray)">
         Floor & Accessibility
       </h1>
@@ -60,7 +60,7 @@ const FloorAccessibility = ({
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className={`mb-4 md:mb-0 ${pickupFloor > 0 && 'pr-5 border-r border-(--light-gray)'}`}>
+            <div className={`mb-4 md:mb-0 ${pickupFloor > 0 && 'md:pr-5 md:border-r md:border-(--light-gray)'}`}>
               <label className="block widget-label-text text-(--medium-grey) mb-2">
                 Floor Level
               </label>
@@ -138,7 +138,7 @@ const FloorAccessibility = ({
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className={`mb-4 md:mb-0 ${dropoffFloor > 0 && 'pr-5 border-r border-(--light-gray)'}`}>
+            <div className={`mb-4 md:mb-0 ${dropoffFloor > 0 && 'md:pr-5 md:border-r md:border-(--light-gray)'}`}>
               <label className="block widget-label-text text-(--medium-grey) mb-2">
                 Floor Level
               </label>
@@ -224,7 +224,7 @@ const FloorAccessibility = ({
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={` ${(floorAccess[`additionalDropoff${ad.id}Floor`] || 0) && 'pr-5 border-r border-(--light-gray)'}`}>
+              <div className={` ${(floorAccess[`additionalDropoff${ad.id}Floor`] || 0) && 'md:pr-5 md:border-r md:border-(--light-gray)'}`}>
                 <label className="block widget-label-text text-(--medium-grey) mb-2">
                   Floor Level
                 </label>

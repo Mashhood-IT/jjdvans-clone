@@ -297,7 +297,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
   };
 
   return (
-    <div ref={containerRef} className="px-4 md:px-8 pb-8 relative">
+    <div ref={containerRef} className="px-4 md:px-8 pb-8 mt-8 relative">
       <div className="mb-6">
         <button
           onClick={onBack}
@@ -442,7 +442,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
               }`}
           >
             <span
-              className={`absolute top-1 left-1 w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${ridingAlong ? "translate-x-4 md:translate-x-6" : "translate-x-0"
+              className={`absolute top-1 left-1  w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${ridingAlong ? "translate-x-5.5 md:translate-x-6" : "translate-x-0"
                 }`}
             />
           </button>
