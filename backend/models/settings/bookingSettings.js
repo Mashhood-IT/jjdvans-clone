@@ -77,11 +77,6 @@ const BookingSettingSchema = new mongoose.Schema({
         default: "New Bookings Only"
     },
 
-    googleApiKey: {
-        type: String,
-        default: ""
-    },
-
     stripeKeys: {
         type: StripeKeysSchema,
         default: () => ({})

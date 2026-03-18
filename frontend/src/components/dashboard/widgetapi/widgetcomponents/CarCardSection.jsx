@@ -22,7 +22,6 @@ const CarCardSection = ({
     carList.forEach((car) => {
       const isSelected = car._id === selectedCarId;
 
-      // If we have saved data and it's the selected car, try to match
       if (
         isSelected &&
         (savedExtraHelpPrice !== null || savedExtraHelpLabel)
@@ -36,7 +35,6 @@ const CarCardSection = ({
             { id: `help-${car._id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
-        // Try matching by label first if available
         let match = null;
         if (savedExtraHelpLabel) {
           match = carHelpOptions.find(opt =>
@@ -44,7 +42,6 @@ const CarCardSection = ({
           );
         }
 
-        // Fallback to price matching
         if (!match && savedExtraHelpPrice !== null) {
           match = carHelpOptions.find(opt =>
             Math.round(opt.price * durationUnits) === Math.round(savedExtraHelpPrice)
@@ -52,7 +49,6 @@ const CarCardSection = ({
         }
 
         if (match) {
-          // Only update if it's different to avoid infinite loops
           if (!defaults[car._id] || defaults[car._id].label !== match.label) {
             defaults[car._id] = match;
             changed = true;
@@ -60,7 +56,6 @@ const CarCardSection = ({
         }
       }
 
-      // Default fallback for any car not yet in defaults
       if (!defaults[car._id]) {
         const firstOption = car.extraHelp?.[0]
           ? { ...car.extraHelp[0], id: `help-${car._id}-0` }
@@ -90,12 +85,13 @@ const CarCardSection = ({
       [carId]: option,
     };
     setSelectedOptions(newOptions);
-
-    if (carId === selectedCarId) {
-      const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
-      const totalPrice = option.price * durationUnits;
-      onHelpSelect?.({ ...option, totalPrice, unitPrice: option.price });
+    if (carId !== selectedCarId) {
+      onSelect(carId);
     }
+
+    const durationUnits = Math.ceil(roundedGoogleMinutes / 30);
+    const totalPrice = option.price * durationUnits;
+    onHelpSelect?.({ ...option, totalPrice, unitPrice: option.price });
   };
 
   const handleCarSelect = (carId) => {
@@ -130,7 +126,7 @@ const CarCardSection = ({
             { id: `help-${_id}-3men`, label: "3 Men Team", price: 100 },
           ];
 
-        if (!_id) return null; // Defensive check
+        if (!_id) return null;
         const activeOption = selectedOptions[_id] || helpOptions[0] || {
           id: `help-${_id}-self`,
           label: "Self Load",

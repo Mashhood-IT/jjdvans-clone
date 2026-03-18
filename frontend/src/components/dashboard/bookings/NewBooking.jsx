@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetBookingByIdQuery } from "../../../redux/api/bookingApi";
 import { useGetAllVehiclesQuery } from "../../../redux/api/vehicleApi";
@@ -40,8 +40,8 @@ const NewBooking = ({ onClose, editBookingData }) => {
       bookingType: b.bookingType || "",
       notes: b.notes || "",
       date: b.date || "",
-      hour: b.hour ?? "",
-      minute: b.minute ?? "",
+      hour: b.hour !== undefined && b.hour !== null ? b.hour.toString() : "",
+      minute: b.minute !== undefined && b.minute !== null ? b.minute.toString().padStart(2, "0") : "",
       companyId: b.companyId || companyId,
       distanceText: b.distanceText || "",
       durationText: b.durationText || "",

@@ -24,7 +24,6 @@ const BookingSettings = () => {
   const [currency, setCurrencyState] = useState("GBP");
   const [currencyApplication, setCurrencyApplication] =
     useState("New Bookings Only");
-  const [googleApiKey, setGoogleApiKey] = useState("");
   const [stripeKeys, setStripeKeys] = useState({
     publishableKey: "",
     secretKey: "",
@@ -33,6 +32,13 @@ const BookingSettings = () => {
     clientId: "",
     clientSecret: "",
   });
+
+  const [focusedField, setFocusedField] = useState(null);
+
+  const maskKey = (key) => {
+    if (!key) return "";
+    return "....... " + (key.length > 4 ? key.slice(-4) : "");
+  };
   const [advanceBookingMin, setAdvanceBookingMin] = useState({
     value: 12,
     unit: "Hours",
@@ -62,8 +68,6 @@ const BookingSettings = () => {
     if (setting.currencyApplication) {
       setCurrencyApplication(setting.currencyApplication);
     }
-
-    setGoogleApiKey(setting.googleApiKey || "");
 
     setStripeKeys({
       publishableKey: setting.stripeKeys?.publishableKey || "",
@@ -99,7 +103,6 @@ const BookingSettings = () => {
         ],
         currencyApplication: currencyApplication || "New Bookings Only",
 
-        googleApiKey,
         stripeKeys,
         paypalKeys,
 
@@ -141,23 +144,17 @@ const BookingSettings = () => {
           />
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1">
-              Google Maps API key
-            </label>
-            <input
-              type="text"
-              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-              value={googleApiKey}
-              onChange={(e) => setGoogleApiKey(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1">
               Stripe Publishable Key
             </label>
             <input
               type="text"
-              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-              value={stripeKeys.publishableKey}
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm select-none"
+              value={focusedField === "stripePublishable" ? stripeKeys.publishableKey : maskKey(stripeKeys.publishableKey)}
+              onFocus={() => setFocusedField("stripePublishable")}
+              onBlur={() => setFocusedField(null)}
+              onCopy={(e) => e.preventDefault()}
+              onPaste={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
               onChange={(e) =>
                 setStripeKeys((p) => ({ ...p, publishableKey: e.target.value }))
               }
@@ -169,9 +166,14 @@ const BookingSettings = () => {
               Stripe Secret Key
             </label>
             <input
-              type="password"
-              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-              value={stripeKeys.secretKey}
+              type="text"
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm select-none"
+              value={focusedField === "stripeSecret" ? stripeKeys.secretKey : maskKey(stripeKeys.secretKey)}
+              onFocus={() => setFocusedField("stripeSecret")}
+              onBlur={() => setFocusedField(null)}
+              onCopy={(e) => e.preventDefault()}
+              onPaste={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
               onChange={(e) =>
                 setStripeKeys((p) => ({ ...p, secretKey: e.target.value }))
               }
@@ -184,8 +186,13 @@ const BookingSettings = () => {
             </label>
             <input
               type="text"
-              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-              value={paypalKeys.clientId}
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm select-none"
+              value={focusedField === "paypalClientId" ? paypalKeys.clientId : maskKey(paypalKeys.clientId)}
+              onFocus={() => setFocusedField("paypalClientId")}
+              onBlur={() => setFocusedField(null)}
+              onCopy={(e) => e.preventDefault()}
+              onPaste={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
               onChange={(e) =>
                 setPaypalKeys((p) => ({ ...p, clientId: e.target.value }))
               }
@@ -197,9 +204,14 @@ const BookingSettings = () => {
               PayPal Client Secret
             </label>
             <input
-              type="password"
-              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm"
-              value={paypalKeys.clientSecret}
+              type="text"
+              className="w-full border border-(--light-gray) rounded px-2 sm:px-3 py-1 text-xs sm:text-sm select-none"
+              value={focusedField === "paypalSecret" ? paypalKeys.clientSecret : maskKey(paypalKeys.clientSecret)}
+              onFocus={() => setFocusedField("paypalSecret")}
+              onBlur={() => setFocusedField(null)}
+              onCopy={(e) => e.preventDefault()}
+              onPaste={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
               onChange={(e) =>
                 setPaypalKeys((p) => ({ ...p, clientSecret: e.target.value }))
               }

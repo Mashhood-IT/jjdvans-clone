@@ -276,14 +276,12 @@ const WidgetPaymentInformation = ({
       if (bookingSettingData.setting.stripeKeys?.publishableKey) allowedMethods.push("Stripe");
       if (bookingSettingData.setting.paypalKeys?.clientId) allowedMethods.push("Paypal");
 
-      // If we're in edit mode, allow a manual/direct update without payment
       if (isEdit) {
-        allowedMethods.unshift("Manual Update");
+        allowedMethods.push("Maintain Existing");
       }
 
       if (allowedMethods.length > 0 && (!formData.paymentMethod || !allowedMethods.includes(formData.paymentMethod))) {
-        // Only auto-select if no valid method is selected
-        setFormData(prev => ({ ...prev, paymentMethod: allowedMethods[0] }));
+        setFormData(prev => ({ ...prev, paymentMethod: isEdit ? "Maintain Existing" : allowedMethods[0] }));
       }
     }
   }, [bookingSettingData, formData.paymentMethod, isEdit]);
@@ -300,7 +298,7 @@ const WidgetPaymentInformation = ({
       passenger: passengerDetails,
       fare: finalFare,
       childSeats: Number(formData.childSeat) || 0,
-      paymentMethod: paymentData.paymentMethod,
+      paymentMethod: paymentData.paymentMethod === "Maintain Existing" ? (booking.paymentMethod || "Stripe") : paymentData.paymentMethod,
       selectedVehicle: {
         ...localVehicle,
         ...vehicle,
@@ -571,6 +569,9 @@ const WidgetPaymentInformation = ({
             if (bookingSettingData?.setting?.paypalKeys?.clientId) {
               options.push({ label: "Paypal", value: "Paypal" });
             }
+            if (isEdit) {
+              options.push({ label: "Maintain Existing Payment", value: "Maintain Existing" });
+            }
 
 
             return (
@@ -631,7 +632,7 @@ const WidgetPaymentInformation = ({
             </div>
           )}
           <div className="mt-8 flex justify-center items-center gap-4">
-            {formData.paymentMethod !== "Stripe" && (
+            {(isEdit || formData.paymentMethod !== "Stripe") && (
               <button
                 onClick={handleBookNow}
                 className="btn btn-blue px-8"

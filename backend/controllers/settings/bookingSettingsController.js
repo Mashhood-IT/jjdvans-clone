@@ -21,7 +21,6 @@ export const getBookingSetting = async (req, res) => {
                     symbol: "£"
                 }],
                 currencyApplication: "New Bookings Only",
-                googleApiKey: "",
                 advanceBookingMin: {
                     value: 12,
                     unit: "Hours"
@@ -32,7 +31,10 @@ export const getBookingSetting = async (req, res) => {
             });
         }
 
-        res.status(200).json({ setting });
+        const settingToSend = setting.toObject();
+        settingToSend.googleApiKey = process.env.GOOGLE_API_KEY || "";
+
+        res.status(200).json({ setting: settingToSend });
     } catch (error) {
         console.error("Error fetching booking settings:", error);
         res.status(500).json({ message: "Server error", error: error.message });
@@ -50,7 +52,6 @@ export const updateBookingSetting = async (req, res) => {
         const {
             currency,
             currencyApplication,
-            googleApiKey,
             stripeKeys,
             paypalKeys,
             advanceBookingMin,
@@ -81,7 +82,6 @@ export const updateBookingSetting = async (req, res) => {
             {
                 currency,
                 currencyApplication,
-                googleApiKey,
                 stripeKeys,
                 paypalKeys,
                 advanceBookingMin,
@@ -167,7 +167,7 @@ export const getPublicBookingSetting = async (req, res) => {
             currency: setting.currency,
             currencyApplication: setting.currencyApplication,
             advanceBookingMin: setting.advanceBookingMin,
-            googleApiKey: setting.googleApiKey,
+            googleApiKey: process.env.GOOGLE_API_KEY || "",
             stripeKeys: setting.stripeKeys ? {
                 publishableKey: setting.stripeKeys.publishableKey,
                 enabled: !!(setting.stripeKeys.publishableKey && setting.stripeKeys.secretKey)

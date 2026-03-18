@@ -2,18 +2,8 @@ import fetch from "node-fetch";
 import BookingSetting from "../models/settings/bookingSettings.js";
 
 const getGoogleKeys = async (companyId) => {
-  let apiKey = "";
-
-  if (companyId) {
-    try {
-      const settings = await BookingSetting.findOne({ companyId });
-      if (settings && settings.googleApiKey) {
-        apiKey = settings.googleApiKey;
-      }
-    } catch (err) {
-      console.error("Error fetching Google key from DB:", err);
-    }
-  }
+  // Use the key from environment variables
+  const apiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_MAPS_API_KEY || "";
 
   return { server: apiKey, browser: apiKey };
 };

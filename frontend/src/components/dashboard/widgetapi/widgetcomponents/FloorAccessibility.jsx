@@ -60,7 +60,7 @@ const FloorAccessibility = ({
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="mb-4 md:mb-0">
+            <div className={`mb-4 md:mb-0 ${pickupFloor > 0 && 'pr-5 border-r border-(--light-gray)'}`}>
               <label className="block widget-label-text text-(--medium-grey) mb-2">
                 Floor Level
               </label>
@@ -94,7 +94,7 @@ const FloorAccessibility = ({
                 <label className="block widget-label-text text-(--medium-grey) mb-2">
                   Access Type
                 </label>
-                <div className="flex md:mt-0 mt-3 gap-2">
+                <div className="flex items-center justify-between md:mt-0 mt-3 gap-2">
                   <button
                     onClick={() => setPickupAccess("LIFT")}
                     className={`btn ${pickupAccess === "LIFT"
@@ -138,7 +138,7 @@ const FloorAccessibility = ({
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="mb-4 md:mb-0">
+            <div className={`mb-4 md:mb-0 ${dropoffFloor > 0 && 'pr-5 border-r border-(--light-gray)'}`}>
               <label className="block widget-label-text text-(--medium-grey) mb-2">
                 Floor Level
               </label>
@@ -172,7 +172,7 @@ const FloorAccessibility = ({
                 <label className="block widget-label-text text-(--medium-grey) mb-2">
                   Access Type
                 </label>
-                <div className="flex gap-2">
+                <div className="flex items-center justify-between gap-2">
                   <button
                     onClick={() => setDropoffAccess("LIFT")}
                     className={`btn ${dropoffAccess === "LIFT"
@@ -224,7 +224,7 @@ const FloorAccessibility = ({
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className={` ${(floorAccess[`additionalDropoff${ad.id}Floor`] || 0) && 'pr-5 border-r border-(--light-gray)'}`}>
                 <label className="block widget-label-text text-(--medium-grey) mb-2">
                   Floor Level
                 </label>
@@ -269,7 +269,7 @@ const FloorAccessibility = ({
                   <label className="block widget-label-text text-(--medium-grey) mb-2">
                     Access Type
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() =>
                         setFloorAccess((prev) => ({

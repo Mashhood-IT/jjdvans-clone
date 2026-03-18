@@ -146,7 +146,7 @@ const WidgetBookingDetails = ({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.date || !formData.hour || !formData.minute) {
+        if (formData.date === "" || formData.hour === "" || formData.minute === "") {
             toast.error("Please select a date and time.");
             return;
         }
