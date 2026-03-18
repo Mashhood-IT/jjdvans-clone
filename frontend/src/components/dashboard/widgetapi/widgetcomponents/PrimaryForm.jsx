@@ -145,12 +145,15 @@ const PrimaryForm = ({
             [idx]: { lat: Number(g.location.lat), lng: Number(g.location.lng) },
           }));
         }
-      } catch { }
+      } catch (err) {
+        toast.error("Error fetching dropoff suggestions", err);
+
+      }
     }
   };
 
   return (
-    <div className="grid grid-cols-12 px-4 lg:px-6">
+    <div className="grid grid-cols-12 px-4 pt-12 lg:px-6">
       <form
         onSubmit={handleSubmit}
         className="col-span-12 lg:col-span-8 lg:col-start-3 bg-(--white) rounded-xl shadow-md border border-gray-200 overflow-visible"

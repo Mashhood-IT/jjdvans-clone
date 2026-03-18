@@ -478,14 +478,14 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                   </span>
                 </div>
                 <div className="flex flex-col w-full mt-2 border-t border-gray-200 pt-2 space-y-1">
-                  <div className="flex justify-between text-xs text-green-600">
+                  <div className="flex justify-between text-xs text-(--dark-grey)">
                     <span>Deposit Paid (35%):</span>
                     <span className="font-semibold">
                       {currencySymbol}
                       {Math.round(Number(viewData?.fareBreakdown?.depositPaid || (viewData?.totalPrice || viewData?.fare || 0) * 0.35)).toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-xs text-blue-600">
+                  <div className="flex justify-between text-xs text-(--dark-grey)">
                     <span>Remaining Balance (65%):</span>
                     <span className="font-semibold">
                       {currencySymbol}
