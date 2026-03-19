@@ -89,25 +89,26 @@ const JourneySummaryCard = ({
               <p className="widget-label-small text-(--medium-grey) mb-2">
                 ADDITIONAL DROP-OFFS (2ND - 5TH)
               </p>
-              {dropList.filter(Boolean).slice(1).map((dropoff, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
-                    <Icons.MapPin className="size-3.5 text-(--primary-dark-red)" />
+              <div className="grid 2xl:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
+                {dropList.filter(Boolean).slice(1).map((dropoff, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-7 h-7 bg-(--light-red) rounded-full shrink-0">
+                      <Icons.MapPin className="size-3.5 text-(--primary-dark-red)" />
+                    </div>
+                    <p className="widget-value-text-sm text-(--white)">
+                      {dropoff}
+                    </p>
                   </div>
-                  <p className="widget-value-text-sm text-(--white)">
-                    {dropoff}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
         </div>
 
         <div className="bg-(--dark-gray) p-5 shadow-lg sm:p-6 lg:min-w-95">
           <div className="grid grid-cols-1 gap-6">
-            {/* Stats */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
+            <div className="flex items-center justify-between gap-5">
+              <div>
                 <p className="widget-label-small mb-2 text-(--light-gray)">
                   TOTAL DISTANCE
                 </p>
@@ -120,9 +121,9 @@ const JourneySummaryCard = ({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
+              <div>
                 <p className="widget-label-small mb-2 text-(--light-gray)">
-                  ESTIMATED TIME
+                  Booked Time
                 </p>
                 <div className="flex items-center gap-2">
                   <Icons.Clock className="h-4 w-4 shrink-0 text-(--main-color)" />
@@ -135,38 +136,7 @@ const JourneySummaryCard = ({
                 </div>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
-                <p className="widget-label-small mb-2 text-(--light-gray)">
-                  BOOKING DATE
-                </p>
-                <div className="flex items-center gap-2">
-                  <Icons.Calendar className="h-4 w-4 shrink-0 text-(--main-color)" />
-                  <span className="text-sm text-(--light-gray)">
-                    {formatDate(formData?.date)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-(--white)/10 bg-(--white)/5 p-4">
-                <p className="widget-label-small mb-2 text-(--light-gray)">
-                  BOOKING TIME
-                </p>
-                <div className="flex items-center gap-2">
-                  <Icons.Clock className="h-4 w-4 shrink-0 text-(--main-color)" />
-                  <span className="text-sm text-(--light-gray)">
-                    {formData?.hour !== undefined && formData?.minute !== undefined
-                      ? `${String(formData.hour).padStart(2, "0")}:${String(
-                        formData.minute
-                      ).padStart(2, "0")} ${formData.hour < 12 ? "AM" : "PM"}`
-                      : "Time not set"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center">
+            <div>
               <button
                 onClick={() => navigate(-1)}
                 className="btn btn-blue"
@@ -175,6 +145,24 @@ const JourneySummaryCard = ({
               </button>
             </div>
           </div>
+        </div>
+      </div>
+      <div className="flex items-center space-x-4 px-6 py-2 border-t border-(--light-gray)">
+        <div className="flex items-center gap-2">
+          <Icons.Calendar className="md:size-4 size-3 shrink-0 text-(--main-color)" />
+          <span className="md:text-sm text-xs text-(--light-gray)">
+            {formatDate(formData?.date)}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Icons.Clock className="md:size-4 size-3 shrink-0 text-(--main-color)" />
+          <span className="md:text-sm text-xs text-(--light-gray)">
+            {formData?.hour !== undefined && formData?.minute !== undefined
+              ? `${String(formData.hour).padStart(2, "0")}:${String(
+                formData.minute
+              ).padStart(2, "0")} ${formData.hour < 12 ? "AM" : "PM"}`
+              : "Time not set"}
+          </span>
         </div>
       </div>
     </div>

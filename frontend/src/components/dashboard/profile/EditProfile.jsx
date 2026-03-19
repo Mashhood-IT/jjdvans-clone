@@ -218,11 +218,10 @@ const EditProfile = () => {
             onChange={handleChange}
             required
             disabled={user?.role !== "superadmin"}
-            className={`custom_input ${
-              user?.role !== "superadmin"
-                ? "bg-(--lightest-gray) text-(--medium-grey) cursor-not-allowed"
-                : ""
-            } py-1.5! sm:py-2!`}
+            className={`custom_input ${user?.role !== "superadmin"
+              ? "bg-(--lightest-gray) text-(--medium-grey) cursor-not-allowed"
+              : ""
+              }`}
           />
           {user?.role !== "superadmin" && (
             <p className="text-(--primary-dark-red) text-xs sm:text-sm mt-1">
@@ -238,7 +237,7 @@ const EditProfile = () => {
             value={form.name}
             onChange={handleChange}
             required
-            className="custom_input text-xs sm:text-sm py-1.5! sm:py-2!"
+            className="custom_input text-xs sm:text-sm"
           />
         </div>
         {user?.role === "superadmin" && (
@@ -252,7 +251,7 @@ const EditProfile = () => {
                 name="superadminCompanyName"
                 value={form.superadminCompanyName}
                 onChange={handleChange}
-                className="custom_input text-xs sm:text-sm py-1.5! sm:py-2!"
+                className="custom_input "
               />
             </div>
             <div>
@@ -264,7 +263,7 @@ const EditProfile = () => {
                 name="superadminCompanyAddress"
                 value={form.superadminCompanyAddress}
                 onChange={handleChange}
-                className="custom_input text-xs sm:text-sm py-1.5! sm:py-2!"
+                className="custom_input"
               />
             </div>
             <div>
@@ -276,7 +275,7 @@ const EditProfile = () => {
                 name="superadminCompanyPhoneNumber"
                 value={form.superadminCompanyPhoneNumber}
                 onChange={handleChange}
-                className="custom_input text-xs sm:text-sm py-1.5! sm:py-2!"
+                className="custom_input"
               />
             </div>
             <div>
@@ -288,7 +287,7 @@ const EditProfile = () => {
                 name="superadminCompanyEmail"
                 value={form.superadminCompanyEmail}
                 onChange={handleChange}
-                className="custom_input text-xs sm:text-sm py-1.5! sm:py-2!"
+                className="custom_input "
               />
             </div>
           </>
@@ -301,7 +300,7 @@ const EditProfile = () => {
               name="newPassword"
               value={form.newPassword}
               onChange={handleChange}
-              className="custom_input text-xs sm:text-sm py-1.5! sm:py-2!"
+              className="custom_input"
             />
             <span
               className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer text-(--medium-grey)"
@@ -326,7 +325,7 @@ const EditProfile = () => {
               value={form.currentPassword}
               onChange={handleChange}
               required
-              className="custom_input text-xs sm:text-sm py-1.5! sm:py-2!"
+              className="custom_input"
             />
             <span
               className="absolute top-1/2 right-3 transform -translate-y-1/2 cursor-pointer text-(--medium-grey)"
@@ -351,9 +350,8 @@ const EditProfile = () => {
           <button
             type="submit"
             disabled={isUpdating}
-            className={`btn btn-success px-6 sm:px-8 text-xs sm:text-sm ${
-              isUpdating ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`btn btn-success px-6 sm:px-8 text-xs sm:text-sm ${isUpdating ? "opacity-50 cursor-not-allowed" : ""
+              }`}
           >
             {isUpdating ? "Updating..." : "Update"}
           </button>

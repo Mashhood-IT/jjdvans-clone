@@ -132,32 +132,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     const delay = isEdit ? 200 : 0;
 
     const timer = setTimeout(() => {
-      const savedInventory = localStorage.getItem("widgetInventoryData");
-      if (savedInventory) {
-        try {
-          const inv = JSON.parse(savedInventory);
-          if (inv.pickupFloor !== undefined) setPickupFloor(inv.pickupFloor);
-          if (inv.dropoffFloor !== undefined) setDropoffFloor(inv.dropoffFloor);
-          if (inv.pickupAccess) setPickupAccess(inv.pickupAccess);
-          if (inv.dropoffAccess) setDropoffAccess(inv.dropoffAccess);
-          if (inv.estimatedHours !== undefined)
-            setEstimatedHours(inv.estimatedHours);
-          if (inv.estimatedMinutes !== undefined)
-            setEstimatedMinutes(inv.estimatedMinutes);
-          if (inv.ridingAlong !== undefined) setRidingAlong(inv.ridingAlong);
-          if (inv.passengerCount !== undefined)
-            setPassengerCount(inv.passengerCount);
-          if (inv.items && Array.isArray(inv.items)) setItems(inv.items);
-          if (inv.initialGoogleMinutes !== undefined)
-            setInitialGoogleMinutes(inv.initialGoogleMinutes);
-          if (inv.floorAccess)
-            setFloorAccess((prev) => ({ ...prev, ...inv.floorAccess }));
-          return;
-        } catch (err) {
-          console.error("Error parsing widgetInventoryData:", err);
-        }
-      }
-
+      // 1. Always get basic info from bookingForm (source of truth for addresses)
       const bookingForm = localStorage.getItem("bookingForm");
       if (bookingForm) {
         try {
@@ -192,7 +167,33 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
           ].filter((d) => d.address && d.address.trim() !== "");
           setAdditionalDropoffs(ad);
         } catch (err) {
-          console.error("Error parsing bookingForm for duration:", err);
+          console.error("Error parsing bookingForm:", err);
+        }
+      }
+
+      // 2. Load saved inventory data if it exists (for floor, access, items, etc.)
+      const savedInventory = localStorage.getItem("widgetInventoryData");
+      if (savedInventory) {
+        try {
+          const inv = JSON.parse(savedInventory);
+          if (inv.pickupFloor !== undefined) setPickupFloor(inv.pickupFloor);
+          if (inv.dropoffFloor !== undefined) setDropoffFloor(inv.dropoffFloor);
+          if (inv.pickupAccess) setPickupAccess(inv.pickupAccess);
+          if (inv.dropoffAccess) setDropoffAccess(inv.dropoffAccess);
+          if (inv.estimatedHours !== undefined)
+            setEstimatedHours(inv.estimatedHours);
+          if (inv.estimatedMinutes !== undefined)
+            setEstimatedMinutes(inv.estimatedMinutes);
+          if (inv.ridingAlong !== undefined) setRidingAlong(inv.ridingAlong);
+          if (inv.passengerCount !== undefined)
+            setPassengerCount(inv.passengerCount);
+          if (inv.items && Array.isArray(inv.items)) setItems(inv.items);
+          if (inv.initialGoogleMinutes !== undefined)
+            setInitialGoogleMinutes(inv.initialGoogleMinutes);
+          if (inv.floorAccess)
+            setFloorAccess((prev) => ({ ...prev, ...inv.floorAccess }));
+        } catch (err) {
+          console.error("Error parsing widgetInventoryData:", err);
         }
       }
     }, delay);
@@ -222,6 +223,44 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     estimatedMinutes,
     initialGoogleMinutes,
     selectedVehicle.halfHourPrice,
+  ]);
+
+  // Persistent storage for inventory data
+  useEffect(() => {
+    if (initialGoogleMinutes === 0) return; // Wait until initialized
+
+    const inventoryData = {
+      pickupFloor,
+      dropoffFloor,
+      pickupAccess,
+      dropoffAccess,
+      estimatedHours,
+      estimatedMinutes,
+      ridingAlong,
+      passengerCount,
+      items,
+      initialGoogleMinutes,
+      additionalFare,
+      floorCharges,
+      accessTypeCharges,
+      floorAccess,
+    };
+    localStorage.setItem("widgetInventoryData", JSON.stringify(inventoryData));
+  }, [
+    pickupFloor,
+    dropoffFloor,
+    pickupAccess,
+    dropoffAccess,
+    estimatedHours,
+    estimatedMinutes,
+    ridingAlong,
+    passengerCount,
+    items,
+    initialGoogleMinutes,
+    additionalFare,
+    floorCharges,
+    accessTypeCharges,
+    floorAccess,
   ]);
 
   const adjustDuration = (increment) => {
@@ -297,7 +336,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
   };
 
   return (
-    <div ref={containerRef} className="px-4 md:px-8 pb-8 mt-8 relative">
+    <div ref={containerRef} className="px-2 md:px-8 pb-8 md:mt-8 mt-6 relative">
       <div className="mb-6">
         <button
           onClick={onBack}
@@ -331,39 +370,41 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
         {showItemInput && (
           <div className="mb-4">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap gap-2">
               <input
                 type="text"
                 value={currentItem}
                 onChange={(e) => setCurrentItem(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Enter item name (press Enter to add)"
-                className="flex-1 px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="flex-1 min-w-[150px] px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 autoFocus
               />
-              <button
-                onClick={handleAddItem}
-                className="btn btn-success"
-              >
-                <Icons.Plus className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => {
-                  setShowItemInput(false);
-                  setCurrentItem("");
-                }}
-                className="btn btn-back"
-              >
-                <Icons.X className="w-4 h-4" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddItem}
+                  className="btn btn-success flex-1 sm:flex-none"
+                >
+                  <Icons.Plus className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setShowItemInput(false);
+                    setCurrentItem("");
+                  }}
+                  className="btn btn-back flex-1 sm:flex-none"
+                >
+                  <Icons.X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {items.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2 grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
             {items.map((item, index) => (
-              <div key={item.id} className="flex items-stretch gap-2">
+              <div key={item.id} className="flex gap-2">
                 <div className="flex w-6 items-center justify-center text-sm font-medium text-gray-900">
                   {index + 1}.
                 </div>
@@ -422,11 +463,12 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="widget-value-text text-gray-900 mb-1">
+            <p className="md:widget-value-text-sm widget-value-text-sm text-(--dark-grey) mb-1">
               Riding along with the vehicle?
             </p>
             <p className="widget-description text-(--medium-grey)">
-              Update passenger seating availability for truck cabin
+              It’s free to ride-along to your destination
+
             </p>
           </div>
           <button
@@ -438,11 +480,11 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
                 setPassengerCount(0);
               }
             }}
-            className={`relative cursor-pointer w-14 h-7 md:h-8 rounded-full transition-colors duration-300 ${ridingAlong ? "bg-gray-900" : "bg-gray-300"
+            className={`relative cursor-pointer md:w-14 w-20 h-7 md:h-8 rounded-full transition-colors duration-300 ${ridingAlong ? "bg-gray-900" : "bg-gray-300"
               }`}
           >
             <span
-              className={`absolute top-1 left-1  w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${ridingAlong ? "translate-x-5.5 md:translate-x-6" : "translate-x-0"
+              className={`absolute top-1 left-1  w-5 h-5 md:w-6 md:h-6 bg-(--white) rounded-full shadow transition-transform duration-300 ${ridingAlong ? "translate-x-9 md:translate-x-6" : "translate-x-0"
                 }`}
             />
           </button>
@@ -454,7 +496,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
               <div className="flex items-center gap-3">
                 <Icons.User className="w-5 h-5 text-(--medium-grey)" />
                 <div>
-                  <span className="widget-value-text-sm text-(--dark-grey)">
+                  <span className="widget-value-text-xs text-(--dark-grey)">
                     Passenger Count
                   </span>
                   <p className="widget-label-tiny leading-none mt-1">
@@ -500,7 +542,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
         <div className="md:col-span-6 col-span-12 lg:border-r lg:border-(--lighter-gray)">
           {(googleDurationText || googleDistanceText) && (
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex md:flex-row flex-col items-center justify-center gap-4 mb-4">
               {googleDistanceText && (
                 <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
                   <Icons.MapPin className="w-3 h-3" />
@@ -510,7 +552,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
               {googleDurationText && (
                 <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
                   <Icons.Clock className="w-3 h-3" />
-                  Drive time: {googleDurationText}
+                  time booked: {googleDurationText}
                 </span>
               )}
             </div>
@@ -518,7 +560,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
           <div className="text-center mb-4">
             <p className="widget-label-small text-gray-400 mb-6">
-              Estimated Duration
+              total hours booked
             </p>
 
             <div className="flex items-center justify-center gap-6 mb-6">

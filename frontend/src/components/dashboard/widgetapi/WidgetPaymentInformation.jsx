@@ -535,7 +535,7 @@ const WidgetPaymentInformation = ({
         <div className="bg-white p-6 rounded-xl border border-gray-100 mb-6">
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-medium text-(--dark-grey)">
-              Deposit at booking (35%)
+              Deposit at booking
             </span>
             <span className="widget-value-text-sm text-(--dark-black)">
               {pricingInfo.currencySymbol}
@@ -548,7 +548,8 @@ const WidgetPaymentInformation = ({
               Pay <strong>35% deposit</strong> now via card to secure your professional transit
             </li>
             <li>
-              The remaining <strong>65% balance</strong> is settled directly with your driver &nbsp;
+              the remaining balance is is to be paid directly to your driver
+              &nbsp;
               <span className="font-semibold">
                 {pricingInfo?.currencySymbol}
                 {Math.round(Number(pricingInfo?.driverAmount)).toFixed(2)}
@@ -556,6 +557,9 @@ const WidgetPaymentInformation = ({
             </li>
             <li>
               Secure, encrypted payments with instant confirmation
+            </li>
+            <li>
+              A confirmation email will be sent to your booking email
             </li>
           </ul>
         </div>

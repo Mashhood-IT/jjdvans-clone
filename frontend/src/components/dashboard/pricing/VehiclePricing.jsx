@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import Icons from "../../../assets/icons";
 import { useSelector } from "react-redux";
 import { useLoading } from "../../common/LoadingProvider";
+import IMAGES from "../../../assets/images";
 
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import CustomTable from "../../constants/constantcomponents/CustomTable";
@@ -172,7 +173,7 @@ const VehiclePricing = () => {
     vehicleInfo: (
       <div className="flex items-center gap-3">
         <div className="size-10 rounded-lg bg-(--lighter-gray) border border-(--light-gray) flex items-center justify-center overflow-hidden">
-          <img src={item.image} alt="" className="w-full h-full object-contain" />
+          <img src={item.image || IMAGES.dummyVan} alt="" className="w-full h-full object-contain" />
         </div>
         <span className="font-bold text-(--dark-grey)">{item.vehicleName}</span>
       </div>

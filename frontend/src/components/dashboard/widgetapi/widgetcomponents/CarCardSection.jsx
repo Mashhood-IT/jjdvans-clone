@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import IMAGES from "../../../../assets/images";
+import Icons from "../../../../assets/icons";
+import { formatMinutesToHM } from "../../../../utils/durationHelper";
 
 const CarCardSection = ({
   carList,
@@ -154,6 +156,15 @@ const CarCardSection = ({
                 className="object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => (e.currentTarget.src = "/placeholder-car.png")}
               />
+              <div className="absolute top-4 left-4">
+                {car.quantity && (
+                  <div className="text-left">
+                    <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-(--lighter-blue) text-(--navy-blue)">
+                      Available Drivers: {car.quantity}
+                    </span>
+                  </div>
+                )}
+              </div>
               <div className="absolute top-4 right-4">
                 <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isSelected ? "bg-(--main-color) text-(--white)" : "bg-gray-100 text-gray-500"
                   }`}>
@@ -162,25 +173,29 @@ const CarCardSection = ({
               </div>
             </div>
 
-            {car.quantity && (
-              <div className=" mt-2 ml-4 text-left">
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-(--lighter-blue) text-(--navy-blue)">
-                  Available Drivers: {car.quantity}
-                </span>
-              </div>
-            )}
             <div className="p-4 flex flex-col grow">
               <div className="flex justify-between items-start mb-2 min-h-12.5">
                 <div>
                   <h3 className="widget-title text-(--dark-grey)">
                     {vehicleName}
                   </h3>
+                  <div className="flex md:mt-0 mt-1 items-center space-x-2">
+                    <span className="text-xs font-semibold text-(--medium-grey) tracking-wider">
+                      Booked Hours:
+                    </span>
+                    <p className="text-xs font-bold text-(--dark-grey)">
+                      {(() => {
+                        const { hours, minutes } = formatMinutesToHM(roundedGoogleMinutes);
+                        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+                      })()}
+                    </p>
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-(--main-color)">
                     {currencySymbol} {Math.round(Number(currentTotalPrice)).toFixed(2)}
                   </div>
-                  <p className="text-(--medium-grey) text-xs mt-0.5">Min. 2 hours</p>
+                  <p className="md:mt-0 mt-1 text-(--medium-grey) text-xs mt-0.5">Min. 2 hours</p>
                 </div>
               </div>
 

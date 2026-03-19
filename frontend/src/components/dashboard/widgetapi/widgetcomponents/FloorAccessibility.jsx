@@ -71,18 +71,18 @@ const FloorAccessibility = ({
                     setPickupFloor(next);
                     if (next === 0) setPickupAccess(null);
                   }}
-                  className="btn btn-mate"
+                  className="btn btn-mate flex-shrink-0"
                 >
                   <Icons.Minus className="w-4 h-4" />
                 </button>
-                <div className="flex-1 text-center">
+                <div className="flex-1 text-center min-w-[30px]">
                   <span className="text-(--dark-grey)">
                     {pickupFloor}
                   </span>
                 </div>
                 <button
                   onClick={() => setPickupFloor(pickupFloor + 1)}
-                  className="btn btn-mate"
+                  className="btn btn-mate flex-shrink-0"
                 >
                   <Icons.Plus className="w-4 h-4" />
                 </button>
@@ -149,18 +149,18 @@ const FloorAccessibility = ({
                     setDropoffFloor(next);
                     if (next === 0) setDropoffAccess(null);
                   }}
-                  className="btn btn-mate"
+                  className="btn btn-mate flex-shrink-0"
                 >
                   <Icons.Minus className="w-4 h-4" />
                 </button>
-                <div className="flex-1 text-center">
+                <div className="flex-1 text-center min-w-[30px]">
                   <span className="text-xl text-(--dark-grey)">
                     {dropoffFloor}
                   </span>
                 </div>
                 <button
                   onClick={() => setDropoffFloor(dropoffFloor + 1)}
-                  className="btn btn-mate"
+                  className="btn btn-mate flex-shrink-0"
                 >
                   <Icons.Plus className="w-4 h-4" />
                 </button>
@@ -201,7 +201,7 @@ const FloorAccessibility = ({
         {additionalDropoffs.map((ad) => (
           <div
             key={ad.id}
-            className={`mt-8 pt-8 border-t border-gray-100 ${ad.id % 2 === 1 ? "md:border-r md:pr-6 border-(--light-gray)" : ""
+            className={`mt-8 pt-8 ${ad.id % 2 === 1 ? "md:border-r md:pr-6 border-(--light-gray)" : ""
               }`}
           >
             <div className="flex items-center justify-between mb-4">
@@ -240,11 +240,11 @@ const FloorAccessibility = ({
                         };
                       })
                     }
-                    className="btn btn-mate"
+                    className="btn btn-mate flex-shrink-0"
                   >
                     <Icons.Minus className="w-4 h-4" />
                   </button>
-                  <div className="flex-1 text-center">
+                  <div className="flex-1 text-center min-w-[30px]">
                     <span className="widget-price-large text-(--dark-grey)">
                       {floorAccess[`additionalDropoff${ad.id}Floor`]}
                     </span>
@@ -257,7 +257,7 @@ const FloorAccessibility = ({
                           (prev[`additionalDropoff${ad.id}Floor`] || 0) + 1,
                       }))
                     }
-                    className="btn btn-mate"
+                    className="btn btn-mate flex-shrink-0"
                   >
                     <Icons.Plus className="w-4 h-4" />
                   </button>

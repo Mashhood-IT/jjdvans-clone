@@ -613,7 +613,7 @@ const WidgetBookingInformation = ({
   ]);
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 py-4 md:px-8 md:py-8">
         <div className="2xl:col-span-12 col-span-12 col-start-1 w-full relative">
           <div className="mb-6">
             <button

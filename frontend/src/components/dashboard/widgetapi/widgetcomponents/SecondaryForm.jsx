@@ -177,7 +177,7 @@ const SecondaryForm = ({
     };
 
     return (
-        <div className="grid grid-cols-12 p-7 gap-6">
+        <div className="grid grid-cols-12 md:p-7 p-4 gap-6">
             <form
                 onSubmit={handleSubmit}
                 className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 widget-base-text text-(--dark-grey) transition duration-300 hover:shadow-xl"
@@ -243,7 +243,7 @@ const SecondaryForm = ({
                     </div>
 
                     <div className="space-y-4 mb-6 transition-all duration-300">
-                        <div className="flex gap-6 items-center justify-center" >
+                        <div className="flex md:flex-row flex-col gap-6 items-center justify-center" >
                             <div className="relative group w-full mt-6">
                                 <label className="block widget-label-text text-(--dark-gray) mb-1">
                                     Pickup Address
@@ -273,7 +273,7 @@ const SecondaryForm = ({
                                 </div>
                             </div>
 
-                            <div className="relative group w-full mt-6">
+                            <div className="relative group w-full md:mt-6 mt-0">
                                 <label className="block widget-label-text text-(--dark-gray) mb-1">
                                     Dropoff Address
                                 </label>
