@@ -186,16 +186,30 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
           if (inv.dropoffFloor !== undefined) setDropoffFloor(inv.dropoffFloor);
           if (inv.pickupAccess) setPickupAccess(inv.pickupAccess);
           if (inv.dropoffAccess) setDropoffAccess(inv.dropoffAccess);
-          if (inv.estimatedHours !== undefined)
-            setEstimatedHours(inv.estimatedHours);
-          if (inv.estimatedMinutes !== undefined)
-            setEstimatedMinutes(inv.estimatedMinutes);
+
+          // Only restore manual adjustments if the base route time hasn't changed
+          // This prevents stale "2 hours" from overwriting new "6 hours" when dropoffs change
+          const currentBookingForm = JSON.parse(localStorage.getItem("bookingForm") || "{}");
+          const routeMinutes = currentBookingForm.roundedGoogleMinutes || passedRoundedMinutes || 120;
+
+          if (inv.initialGoogleMinutes === routeMinutes) {
+            if (inv.estimatedHours !== undefined)
+              setEstimatedHours(inv.estimatedHours);
+            if (inv.estimatedMinutes !== undefined)
+              setEstimatedMinutes(inv.estimatedMinutes);
+          } else {
+            // Route changed, keep the values set from bookingForm above (initialGoogleMinutes from form)
+            console.log("Route changed, skipping stale inventory duration restoration");
+          }
+
           if (inv.ridingAlong !== undefined) setRidingAlong(inv.ridingAlong);
           if (inv.passengerCount !== undefined)
             setPassengerCount(inv.passengerCount);
           if (inv.items && Array.isArray(inv.items)) setItems(inv.items);
-          if (inv.initialGoogleMinutes !== undefined)
-            setInitialGoogleMinutes(inv.initialGoogleMinutes);
+
+          // Always favor the latest routeMinutes for initialGoogleMinutes
+          setInitialGoogleMinutes(routeMinutes);
+
           if (inv.floorAccess)
             setFloorAccess((prev) => ({ ...prev, ...inv.floorAccess }));
         } catch (err) {

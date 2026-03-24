@@ -2,18 +2,19 @@ import React from "react";
 import { useSelector } from "react-redux";
 import Icons from "../../../assets/icons";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
+import { useGetAllVehiclesQuery } from "../../../redux/api/vehicleApi";
 
 const nf = new Intl.NumberFormat();
 
 const StatCards = () => {
-  const user = useSelector((state) => state?.auth?.user);
-
   const { data = [] } = useGetAllBookingsQuery();
+
+  const { data: vehiclesData } = useGetAllVehiclesQuery()
   const adminBookings = data.filter((b) => b?.source === "admin")
   const widgetBookings = data.filter((b) => b?.source === "widget")
   const adminBookingsCustomers = adminBookings?.filter((b) => b.passenger).length;
   const widgetBookingsCustomer = widgetBookings?.filter((b) => b.passenger).length;
-  
+
   const cardData = [
     { title: "Total Bookings", value: data?.length, icon: "FileText" },
     {
@@ -28,25 +29,14 @@ const StatCards = () => {
 
       icon: "Users",
     },
+    { title: "Total Vehicles", value: vehiclesData?.length, icon: "FileText" },
   ];
-
-  const roleVisibility = {
-    superadmin: [
-      "Total Bookings",
-      "Admin Customers",
-      "Widget Customers",
-    ]
-  };
-
-  const visibleCards = cardData.filter((card) =>
-    roleVisibility[user?.role?.toLowerCase()]?.includes(card.title)
-  );
 
   return (
     <section className="w-full">
       <div>
         <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
-          {visibleCards.map((card, index) =>
+          {cardData.map((card, index) =>
             card.skeleton ? (
               <div
                 key={`s-${index}`}
