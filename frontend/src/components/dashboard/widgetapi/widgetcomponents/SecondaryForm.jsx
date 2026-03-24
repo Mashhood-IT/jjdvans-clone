@@ -209,7 +209,7 @@ const SecondaryForm = ({
                             </div>
                         </div>
                         <div>
-                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Select Your Preferrerd Start Time</label>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Select Your Preferred Start Time</label>
                             <select
                                 name="hour"
                                 value={formData.hour}
