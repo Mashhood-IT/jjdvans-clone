@@ -1,7 +1,7 @@
 import { PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { useState } from "react";
 
-const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalPrice, currencySymbol, isProcessing }) => {
+const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalPrice, currencySymbol, isProcessing, onBeforePayment }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [localProcessing, setLocalProcessing] = useState(false);
@@ -9,6 +9,10 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!stripe || !elements || localProcessing) return;
+
+        if (onBeforePayment && !onBeforePayment()) {
+            return;
+        }
 
         setLocalProcessing(true);
         onPaymentError(null);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { toast } from "react-toastify";
 import "react-phone-input-2/lib/style.css";
 import PhoneInput from "react-phone-input-2";
@@ -12,6 +12,7 @@ import {
 import StripeCheckout from "../../../paymentMethod/StripeCheckout";
 import PayPalCheckout from "../../../paymentMethod/PayPalCheckout";
 import { useLoading } from "../../common/LoadingProvider";
+import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 
 const WidgetPaymentInformation = ({
   companyId,
@@ -47,6 +48,7 @@ const WidgetPaymentInformation = ({
 
   const [localVehicle, setLocalVehicle] = useState(vehicle);
   const [selectedCountry, setSelectedCountry] = useState("gb");
+  const formTopRef = useRef(null);
 
   const generalPricing = {
     childSeatPrice: 10,
@@ -332,19 +334,30 @@ const WidgetPaymentInformation = ({
     localStorage.removeItem("isWidgetFormFilled");
   };
 
+  const validatePassengerDetails = () => {
+    if (!passengerDetails.name || !passengerDetails.email || !passengerDetails.phone) {
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      toast.error("Please provide all passenger details (Name, Email, and Phone) before booking.");
+      return false;
+    }
+    return true;
+  };
   const handleBookNow = async () => {
     if (!formData.paymentMethod) {
       toast.error("Please select a payment method.");
       return;
     }
 
+    if (!validatePassengerDetails()) return;
+
     if (formData.paymentMethod !== "Stripe") {
       await onBookNowClick(formData);
     }
   };
 
+
   return (
-    <div className="px-4 md:px-8 pt-8 relative">
+    <div className="px-4 md:px-8 md:pt-8 pt-4 relative">
       <div className="mb-6">
         <button
           onClick={onBack}
@@ -353,16 +366,10 @@ const WidgetPaymentInformation = ({
           Go Back
         </button>
       </div>
-      <div className="mb-3">
-        <h1 className="text-2xl font-bold mb-1 text-(--dark-gray)">
-          Complete Your Booking
-        </h1>
-        <p className="widget-description leading-relaxed text-gray-600">
-          Verify your relocation details and passenger requirements to finalize your professional service estimate.</p>
-      </div>
 
+      <WidgetStepHeader title="Complete Your Booking" description="Verify your relocation details and passenger requirements to finalize your professional service estimate." />
       <div className="grid grid-cols-12 gap-4 md:gap-8">
-        <div className="md:col-span-6 col-span-12 md:px-0 px-4 space-y-6">
+        <div className="md:col-span-6 col-span-12 space-y-6" ref={formTopRef}>
           <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
@@ -613,6 +620,7 @@ const WidgetPaymentInformation = ({
                 isProcessing={isProcessingStripe}
                 onPaymentError={(msg) => setStripeError(msg)}
                 onPaymentSuccess={() => onBookNowClick(formData)}
+                onBeforePayment={validatePassengerDetails}
               />
             </Elements>
           )}
