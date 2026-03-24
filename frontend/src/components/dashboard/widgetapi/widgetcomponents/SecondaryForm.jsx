@@ -180,7 +180,7 @@ const SecondaryForm = ({
         <div className="grid grid-cols-12 md:p-7 p-4 gap-6">
             <form
                 onSubmit={handleSubmit}
-                className="md:col-span-6 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 widget-base-text text-(--dark-grey) transition duration-300 hover:shadow-xl"
+                className="md:col-span-7 col-span-12 bg-linear-to-br from-(--white) via-(--lightest-gray) to-(--lighter-gray) border border-(--light-gray) rounded-2xl shadow-lg px-6 widget-base-text text-(--dark-grey) transition duration-300 hover:shadow-xl"
             >
                 <div>
                     <div className="flex md:flex-row flex-col md:items-center items-start justify-between gap-4 pt-6">
@@ -195,9 +195,9 @@ const SecondaryForm = ({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 md:mt-4 gap-4">
                         <div className="relative">
-                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Date</label>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Choose a Moving Date</label>
                             <div className="relative">
                                 <input
                                     type="date"
@@ -209,7 +209,7 @@ const SecondaryForm = ({
                             </div>
                         </div>
                         <div>
-                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Time</label>
+                            <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Select Your Preferrerd Start Time</label>
                             <select
                                 name="hour"
                                 value={formData.hour}
@@ -360,7 +360,7 @@ const SecondaryForm = ({
                         <label className="block widget-label-text text-(--dark-gray) mb-1">Additional Notes</label>
                         <textarea
                             name="notes"
-                            placeholder="Any special instructions for the driver?"
+                            placeholder="Need help with dismantling of furniture and reassemble?"
                             className="custom_input w-full resize-none"
                             value={formData.notes}
                             onChange={handleChange}
@@ -393,7 +393,7 @@ const SecondaryForm = ({
                 </div>
             </form >
 
-            <div className="md:col-span-6 col-span-12">
+            <div className="md:col-span-5 col-span-12">
                 <LocationMap
                     pickup={formData.pickup}
                     dropoffs={dropOffs}

@@ -109,6 +109,13 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     settingsData,
   ]);
 
+  const baseFare = useMemo(() => {
+    const base = widgetPricing.baseFare || 0;
+    const extraMenCharges = widgetPricing?.extraHelp?.unitPrice || 0;
+    const totalTimeUnits = Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30);
+    return base + (totalTimeUnits * extraMenCharges);
+  }, [widgetPricing?.baseFare, widgetPricing?.extraHelp?.unitPrice, estimatedHours, estimatedMinutes]);
+
   const totalFare = useMemo(() => {
     const base = widgetPricing.baseFare || 0;
     const currentTotalMinutes = estimatedHours * 60 + estimatedMinutes;
@@ -132,7 +139,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     const delay = isEdit ? 200 : 0;
 
     const timer = setTimeout(() => {
-      // 1. Always get basic info from bookingForm (source of truth for addresses)
       const bookingForm = localStorage.getItem("bookingForm");
       if (bookingForm) {
         try {
@@ -608,7 +614,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
             <div className="flex justify-between items-center text-gray-400">
               <span className="text-sm">Base Fare</span>
               <span className="font-semibold text-(--white)">
-                {currencySymbol} {Math.round(Number(widgetPricing.baseFare || 0)).toFixed(2)}
+                {currencySymbol} {Math.round(Number(baseFare || 0)).toFixed(2)}
               </span>
             </div>
 
@@ -639,14 +645,14 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
               </div>
             )}
 
-            {widgetPricing.extraHelp?.unitPrice > 0 && (
+            {/* {widgetPricing.extraHelp?.unitPrice > 0 && (
               <div className="flex justify-between items-center text-gray-400">
                 <span className="text-sm">Extra Men Charges</span>
                 <span className="font-semibold text-(--white)">
                   {currencySymbol} {(Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30) * widgetPricing.extraHelp.unitPrice).toFixed(2)}
                 </span>
               </div>
-            )}
+            )} */}
 
             <div className="pt-3 border-t border-gray-700 flex justify-between items-center">
               <span className="text-gray-300 font-bold">Total Fare</span>
@@ -661,7 +667,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
       <div className="flex justify-center gap-3">
 
         <button onClick={handleContinue} className="btn btn-blue">
-          Continue to Payment
+          Continue
         </button>
       </div>
     </div>

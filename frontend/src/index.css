@@ -224,20 +224,7 @@ select:disabled {
   filter: brightness(1.05);
 }
 
-.btn-primary {
-  background-color: var(--primary-dark-red);
-  color: white;
-}
 
-.btn-primary:hover {
-  color: white !important;
-  background-color: var(--deep-red) !important;
-  filter: brightness(1.1) saturate(1.1);
-}
-
-.nowrap {
-  white-space: nowrap;
-}
 
 .tab {
   padding: 3px 12px;
@@ -460,4 +447,20 @@ input[type="date"]::-webkit-datetime-edit-text {
 
 .widget-value-sm {
   @apply text-sm font-semibold;
+}
+
+.react-tel-input .custom_input {
+  padding-left: 48px !important;
+  width: 100% !important;
+}
+
+.react-tel-input .flag-dropdown {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 4px 0 0 4px !important;
+}
+
+.react-tel-input .selected-flag {
+  background: transparent !important;
+  padding-left: 12px !important;
 }

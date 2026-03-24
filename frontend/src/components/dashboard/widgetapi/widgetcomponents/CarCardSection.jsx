@@ -165,12 +165,6 @@ const CarCardSection = ({
                   </div>
                 )}
               </div>
-              <div className="absolute top-4 right-4">
-                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${isSelected ? "bg-(--main-color) text-(--white)" : "bg-gray-100 text-gray-500"
-                  }`}>
-                  {isSelected ? "Selected" : "Available"}
-                </div>
-              </div>
             </div>
 
             <div className="p-4 flex flex-col grow">
@@ -179,17 +173,6 @@ const CarCardSection = ({
                   <h3 className="widget-title text-(--dark-grey)">
                     {vehicleName}
                   </h3>
-                  <div className="flex md:mt-0 mt-1 items-center space-x-2">
-                    <span className="text-xs font-semibold text-(--medium-grey) tracking-wider">
-                      Booked Hours:
-                    </span>
-                    <p className="text-xs font-bold text-(--dark-grey)">
-                      {(() => {
-                        const { hours, minutes } = formatMinutesToHM(roundedGoogleMinutes);
-                        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-                      })()}
-                    </p>
-                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-(--main-color)">

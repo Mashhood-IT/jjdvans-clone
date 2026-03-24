@@ -502,9 +502,9 @@ const WidgetMain = () => {
                   const childSeatCharges = bookingData?.childSeatCharges || 0;
                   const fareBreakdown = bookingData?.fareBreakdown || {};
 
-                  if (!passengerDetails.email) {
-                    console.error("Missing passenger email");
-                    toast.error("Please provide passenger email");
+                  if (!passengerDetails.email || !passengerDetails.name || !passengerDetails.phone) {
+                    console.error("Missing passenger details");
+                    toast.error("Please provide passenger details");
                     return;
                   }
 
@@ -549,6 +549,7 @@ const WidgetMain = () => {
             }
           />
 
+          {/* 
           <Route
             path="widget-vehicle/widget-payment"
             element={
@@ -608,7 +609,8 @@ const WidgetMain = () => {
                 }}
               />
             }
-          />
+          /> 
+          */}
 
           <Route
             path="*"

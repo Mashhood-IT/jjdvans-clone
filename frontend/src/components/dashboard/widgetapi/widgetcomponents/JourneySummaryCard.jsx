@@ -107,7 +107,7 @@ const JourneySummaryCard = ({
 
         <div className="bg-(--dark-gray) p-5 shadow-lg sm:p-6 lg:min-w-95">
           <div className="grid grid-cols-1 gap-6">
-            <div className="flex items-center justify-between gap-5">
+            <div className="flex items-start justify-between gap-5">
               <div>
                 <p className="widget-label-small mb-2 text-(--light-gray)">
                   TOTAL DISTANCE
@@ -134,15 +134,20 @@ const JourneySummaryCard = ({
                     hours
                   </span>
                 </div>
+                <p className="text-[11px] text-(--light-gray) mt-1">
+                  (You can add more time in next step)
+                </p>
               </div>
             </div>
-            <div>
-              <button
-                onClick={() => navigate(-1)}
-                className="btn btn-blue"
-              >
-                Edit Full Route
-              </button>
+            <div className="flex flex-col">
+              <div>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="btn btn-blue"
+                >
+                  Edit Full Route
+                </button>
+              </div>
             </div>
           </div>
         </div>

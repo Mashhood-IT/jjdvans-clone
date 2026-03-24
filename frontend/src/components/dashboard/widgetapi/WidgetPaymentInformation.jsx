@@ -361,8 +361,8 @@ const WidgetPaymentInformation = ({
           Verify your relocation details and passenger requirements to finalize your professional service estimate.</p>
       </div>
 
-      <div className="grid grid-cols-12 gap-8">
-        <div className="md:col-span-6 col-span-12 space-y-6">
+      <div className="grid grid-cols-12 gap-4 md:gap-8">
+        <div className="md:col-span-6 col-span-12 md:px-0 px-4 space-y-6">
           <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-(--dark-black) text-(--white) widget-value-text-sm">
@@ -372,7 +372,7 @@ const WidgetPaymentInformation = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="md:col-span-1">
                 <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
                   First Name
                 </label>
@@ -389,7 +389,7 @@ const WidgetPaymentInformation = ({
                   className="custom_input"
                 />
               </div>
-              <div>
+              <div className="md:col-span-1">
                 <label className="block widget-label-small !capitalize  text-(--dark-grey) mb-2">
                   Email Address
                 </label>
@@ -406,23 +406,24 @@ const WidgetPaymentInformation = ({
                   className="custom_input"
                 />
               </div>
-              <div>
+              <div className="md:col-span-1">
                 <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
                   Phone
                 </label>
-
-                <PhoneInput
-                  country={"gb"}
-                  value={passengerDetails.phone}
-
-                  onChange={(phone) =>
-                    setPassengerDetails({
-                      ...passengerDetails,
-                      phone: phone,
-                    })
-                  }
-                  inputClass="custom_input !w-full"
-                />
+                <div>
+                  <PhoneInput
+                    country={"gb"}
+                    value={passengerDetails.phone}
+                    onChange={(phone) =>
+                      setPassengerDetails({
+                        ...passengerDetails,
+                        phone: phone,
+                      })
+                    }
+                    inputClass="custom_input !w-full"
+                    containerClass="!w-full"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -545,10 +546,11 @@ const WidgetPaymentInformation = ({
 
           <ul className="list-disc pl-5 space-y-2 text-[12px] text-gray-500 border-t border-gray-100 pt-4 marker:text-gray-400">
             <li>
-              Pay <strong>35% deposit</strong> now via card to secure your professional transit
+              Pay <strong> {pricingInfo.currencySymbol}
+                {Math.round(Number(pricingInfo.depositAmount)).toFixed(2)}</strong> now via card to secure your professional transit
             </li>
             <li>
-              the remaining balance is is to be paid directly to your driver
+              The remaining balance to be paid directly to your driver is
               &nbsp;
               <span className="font-semibold">
                 {pricingInfo?.currencySymbol}
