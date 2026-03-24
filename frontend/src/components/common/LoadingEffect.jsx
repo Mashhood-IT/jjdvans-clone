@@ -3,7 +3,7 @@ import Icons from '../../assets/icons';
 
 const LoadingEffect = ({ overlay = false }) => {
   return (
-    <div className={`${overlay ? "absolute inset-0 bg-white z-50" : "h-screen"} flex flex-col items-center justify-center gap-2`}>
+    <div className={`${overlay ? "fixed inset-0 bg-white z-[9999]" : "h-screen"} flex flex-col items-center justify-center gap-2`}>
       <div className="w-12 animate-[car-idle_0.3s_ease-in-out_infinite] text-(--main-color)">
         <Icons.Truck size={35} />
       </div>

@@ -2,14 +2,24 @@ import React, { useState, useEffect } from "react";
 import Icons from "../../../assets/icons";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
+import { useLoading } from "../../common/LoadingProvider";
 
 
 const BookingCalendar = () => {
+  const { showLoading, hideLoading } = useLoading();
   const { data: bookings = [], isLoading, error } = useGetAllBookingsQuery();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (isLoading) {
+      showLoading();
+    } else {
+      hideLoading();
+    }
+  }, [isLoading, showLoading, hideLoading]);
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
@@ -64,7 +74,6 @@ const BookingCalendar = () => {
     setMousePosition({ x: e.clientX, y: e.clientY });
   };
 
-  if (isLoading) return <div>Loading calendar...</div>;
   if (error) return <div>Failed to load bookings</div>;
 
   return (
@@ -90,22 +99,24 @@ const BookingCalendar = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {dayNames.map((day) => (
-            <div key={day} className="text-center font-medium">
-              {day}
+        <div className="overflow-x-auto custom_scrollbar pb-2">
+          <div className="min-w-[800px] md:min-w-full">
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {dayNames.map((day) => (
+                <div key={day} className="text-center font-medium text-xs md:text-sm">
+                  {day}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-1">
           {getDaysInMonth(currentDate).map((day, index) => {
             const dayBookings = getBookingsForDate(day);
 
             return (
               <div
                 key={index}
-                className={`min-h-28 border rounded p-1 ${day ? "bg-(--white)" : "bg-(--lightest-gray)"
+                className={`md:min-h-28 min-h-20 border rounded p-1 ${day ? "bg-(--white)" : "bg-(--lightest-gray)"
                   }`}
               >
                 {day && (
@@ -115,12 +126,20 @@ const BookingCalendar = () => {
                     {dayBookings.map((booking) => (
                       <div
                         key={booking.id}
-                        className="text-[11px] p-1 rounded mb-1 truncate cursor-pointer bg-(--lighter-blue) text-(--navy-blue)"
+                        className="text-[10px] md:text-[11px] p-1 rounded mb-1 truncate cursor-pointer bg-(--lighter-blue) text-(--navy-blue)"
                         onMouseEnter={(e) => {
                           setHoveredEvent(booking);
                           handleMouseMove(e);
                         }}
                         onMouseLeave={() => setHoveredEvent(null)}
+                        onClick={(e) => {
+                          if (hoveredEvent?.id === booking.id) {
+                            setHoveredEvent(null);
+                          } else {
+                            setHoveredEvent(booking);
+                            handleMouseMove(e);
+                          }
+                        }}
                       >
                         {booking.bookingId} — {booking.pickup} →{" "}
                         {booking.dropoff}
@@ -131,6 +150,8 @@ const BookingCalendar = () => {
               </div>
             );
           })}
+            </div>
+          </div>
         </div>
 
         {hoveredEvent && (

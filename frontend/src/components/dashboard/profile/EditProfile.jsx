@@ -237,7 +237,7 @@ const EditProfile = () => {
             value={form.name}
             onChange={handleChange}
             required
-            className="custom_input text-xs sm:text-sm"
+            className="custom_input"
           />
         </div>
         {user?.role === "superadmin" && (

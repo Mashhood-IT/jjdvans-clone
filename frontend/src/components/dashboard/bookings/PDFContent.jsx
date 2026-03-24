@@ -3,10 +3,9 @@ import IMAGES from "../../../assets/images";
 
 import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
 
-const BASE_API_URL = "http://localhost:5002/api";
+const BASE_API_URL = import.meta.env.VITE_BASE_URL_BACKEND;
 const PDFContent = forwardRef(
   ({ viewData = {}, companyData = {}, companyLogo = null }, ref) => {
-    const isAirport = (s = "") => s.toLowerCase().includes("airport");
 
     const logoSource = companyLogo || companyData?.profileImage;
     const isFullUrl = logoSource?.startsWith("http");
@@ -72,7 +71,7 @@ const PDFContent = forwardRef(
               />
             </div>
 
-            <div style={{ textAlign: "right", fontSize: "13px" }}>
+            <div style={{ textAlign: "right", fontSize: "13px", lineHeight: "1.5" }}>
               <h2
                 style={{
                   margin: "0 0 8px 0",
@@ -84,21 +83,21 @@ const PDFContent = forwardRef(
                 Booking Confirmation
               </h2>
               <p>
-                <strong>Date & Time:</strong> &nbsp;
+                <strong style={{ color: "#111827" }}>Date & Time:</strong> &nbsp;
                 {viewData.date && viewData.hour != null
                   ? formatDateTime(
-                      viewData.date,
-                      viewData.hour,
-                      viewData.minute,
-                    )
+                    viewData.date,
+                    viewData.hour,
+                    viewData.minute,
+                  )
                   : "N/A"}
               </p>
 
               <p>
-                <strong>Order No.:</strong> {viewData?.bookingId || "N/A"}
+                <strong style={{ color: "#111827" }}>Order No.:</strong> {viewData?.bookingId || "N/A"}
               </p>
               <p>
-                <strong>Payment Type:</strong> &nbsp;
+                <strong style={{ color: "#111827" }}>Payment Type:</strong> &nbsp;
                 {viewData?.paymentMethod || "Card Payment"}
               </p>
             </div>
@@ -248,7 +247,7 @@ const PDFContent = forwardRef(
               </p>
 
               <hr style={{ borderColor: "#e5e7eb", margin: "20px 0" }} />
-              <h4 style={{ fontSize: "16px", color: "#111827" }}>Notes</h4>
+              <h4 style={{ fontSize: "16px", marginBottom: "10px", color: "#111827" }}>Notes</h4>
               <p>{viewData.notes || "None"}</p>
             </div>
           </div>
@@ -264,7 +263,7 @@ const PDFContent = forwardRef(
             <h4
               style={{
                 fontSize: "16px",
-                marginBottom: "15px",
+                marginBottom: "10px",
                 color: "#111827",
               }}
             >

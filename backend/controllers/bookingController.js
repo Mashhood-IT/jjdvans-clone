@@ -20,7 +20,6 @@ export const createBooking = async (req, res) => {
     const newBooking = new Booking(bookingData);
     await newBooking.save();
 
-    // Send Confirmation Emails
     try {
       const superadmin = await User.findOne({ companyId: bookingData.companyId, role: "superadmin" });
       if (superadmin) {
@@ -35,13 +34,11 @@ export const createBooking = async (req, res) => {
         const passengerHtml = generateBookingEmailHTML(newBooking, companyData, "passenger");
         const adminHtml = generateBookingEmailHTML(newBooking, companyData, "admin");
 
-        // Email to Passenger
         await sendEmail(newBooking.passenger.email, `Booking Confirmation #${newBooking.bookingId}`, {
           html: passengerHtml,
           fromName: companyData.superadminCompanyName || "Booking Confirmation",
         });
 
-        // Email to Admin
         if (superadmin.email) {
           await sendEmail(superadmin.email, `New Booking Received #${newBooking.bookingId}`, {
             html: adminHtml,
@@ -51,7 +48,6 @@ export const createBooking = async (req, res) => {
       }
     } catch (emailError) {
       console.error("Email notification error:", emailError);
-      // We don't fail the request if email fails, but we log it
     }
 
     res.status(201).json({
@@ -188,15 +184,12 @@ const generateBookingEmailHTML = (booking, companyData = null, type = "passenger
   const formatDateTime = (dateStr, hour, minute) => {
     if (!dateStr || hour === null || minute === null) return "N/A";
 
-    // dateStr is typically YYYY-MM-DD from <input type="date">
-    // Constructing new Date(YYYY, MM-1, DD) uses local time
     const [year, month, day] = dateStr.split("-").map(Number);
     if (!year || !month || !day) return "N/A";
 
     const hh = String(hour).padStart(2, "0");
     const min = String(minute).padStart(2, "0");
 
-    // Return formatted string directly to avoid Date object timezone manipulation
     return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year} ${hh}:${min}`;
   };
 
