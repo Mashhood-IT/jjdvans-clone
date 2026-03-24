@@ -15,6 +15,7 @@ const BookingsFilters = ({
   setEndDate,
   passengerList,
   vehicleList,
+  onClearFilters,
 }) => {
 
   return (
@@ -60,8 +61,15 @@ const BookingsFilters = ({
             />
           </div>
 
+          <div className="w-full sm:w-auto">
+            <button
+              onClick={onClearFilters}
+              className="btn btn-blue"
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
-
       </div>
     </>
   );

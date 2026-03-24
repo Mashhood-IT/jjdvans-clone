@@ -107,6 +107,12 @@ const BookingsList = () => {
   });
 
   const vehicleList = Array.from(vehicleMap.values());
+  const handleClearFilters = () => {
+    setSelectedPassengers([]);
+    setSelectedVehicleTypes([]);
+    setStartDate(null);
+    setEndDate(null);
+  };
 
   const openViewModal = (view) => {
     setViewData(view || []);
@@ -140,6 +146,7 @@ const BookingsList = () => {
         setEndDate={setEndDate}
         passengerList={passengerList}
         vehicleList={vehicleList}
+        onClearFilters={handleClearFilters}
       />
 
       <BookingsTable
