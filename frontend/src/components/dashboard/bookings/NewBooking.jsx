@@ -47,6 +47,7 @@ const NewBooking = ({ onClose, editBookingData }) => {
       durationText: b.durationText || "",
       passengerCount: b.passengerCount || "",
       roundedGoogleMinutes: b.estimatedDuration || 120,
+      source: b.source || "widget",
     };
     localStorage.setItem("bookingForm", JSON.stringify(bookingForm));
 

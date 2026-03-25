@@ -106,6 +106,9 @@ const WidgetMain = () => {
 
       setFormData((prev) => ({
         ...prev,
+        source:
+          (storedBooking && storedBooking.source) ||
+          prev.source,
         booking:
           storedBooking && Object.keys(storedBooking).length > 0
             ? storedBooking
@@ -259,6 +262,7 @@ const WidgetMain = () => {
         distanceText,
         durationText,
         extraTime: billableAddedMinutes.toString(),
+        source: bookingFormData.source || finalPayload.source || formData.source,
       };
 
       let response;
