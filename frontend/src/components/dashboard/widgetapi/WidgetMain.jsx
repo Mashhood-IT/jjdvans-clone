@@ -325,13 +325,13 @@ const WidgetMain = () => {
                 localStorage.removeItem("widgetPaymentData");
                 navigate("/widget-form");
               }}
-              className="px-6 py-2.5 bg-(--primary-dark-red) text-(--white) rounded-full widget-button-text transition"
+              className="btn btn-success"
             >
               Start Again
             </button>
             <button
               onClick={() => navigate(-1)}
-              className="px-6 py-2.5 bg-(--light-gray) hover:bg-(--medium-grey) text-(--dark-grey) rounded-full widget-button-text transition"
+              className="btn btn-cancel"
             >
               Go Back
             </button>

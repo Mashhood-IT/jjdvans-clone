@@ -356,7 +356,7 @@ const DistanceSlab = () => {
       </div>
 
       <div className="mb-4 sm:mb-5 md:mb-6">
-        <button className="btn btn-blue px-6 sm:px-8 text-xs sm:text-sm" onClick={handleAddSlab}>
+        <button className="btn btn-blue" onClick={handleAddSlab}>
           Add Distance Slab
         </button>
       </div>
@@ -369,7 +369,7 @@ const DistanceSlab = () => {
         exportTableData={exportTableData}
       />
       <div className="mt-4 sm:mt-5 md:mt-6 text-right">
-        <button className="btn btn-back px-6 sm:px-8 text-xs sm:text-sm" onClick={handleSaveAll}>
+        <button className="btn btn-back" onClick={handleSaveAll}>
           Update Pricing
         </button>
       </div>

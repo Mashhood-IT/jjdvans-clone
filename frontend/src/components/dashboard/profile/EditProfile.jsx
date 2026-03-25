@@ -343,14 +343,14 @@ const EditProfile = () => {
           <button
             type="button"
             onClick={handleReset}
-            className="btn btn-cancel px-6 sm:px-8 text-xs sm:text-sm"
+            className="btn btn-cancel"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={isUpdating}
-            className={`btn btn-success px-6 sm:px-8 text-xs sm:text-sm ${isUpdating ? "opacity-50 cursor-not-allowed" : ""
+            className={`btn btn-success ${isUpdating ? "opacity-50 cursor-not-allowed" : ""
               }`}
           >
             {isUpdating ? "Updating..." : "Update"}

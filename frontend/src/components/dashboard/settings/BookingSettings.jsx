@@ -243,7 +243,7 @@ const BookingSettings = () => {
           </div>
           <div className="md:col-span-3">
             <button
-              className="btn btn-edit mt-3 sm:mt-4 px-6 sm:px-8 py-1.5 sm:py-2 text-xs sm:text-sm bg-(--indigo-color) text-(--white) rounded-lg hover:bg-(--dark-blue) transition-colors"
+              className="btn btn-edit mt-3 sm:mt-4"
               onClick={handleUpdate}
             >
               Update Settings

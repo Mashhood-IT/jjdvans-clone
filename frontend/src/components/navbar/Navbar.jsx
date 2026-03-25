@@ -162,7 +162,7 @@ const Navbar = ({ toggleSidebar }) => {
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleSidebar}
-              className="cursor-pointer p-2 rounded-lg md:border-hidden! border border-theme"
+              className="cursor-pointer md:p-2 p-1 rounded-lg md:border-hidden! border border-theme"
             >
               <Icons.Menu className="text-(--white)" />
             </button>

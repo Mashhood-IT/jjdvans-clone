@@ -315,7 +315,7 @@ const PrimaryForm = ({
               type="submit"
               className="btn btn-blue w-full lg:w-auto"
             >
-              Get Free Quote
+              Instant Quote
             </button>
           </div>
 

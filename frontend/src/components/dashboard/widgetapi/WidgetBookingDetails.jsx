@@ -7,7 +7,6 @@ const WidgetBookingDetails = ({
     onSubmitSuccess,
     onBack,
     companyId: parentCompanyId,
-    data,
     isEdit: isEditProp,
     bookingId: bookingIdProp,
 }) => {
@@ -41,6 +40,12 @@ const WidgetBookingDetails = ({
         minute: "",
     });
 
+    const [originalDateTime, setOriginalDateTime] = useState({
+        date: "",
+        hour: "",
+        minute: "",
+    });
+
     const extractPostcode = (text) => {
         const match = text?.match(/\b[A-Z]{1,2}\d{1,2}[A-Z]?\b/i);
         return match ? match[0].toUpperCase() : null;
@@ -62,6 +67,11 @@ const WidgetBookingDetails = ({
                 ...prev,
                 ...parsed,
             }));
+            setOriginalDateTime({
+                date: parsed.date || "",
+                hour: parsed.hour || "",
+                minute: parsed.minute || "",
+            });
             const restoredDropOffs = [
                 parsed.dropoff,
                 parsed.additionalDropoff1,
@@ -173,9 +183,16 @@ const WidgetBookingDetails = ({
                 minRequiredMinutes = value * 24 * 60;
             }
 
+            const isDateTimeChanged =
+                formData.date !== originalDateTime.date ||
+                formData.hour !== originalDateTime.hour ||
+                formData.minute !== originalDateTime.minute;
+
             if (diffInMinutes < minRequiredMinutes) {
-                toast.error(`Bookings must be made at least ${value} ${unit.toLowerCase()} in advance.`);
-                return;
+                if (!isEdit || (isEdit && isDateTimeChanged)) {
+                    toast.error(`Bookings must be made at least ${value} ${unit.toLowerCase()} in advance.`);
+                    return;
+                }
             }
         }
 

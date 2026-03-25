@@ -183,7 +183,7 @@ const BookingsList = () => {
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         heading={editBookingData?._id ? "Edit Booking" : "New Booking"}
-        modalClassName="max-w-5xl w-full max-h-full"
+        modalClassName="max-w-8xl w-full max-h-full"
       >
         <NewBooking
           editBookingData={editBookingData}

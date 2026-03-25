@@ -29,7 +29,7 @@ const DeleteModal = ({
           </button>
           <button
             onClick={onCancel}
-            className="w-full bg-(--lightest-gray) cursor-pointer hover:bg-(--light-gray) text-(--dark-grey) font-medium py-2 px-4 rounded-lg transition"
+            className="w-full bg-(--lighter-gray) cursor-pointer hover:bg-(--light-gray) text-(--dark-grey) font-semibold py-2 px-4 rounded-lg transition"
           >
             {cancelText}
           </button>

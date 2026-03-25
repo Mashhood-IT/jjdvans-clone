@@ -160,7 +160,7 @@ const CarCardSection = ({
                 {car.quantity && (
                   <div className="text-left">
                     <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-(--lighter-blue) text-(--navy-blue)">
-                      Available Drivers: {car.quantity}
+                      {car.quantity} Drivers Available
                     </span>
                   </div>
                 )}

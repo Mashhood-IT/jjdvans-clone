@@ -155,7 +155,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
           </div>
           <div className="flex gap-2 w-full md:w-auto">
             <button
-              className="btn btn-success text-sm px-4 py-1.5"
+              className="btn btn-success"
               onClick={handleSendEmail}
             >
               Send

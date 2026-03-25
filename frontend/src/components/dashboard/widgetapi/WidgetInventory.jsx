@@ -437,7 +437,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
 
                 <button
                   onClick={() => handleRemoveItem(item.id)}
-                  className="btn btn-cancel px-4 rounded-md h-auto self-stretch flex items-center justify-center"
+                  className="btn btn-cancel"
                 >
                   <Icons.Minus className="w-4 h-4" />
                 </button>
@@ -531,9 +531,9 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
                   onClick={() =>
                     setPassengerCount(Math.max(0, passengerCount - 1))
                   }
-                  className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
+                  className={`w-8 h-8 flex items-center justify-center border border-(--dark-grey) rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
                 >
-                  <Icons.Minus className="w-4 h-4 text-(--medium-grey)" />
+                  <Icons.Minus className="w-4 h-4 text-(--dark-grey)" />
                 </button>
                 <span className="widget-title text-gray-900 w-8 text-center">
                   {passengerCount}
@@ -543,9 +543,9 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
                   onClick={() =>
                     setPassengerCount(Math.min(totalSeats, passengerCount + 1))
                   }
-                  className={`w-8 h-8 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
+                  className={`w-8 h-8 flex items-center justify-center border border-(--dark-grey) rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount >= totalSeats ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
                 >
-                  <Icons.Plus className="w-4 h-4 text-(--medium-grey)" />
+                  <Icons.Plus className="w-4 h-4 text-(--dark-grey)" />
                 </button>
               </div>
             </div>

@@ -60,7 +60,7 @@ const WidgetAPI = () => {
           </label>
           <button
             onClick={() => copyToClipboard(iframeCode)}
-            className="btn btn-edit px-6 sm:px-8 text-xs sm:text-sm"
+            className="btn btn-edit"
           >
             {copied ? "Copied!" : "Copy Code"}
           </button>

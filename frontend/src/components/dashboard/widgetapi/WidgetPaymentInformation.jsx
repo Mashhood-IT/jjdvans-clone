@@ -649,7 +649,7 @@ const WidgetPaymentInformation = ({
             {(isEdit || formData.paymentMethod !== "Stripe") && (
               <button
                 onClick={handleBookNow}
-                className="btn btn-blue px-8"
+                className="btn btn-blue"
               >
                 {isEdit ? "Confirm Update" : "Book Now"}
               </button>

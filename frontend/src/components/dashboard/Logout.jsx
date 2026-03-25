@@ -43,7 +43,7 @@ const Logout = () => {
 
           <button
             onClick={handleCancel}
-            className="w-full bg-(--light-gray) hover:bg-(--light-gray) text-(--dark-black) font-medium py-2 px-4 rounded-lg transition"
+            className="w-full bg-(--light-gray) hover:bg-(--light-gray) text-(--dark-black) font-semibold py-2 px-4 rounded-lg transition"
           >
             Cancel
           </button>

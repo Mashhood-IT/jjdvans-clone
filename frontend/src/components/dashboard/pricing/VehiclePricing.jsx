@@ -221,7 +221,7 @@ const VehiclePricing = () => {
     <>
       <OutletHeading name="Vehicle Pricing" />
       <button
-        className="btn btn-blue mb-3 sm:mb-4 md:mb-5 px-6 sm:px-8 text-xs sm:text-sm flex items-center gap-2"
+        className="btn btn-blue mb-3 sm:mb-4 md:mb-5"
         onClick={() => handleEditModal({})}
       >
         <Icons.Plus className="size-4" />
@@ -351,7 +351,7 @@ const VehiclePricing = () => {
 
             <button
               type="button"
-              className="btn btn-back w-full px-4 sm:px-6 text-xs sm:text-sm flex items-center justify-center gap-2 border-dashed border-2 hover:border-(--main-color) hover:text-(--main-color) transition-all"
+              className="btn btn-back w-full"
               onClick={() => {
                 if (selectedAccount.extraHelp.length >= 10) {
                   toast.warning("You can only add up to 10 options.");
@@ -409,7 +409,7 @@ const VehiclePricing = () => {
             </button>
             <button
               onClick={() => setShowModal(false)}
-              className="btn btn-cancel px-6 sm:px-8 text-xs sm:text-sm"
+              className="btn btn-cancel"
             >
               Cancel
             </button>

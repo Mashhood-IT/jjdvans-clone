@@ -152,7 +152,7 @@ const SelectDateRange = ({ startDate, endDate, setStartDate, setEndDate }) => {
             />
             <button
               onClick={applyCustomRange}
-              className="bg-(--main-color) text-(--white) text-sm px-3 py-1 rounded hover:bg-(--dark-blue)"
+              className="btn btn-blue"
             >
               Apply
             </button>
