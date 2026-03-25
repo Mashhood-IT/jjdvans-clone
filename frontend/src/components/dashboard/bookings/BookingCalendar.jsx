@@ -3,6 +3,7 @@ import Icons from "../../../assets/icons";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import { useLoading } from "../../common/LoadingProvider";
+import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
 
 
 const BookingCalendar = () => {
@@ -51,7 +52,7 @@ const BookingCalendar = () => {
 
     passenger: booking.passenger?.name || "N/A",
     email: booking.passenger?.email || "N/A",
-    phone: booking.passenger?.phone || "N/A",
+    phone: formatPhoneNumber(booking.passenger?.phone),
     bookingId: booking.bookingId || "-",
   }));
 
@@ -110,46 +111,46 @@ const BookingCalendar = () => {
             </div>
 
             <div className="grid grid-cols-7 gap-1">
-          {getDaysInMonth(currentDate).map((day, index) => {
-            const dayBookings = getBookingsForDate(day);
+              {getDaysInMonth(currentDate).map((day, index) => {
+                const dayBookings = getBookingsForDate(day);
 
-            return (
-              <div
-                key={index}
-                className={`md:min-h-28 min-h-20 border rounded p-1 ${day ? "bg-(--white)" : "bg-(--lightest-gray)"
-                  }`}
-              >
-                {day && (
-                  <>
-                    <div className="text-sm font-semibold mb-1">{day}</div>
+                return (
+                  <div
+                    key={index}
+                    className={`md:min-h-28 min-h-20 border rounded p-1 ${day ? "bg-(--white)" : "bg-(--lightest-gray)"
+                      }`}
+                  >
+                    {day && (
+                      <>
+                        <div className="text-sm font-semibold mb-1">{day}</div>
 
-                    {dayBookings.map((booking) => (
-                      <div
-                        key={booking.id}
-                        className="text-[10px] md:text-[11px] p-1 rounded mb-1 truncate cursor-pointer bg-(--lighter-blue) text-(--navy-blue)"
-                        onMouseEnter={(e) => {
-                          setHoveredEvent(booking);
-                          handleMouseMove(e);
-                        }}
-                        onMouseLeave={() => setHoveredEvent(null)}
-                        onClick={(e) => {
-                          if (hoveredEvent?.id === booking.id) {
-                            setHoveredEvent(null);
-                          } else {
-                            setHoveredEvent(booking);
-                            handleMouseMove(e);
-                          }
-                        }}
-                      >
-                        {booking.bookingId} — {booking.pickup} →{" "}
-                        {booking.dropoff}
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-            );
-          })}
+                        {dayBookings.map((booking) => (
+                          <div
+                            key={booking.id}
+                            className="text-[10px] md:text-[11px] p-1 rounded mb-1 truncate cursor-pointer bg-(--lighter-blue) text-(--navy-blue)"
+                            onMouseEnter={(e) => {
+                              setHoveredEvent(booking);
+                              handleMouseMove(e);
+                            }}
+                            onMouseLeave={() => setHoveredEvent(null)}
+                            onClick={(e) => {
+                              if (hoveredEvent?.id === booking.id) {
+                                setHoveredEvent(null);
+                              } else {
+                                setHoveredEvent(booking);
+                                handleMouseMove(e);
+                              }
+                            }}
+                          >
+                            {booking.bookingId} — {booking.pickup} →{" "}
+                            {booking.dropoff}
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
