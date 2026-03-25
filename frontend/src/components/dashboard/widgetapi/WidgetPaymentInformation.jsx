@@ -214,16 +214,14 @@ const WidgetPaymentInformation = ({
     const initialTimeUnits = Math.ceil(initialGoogleMinutes / 30);
     const extraHelpUnitPrice = Number(pricingData.extraHelp?.unitPrice || 0);
 
-    // Baseline costs (Initial Duration)
     const baseFareVehicleDist = Number(pricingData.baseFare || 0);
     const initialWorkersCharges = initialTimeUnits * extraHelpUnitPrice;
     const displayBaseFare = baseFareVehicleDist + initialWorkersCharges;
 
-    // Additional costs
     const currentTotalMinutes = (inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0);
     const addedMinutes = currentTotalMinutes - initialGoogleMinutes;
     const addedTimeUnits = addedMinutes > 0 ? Math.ceil(addedMinutes / 30) : 0;
-    
+
     const addedVehicleCharge = Number(inventoryData.additionalFare || 0);
     const addedWorkersCharges = addedTimeUnits * extraHelpUnitPrice;
     const displayExtraTimeCharges = addedVehicleCharge + addedWorkersCharges;
@@ -240,7 +238,7 @@ const WidgetPaymentInformation = ({
 
     return {
       baseFare: displayBaseFare,
-      workersCharges: 0, // Now included in baseFare and extraTimeCharges for consistency
+      workersCharges: 0,
       extraTimeCharges: displayExtraTimeCharges,
       floorCharges,
       accessTypeCharges,

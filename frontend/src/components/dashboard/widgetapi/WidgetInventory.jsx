@@ -115,7 +115,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     const extraHelpUnitPrice = widgetPricing.extraHelp?.unitPrice || 0;
     const initialExtraHelpCharge = initialTimeUnits * extraHelpUnitPrice;
 
-    // Display Base Fare (Static: Distance + Initial Vehicle Duration + Initial Men Duration)
     const dBaseFare = base + initialExtraHelpCharge;
 
     const currentTotalMinutes = estimatedHours * 60 + estimatedMinutes;
@@ -125,7 +124,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     const addedVehicleCharge = addedTimeUnits * (selectedVehicle.halfHourPrice || 0);
     const addedExtraHelpCharge = addedTimeUnits * extraHelpUnitPrice;
 
-    // Display Additional Fare (Added Vehicle Duration + Added Men Duration)
     const dAdditionalFare = addedVehicleCharge + addedExtraHelpCharge;
 
     return {
@@ -210,7 +208,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
             setPassengerCount(inv.passengerCount);
           if (inv.items && Array.isArray(inv.items)) setItems(inv.items);
 
-          // Always favor the latest routeMinutes for initialGoogleMinutes
           setInitialGoogleMinutes(routeMinutes);
 
           if (inv.floorAccess)

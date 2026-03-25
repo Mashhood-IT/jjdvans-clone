@@ -5,11 +5,7 @@ import PrimaryForm from "./widgetcomponents/PrimaryForm";
 const WidgetBooking = ({
   onSubmitSuccess,
   companyId: parentCompanyId,
-  isEdit: isEditProp,
-  bookingId: bookingIdProp,
 }) => {
-  const isEdit = isEditProp || new URLSearchParams(window.location.search).get("isEdit") === "true";
-  const bookingId = bookingIdProp || new URLSearchParams(window.location.search).get("bookingId") || "";
   const companyId =
     parentCompanyId ||
     new URLSearchParams(window.location.search).get("company") ||
@@ -31,9 +27,9 @@ const WidgetBooking = ({
     minute: "",
   });
 
-useEffect(() => {
+  useEffect(() => {
     const isEdit = new URLSearchParams(window.location.search).get("isEdit") === "true";
-    
+
     if (isEdit) {
       const timer = setTimeout(() => {
         const savedData = localStorage.getItem("bookingForm");
@@ -54,11 +50,11 @@ useEffect(() => {
             setDropOffs(restoredDropOffs);
           }
         }
-      }, 100); 
-      
+      }, 100);
+
       return () => clearTimeout(timer);
     }
-    
+
     const savedData = localStorage.getItem("bookingForm");
     if (savedData) {
       const parsed = JSON.parse(savedData);

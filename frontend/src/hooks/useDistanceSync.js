@@ -9,7 +9,7 @@ const useDistanceSync = (companyId) => {
     durationText: '',
     miles: 0,
     googleMinutes: 0,
-    roundedGoogleMinutes: 120, // Default 2 hours
+    roundedGoogleMinutes: 120,
     segments: [],
     loading: false
   });
@@ -75,7 +75,6 @@ const useDistanceSync = (companyId) => {
 
       setDistanceInfo(newInfo);
       
-      // Sync to localStorage for other components to find
       const savedForm = JSON.parse(localStorage.getItem('bookingForm') || '{}');
       localStorage.setItem('bookingForm', JSON.stringify({
         ...savedForm,
@@ -95,7 +94,6 @@ const useDistanceSync = (companyId) => {
     }
   }, [triggerDistance, companyId]);
 
-  // Load from localStorage on init
   useEffect(() => {
     const savedForm = localStorage.getItem('bookingForm');
     if (savedForm) {

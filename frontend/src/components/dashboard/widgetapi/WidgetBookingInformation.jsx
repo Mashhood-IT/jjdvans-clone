@@ -4,7 +4,7 @@ import CarCardSection from './widgetcomponents/CarCardSection';
 
 import { toast } from 'react-toastify';
 import IMAGES from '../../../assets/images';
-import { useLazyGeocodeQuery, useLazyGetDistanceQuery } from '../../../redux/api/googleApi';
+import { useLazyGeocodeQuery } from '../../../redux/api/googleApi';
 
 import { useGetAllVehiclesQuery } from '../../../redux/api/vehicleApi';
 import { useGetPublicBookingSettingQuery } from '../../../redux/api/bookingSettingsApi';
@@ -17,11 +17,7 @@ const WidgetBookingInformation = ({
   onBack,
   dropOffPrice,
   data,
-  isEdit: isEditProp,
-  bookingId: bookingIdProp,
 }) => {
-  const isEdit = isEditProp || new URLSearchParams(window.location.search).get("isEdit") === "true";
-  const bookingId = bookingIdProp || new URLSearchParams(window.location.search).get("bookingId") || "";
 
   const companyId = new URLSearchParams(window.location.search).get("company") || "";
   const { data: bookingSettingData } = useGetPublicBookingSettingQuery(companyId, {
@@ -31,7 +27,6 @@ const WidgetBookingInformation = ({
 
   const { data: vehicleResponse, isLoading: isVehiclesLoading } = useGetAllVehiclesQuery();
   const [triggerGeocode] = useLazyGeocodeQuery();
-  const [triggerDistance] = useLazyGetDistanceQuery();
 
   const carList = vehicleResponse?.data || vehicleResponse || [];
 
@@ -588,7 +583,7 @@ const WidgetBookingInformation = ({
       segmentBreakdown,
       extraHelp: selectedHelpOption ? {
         label: selectedHelpOption.label,
-        price: Number(extraHelpPrice || 0), // Explicitly store total price here
+        price: Number(extraHelpPrice || 0),
         unitPrice: Number(selectedHelpOption.unitPrice || 0)
       } : null
     };

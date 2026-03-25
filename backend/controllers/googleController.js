@@ -2,7 +2,6 @@ import fetch from "node-fetch";
 import BookingSetting from "../models/settings/bookingSettings.js";
 
 const getGoogleKeys = async (companyId) => {
-  // Use the key from environment variables
   const apiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_MAPS_API_KEY || "";
 
   return { server: apiKey, browser: apiKey };
@@ -62,7 +61,6 @@ const airportTerminals = {
     },
   ],
 
-  // Gatwick (LGW)
   gatwick: [
     {
       name: "London Gatwick Airport (LGW), North Terminal",
@@ -84,7 +82,6 @@ const airportTerminals = {
     },
   ],
 
-  // Stansted (STN)
   stansted: [
     {
       name: "London Stansted Airport (STN), Main Terminal",
@@ -100,7 +97,6 @@ const airportTerminals = {
     },
   ],
 
-  // Luton (LTN)
   luton: [
     {
       name: "London Luton Airport (LTN), Main Terminal",
@@ -114,7 +110,6 @@ const airportTerminals = {
     },
   ],
 
-  // City Airport (LCY)
   city: [
     {
       name: "London City Airport (LCY), Main Terminal",
@@ -128,7 +123,6 @@ const airportTerminals = {
     },
   ],
 
-  // Manchester (MAN)
   manchester: [
     {
       name: "Manchester Airport (MAN), Terminal 1",
@@ -164,7 +158,6 @@ const airportTerminals = {
     },
   ],
 
-  // Birmingham (BHX)
   birmingham: [
     {
       name: "Birmingham Airport (BHX), Main Terminal",
@@ -178,7 +171,6 @@ const airportTerminals = {
     },
   ],
 
-  // Edinburgh (EDI)
   edinburgh: [
     {
       name: "Edinburgh Airport (EDI), Main Terminal",
@@ -192,7 +184,6 @@ const airportTerminals = {
     },
   ],
 
-  // Glasgow (GLA)
   glasgow: [
     {
       name: "Glasgow Airport (GLA), Main Terminal",
@@ -206,7 +197,6 @@ const airportTerminals = {
     },
   ],
 
-  // Bristol (BRS)
   bristol: [
     {
       name: "Bristol Airport (BRS), Main Terminal",
@@ -220,7 +210,6 @@ const airportTerminals = {
     },
   ],
 
-  // Belfast (BFS/BHD)
   belfast: [
     {
       name: "Belfast International Airport (BFS), Main Terminal",
@@ -246,7 +235,6 @@ const airportTerminals = {
     },
   ],
 
-  // Leeds (LBA)
   leeds: [
     {
       name: "Leeds Bradford Airport (LBA), Main Terminal",
@@ -260,7 +248,6 @@ const airportTerminals = {
     },
   ],
 
-  // East Midlands (EMA)
   eastmidlands: [
     {
       name: "East Midlands Airport (EMA), Main Terminal",
@@ -274,7 +261,6 @@ const airportTerminals = {
     },
   ],
 
-  // Newcastle (NCL)
   newcastle: [
     {
       name: "Newcastle Airport (NCL), Main Terminal",
@@ -291,7 +277,6 @@ const airportTerminals = {
   ],
 };
 
-// CONTROLLERS
 export const AutoComplete = async (req, res) => {
   try {
     const queryRaw = req.query.input || "";
