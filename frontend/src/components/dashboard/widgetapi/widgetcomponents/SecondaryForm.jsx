@@ -195,8 +195,8 @@ const SecondaryForm = ({
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 md:mt-4 gap-4">
-                        <div className="relative">
+                    <div className="grid grid-cols-12 md:mt-4 gap-4">
+                        <div className="relative col-span-12 md:col-span-6 lg:col-span-5">
                             <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Choose a Moving Date</label>
                             <div className="relative">
                                 <input
@@ -208,7 +208,7 @@ const SecondaryForm = ({
                                 />
                             </div>
                         </div>
-                        <div>
+                        <div className="col-span-12 md:col-span-6 lg:col-span-5">
                             <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Select Your Preferred Start Time</label>
                             <select
                                 name="hour"
@@ -224,7 +224,7 @@ const SecondaryForm = ({
                                 ))}
                             </select>
                         </div>
-                        <div>
+                        <div className="col-span-12 md:col-span-12 lg:col-span-2">
                             <label className="block widget-label-text text-(--dark-gray) tracking-wider mb-1">Minute</label>
                             <select
                                 name="minute"

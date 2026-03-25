@@ -159,8 +159,8 @@ const CarCardSection = ({
               <div className="absolute top-4 left-4">
                 {car.quantity && (
                   <div className="text-left">
-                    <span className="px-2 py-1 rounded-full text-[11px] font-bold bg-(--lighter-blue) text-(--navy-blue)">
-                      {car.quantity} Drivers Available
+                    <span className="px-2 py-1 rounded-full text-[12px] font-bold text-(--dark-grey)">
+                      {car.quantity} {car.quantity < 2 ? "Driver" : "Drivers"} Available
                     </span>
                   </div>
                 )}
