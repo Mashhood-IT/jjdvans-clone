@@ -44,8 +44,6 @@ const sendEmail = async (to, subject, payload = {}) => {
     throw new Error("HTML content is required");
   }
 
-  console.log(`[sendEmail] Sending → "${subject}" to: ${recipients.join(", ")}`);
-
   try {
     const info = await transporter.sendMail({
       from: `${fromName} <${fromEmail}>`,
@@ -55,8 +53,6 @@ const sendEmail = async (to, subject, payload = {}) => {
       html: html,
       text: `View this email in an HTML-enabled client. ${subject}`,
     });
-
-    console.log(`[sendEmail] Email sent. ID: ${info.messageId}`);
 
     return {
       success: true,
