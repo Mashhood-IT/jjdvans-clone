@@ -210,13 +210,23 @@ const WidgetPaymentInformation = ({
     const inventoryDataRaw = localStorage.getItem("widgetInventoryData");
     const inventoryData = inventoryDataRaw ? JSON.parse(inventoryDataRaw) : {};
 
-    const baseFare = Number(pricingData.baseFare || 0);
+    const initialGoogleMinutes = inventoryData.initialGoogleMinutes || 120;
+    const initialTimeUnits = Math.ceil(initialGoogleMinutes / 30);
     const extraHelpUnitPrice = Number(pricingData.extraHelp?.unitPrice || 0);
-    const extraTimeCharges = Number(inventoryData.additionalFare || 0);
 
-    const totalMinutes = (inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0);
-    const totalTimeUnits = Math.ceil(totalMinutes / 30);
-    const workersCharges = totalTimeUnits * extraHelpUnitPrice;
+    // Baseline costs (Initial Duration)
+    const baseFareVehicleDist = Number(pricingData.baseFare || 0);
+    const initialWorkersCharges = initialTimeUnits * extraHelpUnitPrice;
+    const displayBaseFare = baseFareVehicleDist + initialWorkersCharges;
+
+    // Additional costs
+    const currentTotalMinutes = (inventoryData.estimatedHours || 0) * 60 + (inventoryData.estimatedMinutes || 0);
+    const addedMinutes = currentTotalMinutes - initialGoogleMinutes;
+    const addedTimeUnits = addedMinutes > 0 ? Math.ceil(addedMinutes / 30) : 0;
+    
+    const addedVehicleCharge = Number(inventoryData.additionalFare || 0);
+    const addedWorkersCharges = addedTimeUnits * extraHelpUnitPrice;
+    const displayExtraTimeCharges = addedVehicleCharge + addedWorkersCharges;
 
     const floorCharges = Number(inventoryData.floorCharges || 0);
     const accessTypeCharges = Number(inventoryData.accessTypeCharges || 0);
@@ -224,14 +234,14 @@ const WidgetPaymentInformation = ({
     const childSeatCount = parseIntSafe(formData.childSeat || "0");
     const childSeatTotal = childSeatCount * childSeatUnitPrice;
 
-    const total = baseFare + workersCharges + extraTimeCharges + floorCharges + accessTypeCharges + childSeatTotal;
+    const total = displayBaseFare + displayExtraTimeCharges + floorCharges + accessTypeCharges + childSeatTotal;
     const depositAmount = total * 0.35;
     const driverAmount = total - depositAmount;
 
     return {
-      baseFare,
-      workersCharges,
-      extraTimeCharges,
+      baseFare: displayBaseFare,
+      workersCharges: 0, // Now included in baseFare and extraTimeCharges for consistency
+      extraTimeCharges: displayExtraTimeCharges,
       floorCharges,
       accessTypeCharges,
       childSeatTotal,

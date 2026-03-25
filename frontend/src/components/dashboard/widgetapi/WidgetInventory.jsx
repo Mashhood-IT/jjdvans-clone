@@ -109,22 +109,31 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     settingsData,
   ]);
 
-  const baseFare = useMemo(() => {
+  const { totalFare, displayBaseFare, displayAdditionalFare } = useMemo(() => {
     const base = widgetPricing.baseFare || 0;
-    const extraMenCharges = widgetPricing?.extraHelp?.unitPrice || 0;
-    const totalTimeUnits = Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30);
-    return base + (totalTimeUnits * extraMenCharges);
-  }, [widgetPricing?.baseFare, widgetPricing?.extraHelp?.unitPrice, estimatedHours, estimatedMinutes]);
-
-  const totalFare = useMemo(() => {
-    const base = widgetPricing.baseFare || 0;
-    const currentTotalMinutes = estimatedHours * 60 + estimatedMinutes;
-    const totalTimeUnits = Math.ceil(currentTotalMinutes / 30);
+    const initialTimeUnits = Math.ceil(initialGoogleMinutes / 30);
     const extraHelpUnitPrice = widgetPricing.extraHelp?.unitPrice || 0;
-    const totalExtraHelpCharge = totalTimeUnits * extraHelpUnitPrice;
+    const initialExtraHelpCharge = initialTimeUnits * extraHelpUnitPrice;
 
-    return base + additionalFare + floorCharges + accessTypeCharges + totalExtraHelpCharge;
-  }, [widgetPricing.baseFare, additionalFare, floorCharges, accessTypeCharges, widgetPricing.extraHelp?.unitPrice, estimatedHours, estimatedMinutes]);
+    // Display Base Fare (Static: Distance + Initial Vehicle Duration + Initial Men Duration)
+    const dBaseFare = base + initialExtraHelpCharge;
+
+    const currentTotalMinutes = estimatedHours * 60 + estimatedMinutes;
+    const addedMinutes = currentTotalMinutes - initialGoogleMinutes;
+    const addedTimeUnits = addedMinutes > 0 ? Math.ceil(addedMinutes / 30) : 0;
+
+    const addedVehicleCharge = addedTimeUnits * (selectedVehicle.halfHourPrice || 0);
+    const addedExtraHelpCharge = addedTimeUnits * extraHelpUnitPrice;
+
+    // Display Additional Fare (Added Vehicle Duration + Added Men Duration)
+    const dAdditionalFare = addedVehicleCharge + addedExtraHelpCharge;
+
+    return {
+      totalFare: dBaseFare + dAdditionalFare + (floorCharges || 0) + (accessTypeCharges || 0),
+      displayBaseFare: dBaseFare,
+      displayAdditionalFare: dAdditionalFare
+    };
+  }, [widgetPricing.baseFare, initialGoogleMinutes, estimatedHours, estimatedMinutes, widgetPricing.extraHelp?.unitPrice, selectedVehicle.halfHourPrice, floorCharges, accessTypeCharges]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -177,7 +186,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
         }
       }
 
-      // 2. Load saved inventory data if it exists (for floor, access, items, etc.)
       const savedInventory = localStorage.getItem("widgetInventoryData");
       if (savedInventory) {
         try {
@@ -187,8 +195,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
           if (inv.pickupAccess) setPickupAccess(inv.pickupAccess);
           if (inv.dropoffAccess) setDropoffAccess(inv.dropoffAccess);
 
-          // Only restore manual adjustments if the base route time hasn't changed
-          // This prevents stale "2 hours" from overwriting new "6 hours" when dropoffs change
           const currentBookingForm = JSON.parse(localStorage.getItem("bookingForm") || "{}");
           const routeMinutes = currentBookingForm.roundedGoogleMinutes || passedRoundedMinutes || 120;
 
@@ -197,9 +203,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
               setEstimatedHours(inv.estimatedHours);
             if (inv.estimatedMinutes !== undefined)
               setEstimatedMinutes(inv.estimatedMinutes);
-          } else {
-            // Route changed, keep the values set from bookingForm above (initialGoogleMinutes from form)
-            console.log("Route changed, skipping stale inventory duration restoration");
           }
 
           if (inv.ridingAlong !== undefined) setRidingAlong(inv.ridingAlong);
@@ -245,9 +248,8 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     selectedVehicle.halfHourPrice,
   ]);
 
-  // Persistent storage for inventory data
   useEffect(() => {
-    if (initialGoogleMinutes === 0) return; // Wait until initialized
+    if (initialGoogleMinutes === 0) return;
 
     const inventoryData = {
       pickupFloor,
@@ -531,7 +533,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
                   onClick={() =>
                     setPassengerCount(Math.max(0, passengerCount - 1))
                   }
-                  className={`w-8 h-8 flex items-center justify-center border border-(--dark-grey) rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
+                  className={`w-8 h-8 flex items-center justify-center border border-(--medium-grey) rounded-lg hover:bg-(--lighter-gray) transition-colors ${passengerCount <= 0 ? "opacity-30 cursor-not-allowed" : "cursor-pointer"} `}
                 >
                   <Icons.Minus className="w-4 h-4 text-(--dark-grey)" />
                 </button>
@@ -620,7 +622,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
             Adjustments vary ±30 - minute increments
           </p>
           <p className="widget-option-text text-center mt-2 px-2 text-gray-400">
-            Non booked time will cost {currencySymbol}{(Math.round((selectedVehicle?.halfHourPrice || 0) * 1.05)).toFixed(2)} per half hour. Book in advance your total time and Save up to 5%
+            Non booked time will cost {currencySymbol}{(Math.round(((selectedVehicle?.halfHourPrice || 0) + (widgetPricing.extraHelp?.unitPrice || 0)) * 1.05)).toFixed(2)} per half hour. Book in advance your total time and Save up to 5%
           </p>
         </div>
         <div className="md:col-span-6 col-span-12 md:pl-12 pl-0 md:mt-0 mt-8">
@@ -628,15 +630,15 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
             <div className="flex justify-between items-center text-gray-400">
               <span className="text-sm">Base Fare</span>
               <span className="font-semibold text-(--white)">
-                {currencySymbol} {Math.round(Number(baseFare || 0)).toFixed(2)}
+                {currencySymbol} {Math.round(displayBaseFare).toFixed(2)}
               </span>
             </div>
 
-            {additionalFare > 0 && (
+            {displayAdditionalFare > 0 && (
               <div className="flex justify-between items-center text-gray-400">
                 <span className="text-sm">Additional Time Charge</span>
                 <span className="font-semibold text-(--white)">
-                  {currencySymbol} {additionalFare.toFixed(2)}
+                  {currencySymbol} {displayAdditionalFare.toFixed(2)}
                 </span>
               </div>
             )}
@@ -658,15 +660,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
                 </span>
               </div>
             )}
-
-            {/* {widgetPricing.extraHelp?.unitPrice > 0 && (
-              <div className="flex justify-between items-center text-gray-400">
-                <span className="text-sm">Extra Men Charges</span>
-                <span className="font-semibold text-(--white)">
-                  {currencySymbol} {(Math.ceil((estimatedHours * 60 + estimatedMinutes) / 30) * widgetPricing.extraHelp.unitPrice).toFixed(2)}
-                </span>
-              </div>
-            )} */}
 
             <div className="pt-3 border-t border-gray-700 flex justify-between items-center">
               <span className="text-gray-300 font-bold">Total Fare</span>
