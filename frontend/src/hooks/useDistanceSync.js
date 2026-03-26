@@ -7,6 +7,7 @@ const useDistanceSync = (companyId) => {
   const [distanceInfo, setDistanceInfo] = useState({
     distanceText: '',
     durationText: '',
+    realDurationText: '',
     miles: 0,
     googleMinutes: 0,
     roundedGoogleMinutes: 120,
@@ -61,11 +62,13 @@ const useDistanceSync = (companyId) => {
       const rawMins = totalSeconds / 60;
       const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
 
-      const { hours, minutes: mins } = formatMinutesToHM(roundedMins);
+const roundedRealMins = Math.ceil(rawMins);
+const { hours: realHours, minutes: realMins } = formatMinutesToHM(roundedRealMins);      const { hours, minutes: mins } = formatMinutesToHM(roundedMins);
 
       const newInfo = {
         distanceText: `${totalMiles.toFixed(2)} mi`,
         durationText: `${hours} hours ${mins} mins`,
+        realDurationText: `${realHours} hours ${realMins} mins`,
         miles: totalMiles,
         googleMinutes: rawMins,
         roundedGoogleMinutes: roundedMins,
@@ -100,9 +103,13 @@ const useDistanceSync = (companyId) => {
       try {
         const data = JSON.parse(savedForm);
         if (data.distanceText || (data.segments && data.segments.length > 0)) {
+          const realDurText = data.googleMinutes ? (() => {
+const { hours, minutes } = formatMinutesToHM(Math.ceil(data.googleMinutes));            return `${hours} hours ${minutes} mins`;
+          })() : '';
           setDistanceInfo({
             distanceText: data.distanceText || '',
             durationText: data.durationText || '',
+            realDurationText: realDurText,
             miles: data.miles || 0,
             googleMinutes: data.googleMinutes || 0,
             roundedGoogleMinutes: data.roundedGoogleMinutes || 120,

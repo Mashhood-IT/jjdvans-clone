@@ -7,7 +7,7 @@ const WidgetAPI = () => {
   const [copied, setCopied] = useState(false);
 
   const BASE_URL =
-    import.meta.env.VITE_BASE_URL_FRONTEND;
+    import.meta.env.VITE_BASE_URL_FRONTEND || "https://dashboard.flexiblebudgetremovals.com/";
   const companyId = user?.companyId || "";
 
 

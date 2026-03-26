@@ -23,7 +23,6 @@ const PrimaryForm = ({
   setFormData,
   companyId,
 }) => {
-
   const serviceDropdownRef = useRef(null);
   const serviceTimeoutRef = useRef(null);
   const [showServiceDropdown, setShowServiceDropdown] = useState(false);
@@ -164,10 +163,11 @@ const PrimaryForm = ({
           </h2>
         </div>
 
-        <div className=" lg:grid-cols-12 lg:col-start-1 gap-0">
+        <div className="grid grid-cols-12 gap-3 px-5 py-4 items-end">
 
-          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5
-           relative" ref={serviceDropdownRef}
+          <div
+            className="col-span-12 md:col-span-3 lg:col-span-3 relative"
+            ref={serviceDropdownRef}
             onMouseEnter={() => {
               setIsHoveringService(true);
               clearTimeout(serviceTimeoutRef.current);
@@ -179,7 +179,7 @@ const PrimaryForm = ({
               }, 2000);
             }}
           >
-            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1.5 mt-4">
+            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1">
               <Icons.Map size={17} />
               Service Type
             </label>
@@ -208,7 +208,7 @@ const PrimaryForm = ({
             </div>
 
             {showServiceDropdown && (
-              <div className="absolute z-50 left-5 right-5 top-full -mt-2 bg-(--white) border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-50 w-full top-full mt-1 bg-(--white) border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
                 {REMOVAL_BOOKING_TYPES.map((opt) => (
                   <div
                     key={opt.value}
@@ -225,8 +225,8 @@ const PrimaryForm = ({
             )}
           </div>
 
-          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 relative">
-            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1.5 mt-2">
+          <div className="col-span-12 md:col-span-3 relative">
+            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1">
               <Icons.MapPin size={17} />
               Pickup Address
             </label>
@@ -239,7 +239,7 @@ const PrimaryForm = ({
               className="custom_input text-sm"
             />
             {pickupSuggestions.length > 0 && (
-              <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-[calc(100%-2.5rem)] mt-1 left-5">
+              <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-1">
                 <li
                   onClick={() => {
                     const val = (formData.pickup || "").trim();
@@ -263,8 +263,8 @@ const PrimaryForm = ({
             )}
           </div>
 
-          <div className="col-span-12 md:col-span-6 lg:col-span-6 lg:col-start-4 px-5 py-2.5 relative">
-            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1.5 mt-2">
+          <div className="col-span-12 md:col-span-3 relative">
+            <label className="flex items-center gap-1 text-xs font-semibold text-gray-500 tracking-wide mb-1">
               <Icons.MapPin size={17} />
               Drop-off Address
             </label>
@@ -276,7 +276,7 @@ const PrimaryForm = ({
               className="custom_input text-sm"
             />
             {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
-              <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-[calc(100%-2.5rem)] mt-1 left-5">
+              <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-1">
                 <li
                   onClick={async () => {
                     const val = (dropOffs[0] || "").trim();
@@ -310,10 +310,10 @@ const PrimaryForm = ({
             )}
           </div>
 
-          <div className="px-5 py-2.5 flex items-center lg:justify-end mb-4">
+          <div className="col-span-12 md:col-span-3 flex items-end">
             <button
               type="submit"
-              className="btn btn-blue w-full lg:w-auto"
+              className="btn btn-blue w-full"
             >
               Instant Quote
             </button>

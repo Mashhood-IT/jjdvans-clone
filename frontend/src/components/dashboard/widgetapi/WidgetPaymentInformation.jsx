@@ -375,7 +375,7 @@ const WidgetPaymentInformation = ({
         </button>
       </div>
 
-      <WidgetStepHeader title="Complete Your Booking" description="Verify your relocation details and passenger requirements to finalize your professional service estimate." />
+      <WidgetStepHeader title="Complete Your Booking"/>
       <div className="grid grid-cols-12 gap-4 md:gap-8">
         <div className="md:col-span-6 col-span-12 space-y-6" ref={formTopRef}>
           <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
@@ -565,12 +565,10 @@ const WidgetPaymentInformation = ({
                 {Math.round(Number(pricingInfo.depositAmount)).toFixed(2)}</strong> now via card to secure your professional transit
             </li>
             <li>
-              The remaining balance to be paid directly to your driver is
-              &nbsp;
-              <span className="font-semibold">
+              The remaining outstand balance to be paid directly to the driver is&nbsp;<span className="font-semibold">
                 {pricingInfo?.currencySymbol}
                 {Math.round(Number(pricingInfo?.driverAmount)).toFixed(2)}
-              </span>
+              </span><span> either by Cash, Card or Bank Transfer.</span>
             </li>
             <li>
               Secure, encrypted payments with instant confirmation

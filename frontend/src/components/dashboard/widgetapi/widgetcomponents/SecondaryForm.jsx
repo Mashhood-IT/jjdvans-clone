@@ -39,6 +39,8 @@ const SecondaryForm = ({
 
     const {
         distanceText,
+        durationText,
+        realDurationText,
         calculateRoute,
     } = useDistanceSync(companyId);
 
@@ -190,8 +192,20 @@ const SecondaryForm = ({
                             </h2>
                         </div>
 
-                        <div className="rounded-full md:mb-0 mb-5 border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
-                            Distance {distanceText && <span className="text-(--dark-gray)">({distanceText})</span>}
+                        <div className="rounded-full md:mb-0 mb-5 border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 shadow-sm flex items-center gap-2">
+                            {distanceText ? (
+                                <>
+                                    <span className="flex items-center gap-1"><Icons.MapPin size={14} className="text-(--dark-gray)" /><span className="text-(--dark-gray) font-semibold">{distanceText}</span></span>
+                                    {realDurationText && (
+                                        <>
+                                            <span className="text-gray-300">|</span>
+                                            <span className="flex items-center gap-1"><Icons.Clock size={14} className="text-(--dark-gray)" /><span className="text-(--dark-gray) font-semibold">{realDurationText}</span></span>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <span>Distance</span>
+                            )}
                         </div>
                     </div>
 

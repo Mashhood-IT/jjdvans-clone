@@ -106,12 +106,12 @@ select:disabled {
   justify-content: center;
   gap: 8px;
   font-family: var(--app-font);
-  padding: 6px 24px;
+  padding: 10px 28px;
   letter-spacing: 0.3px;
   text-align: center;
   text-decoration: none;
   border: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 450;
   position: relative;
   overflow: hidden;

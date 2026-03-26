@@ -292,53 +292,53 @@ const PDFContent = forwardRef(
               marginLeft: "auto",
             }}
           >
-            <div
-              style={{
-                fontSize: "11px",
-                color: "#4b5563",
-                marginBottom: "4px",
-              }}
-            >
-              <strong>Base Fare:</strong> {currencySymbol}
-              {Number(viewData?.fare || 0).toFixed(2)}
-            </div>
-            {viewData?.additionalTimeFare > 0 && (
-              <div
-                style={{
-                  fontSize: "11px",
-                  color: "#4b5563",
-                  marginBottom: "4px",
-                }}
-              >
-                <strong>Extra Time:</strong> +{currencySymbol}
-                {Number(viewData?.additionalTimeFare).toFixed(2)}
-              </div>
-            )}
-            {viewData?.workersCharges > 0 && (
-              <div
-                style={{
-                  fontSize: "11px",
-                  color: "#4b5563",
-                  paddingBottom: "10px",
-                }}
-              >
-                <strong>Extra Men:</strong> +{currencySymbol}
-                {Number(viewData?.workersCharges).toFixed(2)}
-              </div>
-            )}
-            <p
-              style={{
-                fontSize: "14px",
-                margin: "8px 0 0 0",
-                borderTop: "1px solid #d1d5db",
-                paddingTop: "5px",
-              }}
-            >
-              <strong style={{ fontWeight: "bold" }}>Total Fare:</strong>{" "}
-              {currencySymbol}
-              {Number(viewData?.totalPrice || viewData?.fare || 0).toFixed(2)}
-              &nbsp; GBP
-            </p>
+            {(() => {
+              const baseFare = Number(Math.round(viewData?.fareBreakdown?.baseFare).toFixed(2) ?? viewData?.fare ?? 0);
+              const workersCharges = Number(viewData?.fareBreakdown?.workersCharges ?? viewData?.workersCharges ?? 0);
+              const extraTimeFare = Number(viewData?.fareBreakdown?.extraTimeCharges ?? viewData?.additionalTimeFare ?? 0);
+              const totalFare = Number(viewData?.fareBreakdown?.total ?? viewData?.totalPrice ?? baseFare + workersCharges + extraTimeFare);
+              const displayBaseFare = baseFare + workersCharges;
+
+              return (
+                <>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "#4b5563",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <strong>Base Fare:</strong> {currencySymbol}
+                    {displayBaseFare.toFixed(2)}
+                  </div>
+                  {extraTimeFare > 0 && (
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "#4b5563",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      <strong>Extra Time:</strong> +{currencySymbol}
+                      {extraTimeFare.toFixed(2)}
+                    </div>
+                  )}
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      margin: "8px 0 0 0",
+                      borderTop: "1px solid #d1d5db",
+                      paddingTop: "5px",
+                    }}
+                  >
+                    <strong style={{ fontWeight: "bold" }}>Total Fare:</strong>{" "}
+                    {currencySymbol}
+                    {totalFare.toFixed(2)}
+                    &nbsp; GBP
+                  </p>
+                </>
+              );
+            })()}
             <div style={{ marginTop: "8px", borderTop: "1px dashed #e5e7eb", paddingTop: "8px" }}>
               <div style={{ fontSize: "11px", color: "#059669", marginBottom: "4px" }}>
                 <strong>Deposit Paid (35%):</strong> {currencySymbol}

@@ -571,15 +571,15 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
               {googleDurationText && (
                 <span className="widget-meta-text text-gray-400 gap-1.5 flex items-center">
                   <Icons.Clock className="w-3 h-3" />
-                  time booked: {googleDurationText}
+                  Time Booked: {googleDurationText}
                 </span>
               )}
             </div>
           )}
 
           <div className="text-center mb-4">
-            <p className="widget-label-small text-gray-400 mb-6">
-              total hours booked
+            <p className="text-xs text-gray-400 mb-6">
+              Total Hours Booked
             </p>
 
             <div className="flex items-center justify-center gap-6 mb-6">
@@ -615,7 +615,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
             </p>
           </div>
 
-          <p className="widget-option-text text-center text-gray-400">
+          <p className="text-sm text-center text-gray-400">
             Adjustments vary ±30 - minute increments
           </p>
           <p className="widget-option-text text-center mt-2 px-2 text-gray-400">

@@ -32,7 +32,6 @@ app.use(
       if (!origin) return callback(null, true);
 
       const normalizedOrigin = origin.replace(/\/$/, "");
-
       const isAllowed = origins.some((o) => {
         const normalizedO = o.replace(/\/$/, "");
         return (
