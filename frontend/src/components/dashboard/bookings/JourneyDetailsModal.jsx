@@ -358,7 +358,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     <strong className="text-(--dark-gray) text-xs whitespace-nowrap">
                       Name:
                     </strong>
-                    <span className="text-(--dark-grey)">
+                    <span className="text-(--dark-grey)  text-xs">
                       {viewData?.passenger?.name || "N/A"}
                     </span>
                   </div>
@@ -366,7 +366,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
                     <strong className="text-(--dark-gray)">
                       Email:
                     </strong>
-                    <span className="text-(--dark-grey) break-all">
+                    <span className="text-(--dark-grey)  text-xs break-all">
                       {viewData?.passenger?.email || "N/A"}
                     </span>
                   </div>
