@@ -9,8 +9,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
 } from "@stripe/react-stripe-js";
-import StripeCheckout from "../../../paymentmethod/StripeCheckout";
-import PayPalCheckout from "../../../paymentmethod/PayPalCheckout";
+import StripeCheckout from "../../../paymentMethod/StripeCheckout";
+import PayPalCheckout from "../../../paymentMethod/PayPalCheckout";
 import { useLoading } from "../../common/LoadingProvider";
 import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 
