@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLoading } from "../../common/LoadingProvider";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 
 import JourneyDetailsModal from "./JourneyDetailsModal";
@@ -12,7 +11,6 @@ import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import { actionMenuItems } from "../../constants/dashboardTabsData/data";
 
 const CompletedBookings = () => {
-  const { showLoading, hideLoading } = useLoading();
   const { data: allBookings = [], isLoading, refetch } = useGetAllBookingsQuery();
 
   const [selectedRow, setSelectedRow] = useState(null);
@@ -29,13 +27,6 @@ const CompletedBookings = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editBookingData, setEditBookingData] = useState(null);
 
-  useEffect(() => {
-    if (isLoading) {
-      showLoading();
-    } else {
-      hideLoading();
-    }
-  }, [isLoading]);
 
   const completedBookings = allBookings.filter((booking) => booking.status !== "New");
 

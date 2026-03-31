@@ -2,26 +2,16 @@ import React, { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useGetCurrentUserQuery } from "../redux/api/userApi";
-import { useLoading } from "../components/common/LoadingProvider";
 import { setUser } from "../redux/slice/authSlice";
 import sidebarItems from "../components/constants/constantcomponents/sidebarItems";
 
 const ProtectedRoute = () => {
   const dispatch = useDispatch();
-  const { showLoading, hideLoading } = useLoading();
 
   const location = useLocation();
   const currentPath = location.pathname;
 
   const { data: currentUser, isLoading, isError } = useGetCurrentUserQuery();
-
-  useEffect(() => {
-    if (isLoading) {
-      showLoading();
-    } else {
-      hideLoading();
-    }
-  }, [isLoading, showLoading, hideLoading]);
 
   useEffect(() => {
     if (currentUser) {

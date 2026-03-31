@@ -21,11 +21,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
   const timezone =
     useSelector((state) => state.bookingSetting?.timezone) || "UTC";
 
-  const companyId = localStorage.getItem("companyId");
-  const companyList = useSelector((state) => state.company?.list);
-  const companyData = Array.isArray(companyList)
-    ? companyList.find((c) => c._id === companyId)
-    : null;
   const loggedInUser = useSelector((state) => state.auth?.user);
 
   const [sendBookingEmail] = useSendBookingEmailMutation();
@@ -54,6 +49,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
       await sendBookingEmail({
         email,
         bookingId: viewData?._id,
+        type: selectedType === "Send  Admin" ? "admin" : "passenger",
       }).unwrap();
       toast.success("Email sent successfully!");
     } catch (err) {
@@ -125,7 +121,6 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
     viewData?.date && viewData?.hour !== undefined
       ? formatDateTime(viewData.date, viewData.hour, viewData.minute)
       : "N/A";
-
 
   return (
     <>
@@ -502,7 +497,7 @@ const JourneyDetailsModal = ({ viewData = {} }) => {
           <span className="ml-2">{viewData?.distanceText}</span>
         </div>
       </div>
-      <PDFContent ref={pdfRef} viewData={viewData} companyData={companyData} companyLogo={companyLogo} />
+      <PDFContent ref={pdfRef} viewData={viewData} companyData={user} companyLogo={companyLogo} />
     </>
   );
 };

@@ -3,7 +3,6 @@ import FloorAccessibility from "./widgetcomponents/FloorAccessibility";
 import Icons from "../../../assets/icons";
 import { toast } from "react-toastify";
 import { useGetPublicBookingSettingQuery } from "../../../redux/api/bookingSettingsApi";
-import { useLoading } from "../../common/LoadingProvider";
 import { formatMinutesToHM } from "../../../utils/durationHelper";
 
 const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: passedGoogleMinutes, roundedGoogleMinutes: passedRoundedMinutes }) => {
@@ -49,15 +48,6 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
     skip: !companyId,
   });
 
-  const { showLoading, hideLoading } = useLoading();
-
-  useEffect(() => {
-    if (isSettingsLoading) {
-      showLoading();
-    } else {
-      hideLoading();
-    }
-  }, [isSettingsLoading, showLoading, hideLoading]);
 
   const currencySymbol = settingsData?.setting?.currency?.[0]?.symbol || "£";
 
@@ -396,7 +386,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
                 onChange={(e) => setCurrentItem(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Enter item name (press Enter to add)"
-                className="flex-1 min-w-[150px] px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="flex-1 min-w-[150px] px-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-none"
                 autoFocus
               />
               <div className="flex gap-2">
@@ -616,7 +606,7 @@ const WidgetInventory = ({ onContinue, onBack, items, setItems, googleMinutes: p
           </div>
 
           <p className="text-sm text-center text-gray-400">
-            Adjustments vary ±30 - minute increments
+            Click (+) to add extra time
           </p>
           <p className="widget-option-text text-center mt-2 px-2 text-gray-400">
             Non booked time will cost {currencySymbol}{(Math.round(((selectedVehicle?.halfHourPrice || 0) + (widgetPricing.extraHelp?.unitPrice || 0)) * 1.05)).toFixed(2)} per half hour. Book in advance your total time and Save up to 5%

@@ -62,8 +62,8 @@ const useDistanceSync = (companyId) => {
       const rawMins = totalSeconds / 60;
       const roundedMins = Math.max(120, Math.ceil(rawMins / 30) * 30);
 
-const roundedRealMins = Math.ceil(rawMins);
-const { hours: realHours, minutes: realMins } = formatMinutesToHM(roundedRealMins);      const { hours, minutes: mins } = formatMinutesToHM(roundedMins);
+      const roundedRealMins = Math.ceil(rawMins);
+      const { hours: realHours, minutes: realMins } = formatMinutesToHM(roundedRealMins); const { hours, minutes: mins } = formatMinutesToHM(roundedMins);
 
       const newInfo = {
         distanceText: `${totalMiles.toFixed(2)} mi`,
@@ -77,7 +77,7 @@ const { hours: realHours, minutes: realMins } = formatMinutesToHM(roundedRealMin
       };
 
       setDistanceInfo(newInfo);
-      
+
       const savedForm = JSON.parse(localStorage.getItem('bookingForm') || '{}');
       localStorage.setItem('bookingForm', JSON.stringify({
         ...savedForm,
@@ -104,7 +104,7 @@ const { hours: realHours, minutes: realMins } = formatMinutesToHM(roundedRealMin
         const data = JSON.parse(savedForm);
         if (data.distanceText || (data.segments && data.segments.length > 0)) {
           const realDurText = data.googleMinutes ? (() => {
-const { hours, minutes } = formatMinutesToHM(Math.ceil(data.googleMinutes));            return `${hours} hours ${minutes} mins`;
+            const { hours, minutes } = formatMinutesToHM(Math.ceil(data.googleMinutes)); return `${hours} hours ${minutes} mins`;
           })() : '';
           setDistanceInfo({
             distanceText: data.distanceText || '',

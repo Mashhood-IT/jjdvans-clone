@@ -26,7 +26,7 @@ const BookingsFilters = ({
             <Link to="/dashboard/new-booking">
               <button
                 title="Add New Booking"
-                className="icon-box icon-box-primary"
+                className="icon-box icon-box-primary py-3!"
               >
                 <Icons.Plus size={17} />
               </button>

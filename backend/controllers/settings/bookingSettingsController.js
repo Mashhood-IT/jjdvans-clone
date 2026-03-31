@@ -1,7 +1,6 @@
 import BookingSetting from "../../models/settings/bookingSettings.js";
 import Booking from "../../models/bookings.js";
 
-
 export const getBookingSetting = async (req, res) => {
     try {
         const companyId = req.user.companyId;
@@ -174,6 +173,8 @@ export const getPublicBookingSetting = async (req, res) => {
             } : null,
             paypalKeys: setting.paypalKeys ? {
                 clientId: setting.paypalKeys.clientId,
+                mode: setting.paypalKeys.mode || "sandbox",
+                currency: setting.paypalKeys.currency || "GBP",
                 enabled: !!(setting.paypalKeys.clientId && setting.paypalKeys.clientSecret)
             } : null,
             pricePerFloor: setting.pricePerFloor || 0,

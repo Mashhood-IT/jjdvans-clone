@@ -218,7 +218,8 @@ const SecondaryForm = ({
                                     name="date"
                                     value={formData.date}
                                     onChange={handleChangeWithValidation}
-                                    className="custom_input w-full pr-1 px-3 appearance-none"
+                                    onClick={(e) => e.target.showPicker?.()}
+                                    className="custom_input w-full pr-1 px-3 appearance-none cursor-pointer"
                                 />
                             </div>
                         </div>
@@ -382,7 +383,7 @@ const SecondaryForm = ({
                         />
                     </div>
 
-                    <div className="flex justify-between items-center mt-2 mb-4">
+                    <div className="flex justify-between items-center mt-2 mb-5">
                         <div className="flex items-center lg:justify-end">
                             <button
                                 type="button"

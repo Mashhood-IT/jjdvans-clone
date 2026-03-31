@@ -25,7 +25,6 @@ export const otpEmailTemplate = ({ otp }) => `
     border: 1px solid #d1d5db;
   }
 
-  /* HEADER */
   .header {
     background: #f5f6f8;
     padding: 25px 25px;
@@ -42,13 +41,11 @@ export const otpEmailTemplate = ({ otp }) => `
     margin: 0;
   }
 
-  /* CONTENT */
   .content {
     padding: 25px 28px;
     color: #2b2f36;
   }
 
-  /* OTP BLOCK */
   .otp-container {
     background: #0f1217;
     border-left: 4px solid #3B82F6;
@@ -84,7 +81,6 @@ export const otpEmailTemplate = ({ otp }) => `
     color: #bfc6d3;
   }
 
-  /* FOOTER */
   .footer {
     background: #f5f6f8;
     padding: 18px;

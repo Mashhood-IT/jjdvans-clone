@@ -15,10 +15,15 @@ export const LoadingProvider = ({ children }) => {
     setLoadingMessage(message);
     setLoadingConfig(prev => ({ ...prev, ...config }));
     setLoading(true);
+    document.body.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
+    window.parent.postMessage({ type: 'scrollToTop' }, '*');
+    window.parent.postMessage({ type: 'setHeight', height: window.innerHeight }, '*');
   }, []);
   
   const hideLoading = useCallback(() => {
     setLoading(false);
+    document.body.style.overflow = '';
   }, []);
 
   const value = useMemo(() => ({

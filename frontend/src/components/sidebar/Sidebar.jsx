@@ -71,6 +71,12 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
     .filter(Boolean);
 
   useEffect(() => {
+    if (!isOpen) {
+      setActiveMain(null);
+      setActiveSubTabs({});
+      return;
+    }
+
     const mainIndex = sidebarTabs.findIndex((item) => {
       if (item.route === location.pathname) return true;
 
@@ -99,7 +105,7 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
 
       setActiveSubTabs(newActiveSubTabs);
     }
-  }, [location.pathname]);
+  }, [location.pathname, isOpen]);
 
   const handleToggle = (index) => {
     if (activeMain === index) {
@@ -151,8 +157,9 @@ const Sidebar = ({ activeSubTabs, setActiveSubTabs, isOpen = true }) => {
           className={classNames(
             isOpen ? "w-64" : "w-16",
             isMobileView && "rounded-none",
-            "flex flex-col h-full bg-(--navy-blue) border-t relative border-r border-(--light-gray) overflow-hidden",
+            "flex flex-col h-full bg-(--navy-blue) border-t relative border-r border-(--light-gray) overflow-hidden transition-all duration-500 ease-in-out",
           )}
+          style={{ transition: "0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }}
         >
           <div className="flex-1 overflow-y-auto pr-0.5 custom_scrollbar">
             <ul className="flex flex-col mt-4">

@@ -2,16 +2,13 @@
 import { useSelector } from "react-redux";
 import { useGetBookingByIdQuery } from "../../../redux/api/bookingApi";
 import { useGetAllVehiclesQuery } from "../../../redux/api/vehicleApi";
-import { useLoading } from "../../common/LoadingProvider";
 import { toast } from "react-toastify";
 
 const NewBooking = ({ onClose, editBookingData }) => {
   const user = useSelector((state) => state.auth.user);
   const companyId = user?.companyId;
   const iframeRef = useRef(null);
-  const { showLoading, hideLoading } = useLoading();
 
-  const [loading, setLoading] = useState(true);
   const isEdit = !!editBookingData?._id;
   const [isSeededFromDb, setIsSeededFromDb] = useState(!isEdit);
 
@@ -83,7 +80,10 @@ const NewBooking = ({ onClose, editBookingData }) => {
       estimatedMinutes: (b.estimatedDuration || 0) % 60,
       additionalFare: b.additionalTimeFare || 0,
       items: b.inventoryItems
-        ? b.inventoryItems.split(", ").map((name) => ({ name }))
+        ? b.inventoryItems.split(", ").map((name, index) => ({
+          id: Date.now() + index,
+          name: name.trim()
+        }))
         : [],
       floorAccess: {
         additionalDropoff1Floor: b.additionalDropoff1FloorNo || 0,
@@ -121,13 +121,6 @@ const NewBooking = ({ onClose, editBookingData }) => {
     setIsSeededFromDb(true);
   }, [isEdit, existingBooking, companyId, isSeededFromDb, vehicleList]);
 
-  useEffect(() => {
-    if (isEdit && (isBookingLoading || !isSeededFromDb)) {
-      showLoading();
-    } else {
-      hideLoading();
-    }
-  }, [isEdit, isBookingLoading, isSeededFromDb, showLoading, hideLoading]);
 
   useEffect(() => {
     return () => {
@@ -146,8 +139,10 @@ const NewBooking = ({ onClose, editBookingData }) => {
       if (event.data && event.data.type === "resizeWidget") {
         if (iframeRef.current) {
           iframeRef.current.style.height = `${event.data.height}px`;
-          setLoading(false);
         }
+      }
+      if (event.data && event.data.type === "scrollToTop") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
       if (event.data && event.data.type === "bookingSuccess") {
         if (isEdit) {
@@ -171,7 +166,6 @@ const NewBooking = ({ onClose, editBookingData }) => {
         className="w-full border-none transition-all duration-300"
         style={{ minHeight: "600px" }}
         title="Booking Widget"
-        onLoad={() => setLoading(false)}
       />
     </div>
   );

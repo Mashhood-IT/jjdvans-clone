@@ -190,7 +190,6 @@ const DistanceSlab = () => {
         }),
       );
 
-      // Update Floor Pricing
       await updateBookingSetting(floorPricing).unwrap();
 
       toast.success("All Slabs & Floor Pricing Updated Successfully!");

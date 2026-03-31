@@ -1,14 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-
 import CarCardSection from './widgetcomponents/CarCardSection';
-
 import { toast } from 'react-toastify';
 import IMAGES from '../../../assets/images';
-import { useLazyGeocodeQuery } from '../../../redux/api/googleApi';
-
 import { useGetAllVehiclesQuery } from '../../../redux/api/vehicleApi';
 import { useGetPublicBookingSettingQuery } from '../../../redux/api/bookingSettingsApi';
-import { useLoading } from '../../common/LoadingProvider';
 import useDistanceSync from '../../../hooks/useDistanceSync';
 import JourneySummaryCard from './widgetcomponents/JourneySummaryCard';
 
@@ -23,10 +18,8 @@ const WidgetBookingInformation = ({
   const { data: bookingSettingData } = useGetPublicBookingSettingQuery(companyId, {
     skip: !companyId
   });
-  const { showLoading, hideLoading } = useLoading()
 
   const { data: vehicleResponse, isLoading: isVehiclesLoading } = useGetAllVehiclesQuery();
-  const [triggerGeocode] = useLazyGeocodeQuery();
 
   const carList = vehicleResponse?.data || vehicleResponse || [];
 
@@ -39,7 +32,6 @@ const WidgetBookingInformation = ({
     roundedGoogleMinutes,
     segments: segmentBreakdown,
     calculateRoute,
-    loading: isDistanceLoading
   } = useDistanceSync(companyId);
 
   const [selectedCarId, setSelectedCarId] = useState(null);
@@ -59,14 +51,6 @@ const WidgetBookingInformation = ({
     dropoffAirportPrice: 10,
     minAdditionalDropOff: 5
   };
-
-  useEffect(() => {
-    if (isVehiclesLoading || isDistanceLoading) {
-      showLoading()
-    } else {
-      hideLoading()
-    }
-  }, [showLoading, hideLoading, isVehiclesLoading, isDistanceLoading])
 
   const fixedPrices = [];
   const discounts = [];
@@ -344,11 +328,6 @@ const WidgetBookingInformation = ({
     resizeObserver.observe(document.body);
     return () => resizeObserver.disconnect();
   }, []);
-
-  const getLatLng = async (address) => {
-    const res = await triggerGeocode({ address, companyId }).unwrap();
-    return res?.location || null;
-  };
 
   const getActivePricingMode = () => {
     const allDropoffs = [

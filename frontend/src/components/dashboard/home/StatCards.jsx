@@ -1,5 +1,4 @@
 import React from "react";
-import { useSelector } from "react-redux";
 import Icons from "../../../assets/icons";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 import { useGetAllVehiclesQuery } from "../../../redux/api/vehicleApi";

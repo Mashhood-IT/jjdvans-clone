@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import IMAGES from "../../../../assets/images";
-import Icons from "../../../../assets/icons";
-import { formatMinutesToHM } from "../../../../utils/durationHelper";
 
 const CarCardSection = ({
   carList,
@@ -149,14 +147,14 @@ const CarCardSection = ({
               }`}
             onClick={() => handleCarSelect(_id)}
           >
-            <div className="bg-(--lighter-gray)/50 p-4 flex items-center justify-center relative border-b border-gray-100 aspect-video">
+            <div className="bg-(--lighter-gray)/50 rounded-t-2xl p-4 flex items-center justify-center relative border-b border-gray-100 aspect-video">
               <img
                 src={validImage}
                 alt={vehicleName}
                 className="object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
                 onError={(e) => (e.currentTarget.src = "/placeholder-car.png")}
               />
-              <div className="absolute top-4 left-4">
+              <div className="absolute top-4 bg-[#f3f3f3] rounded-full left-2">
                 {car.quantity && (
                   <div className="text-left">
                     <span className="px-2 py-1 rounded-full text-[12px] font-bold text-(--dark-grey)">

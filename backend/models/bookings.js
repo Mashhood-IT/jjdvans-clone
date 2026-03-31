@@ -123,6 +123,8 @@ const BookingSchema = new mongoose.Schema({
         total: Number,
         depositPaid: Number,
     },
+    paypalCaptureId: String,
+    stripeSessionId: String,
     source: {
         type: String,
         enum: ["widget", "admin"],

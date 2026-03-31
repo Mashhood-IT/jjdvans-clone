@@ -12,6 +12,7 @@ import WidgetBookingInformation from "./WidgetBookingInformation";
 import WidgetInventory from "./WidgetInventory";
 import WidgetBookingDetails from "./WidgetBookingDetails";
 import Icons from "../../../assets/icons";
+import { useLoading } from "../../common/LoadingProvider";
 
 const scrollToTop = () => {
   window.scrollTo({
@@ -22,6 +23,8 @@ const scrollToTop = () => {
 
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
+
+  window.parent.postMessage({ type: "scrollToTop" }, "*");
 };
 
 const WidgetMain = () => {
@@ -48,6 +51,18 @@ const WidgetMain = () => {
     useUpdateBookingMutation();
 
   const isLoading = isBookingLoading || isUpdateLoading;
+  const { showLoading, hideLoading } = useLoading();
+
+  useEffect(() => {
+    showLoading();
+    const timer = setTimeout(() => {
+      hideLoading();
+    }, 500);
+    return () => {
+      clearTimeout(timer);
+      hideLoading();
+    };
+  }, [location.pathname, showLoading, hideLoading]);
 
   useEffect(() => {
     sessionStorage.setItem("widget_tab_open", "true");
@@ -529,6 +544,8 @@ const WidgetMain = () => {
                     voucher: voucher || null,
                     voucherApplied: !!voucher,
                     fareBreakdown: fareBreakdown,
+                    paypalCaptureId: bookingData.paypalCaptureId,
+                    stripeSessionId: bookingData.stripeSessionId,
                     source: formData.source,
                     ...formData.booking,
                     currency: bookingData.currency,

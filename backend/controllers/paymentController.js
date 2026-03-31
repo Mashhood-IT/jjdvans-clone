@@ -1,5 +1,8 @@
-import Stripe from "stripe";
+import { getPaypalClient, paypal } from "../utils/paypalClient.js";
 import BookingSetting from "../models/settings/bookingSettings.js";
+import Stripe from "stripe";
+
+const DEFAULT_CCY = "GBP";
 
 export const createPaymentIntent = async (req, res) => {
     try {
@@ -43,20 +46,6 @@ export const createPaymentIntent = async (req, res) => {
     }
 };
 
-const getPayPalAccessToken = async (clientId, clientSecret) => {
-    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-    const response = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
-        method: "POST",
-        body: "grant_type=client_credentials",
-        headers: {
-            Authorization: `Basic ${auth}`,
-        },
-    });
-
-    const data = await response.json();
-    return data.access_token;
-};
-
 export const getPayPalConfig = async (req, res) => {
     try {
         const { companyId } = req.query;
@@ -65,14 +54,22 @@ export const getPayPalConfig = async (req, res) => {
         }
 
         const settings = await BookingSetting.findOne({ companyId });
-        if (!settings || !settings.paypalKeys || !settings.paypalKeys.clientId) {
-            return res.status(404).json({ success: false, message: "PayPal is not configured" });
+        const paypalKeys = settings?.paypalKeys || {};
+
+        if (!paypalKeys.clientId || !paypalKeys.clientSecret) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "PayPal configuration (Client ID or Secret) missing for this company",
+                isConfigured: false
+            });
         }
 
         res.status(200).json({
             success: true,
-            clientId: settings.paypalKeys.clientId,
-            currency: settings.currency?.[0]?.value || "GBP",
+            clientId: paypalKeys.clientId,
+            currency: paypalKeys.currency || settings.currency?.[0]?.value || DEFAULT_CCY,
+            mode: paypalKeys.mode || "sandbox",
+            isConfigured: true
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -81,54 +78,56 @@ export const getPayPalConfig = async (req, res) => {
 
 export const createPayPalOrder = async (req, res) => {
     try {
-        const { amount, currency, companyId } = req.body;
+        const { amount, currency, companyId, bookingId } = req.body;
 
-        const settings = await BookingSetting.findOne({ companyId });
-        if (!settings || !settings.paypalKeys || !settings.paypalKeys.clientId) {
-            return res.status(404).json({ success: false, message: "PayPal is not configured" });
+        if (!companyId) {
+            return res.status(400).json({ success: false, message: "Company ID is required" });
         }
 
-        const accessToken = await getPayPalAccessToken(
-            settings.paypalKeys.clientId,
-            settings.paypalKeys.clientSecret
-        );
+        const settings = await BookingSetting.findOne({ companyId });
+        const paypalKeys = settings?.paypalKeys || {};
 
-        const formattedAmount = Number(amount).toFixed(2);
-
-        const response = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-                intent: "CAPTURE",
-                purchase_units: [
-                    {
-                        amount: {
-                            currency_code: currency.toUpperCase(),
-                            value: formattedAmount,
-                        },
-                    },
-                ],
-            }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error("PayPal API Error Details:", JSON.stringify(data, null, 2));
-            return res.status(response.status).json({
-                success: false,
-                message: data.message || "PayPal order creation failed",
-                details: data
+        if (!paypalKeys.clientId || !paypalKeys.clientSecret) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "PayPal credentials (Client ID or Secret) are missing for this company. Please add them in the dashboard." 
             });
         }
 
-        res.status(200).json(data);
+        const client = getPaypalClient({
+            clientId: paypalKeys.clientId,
+            clientSecret: paypalKeys.clientSecret,
+            mode: paypalKeys.mode || "sandbox"
+        });
+
+        const request = new paypal.orders.OrdersCreateRequest();
+        request.prefer("return=representation");
+        request.requestBody({
+            intent: "CAPTURE",
+            purchase_units: [
+                {
+                    reference_id: String(bookingId || "temp"),
+                    amount: {
+                        currency_code: (currency || paypalKeys.currency || DEFAULT_CCY).toUpperCase(),
+                        value: Number(amount || 0).toFixed(2),
+                    },
+                    description: `Booking payment for company: ${companyId}`,
+                },
+            ],
+            application_context: {
+                user_action: "PAY_NOW",
+            },
+        });
+
+        const response = await client.execute(request);
+        res.status(200).json({ id: response.result.id, status: response.result.status });
     } catch (error) {
         console.error("PayPal Create Order Error:", error);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to create PayPal order", 
+            error: error.message 
+        });
     }
 };
 
@@ -136,41 +135,37 @@ export const capturePayPalOrder = async (req, res) => {
     try {
         const { orderID, companyId } = req.body;
 
-        const settings = await BookingSetting.findOne({ companyId });
-        if (!settings || !settings.paypalKeys || !settings.paypalKeys.clientId) {
-            return res.status(404).json({ success: false, message: "PayPal is not configured" });
+        if (!orderID || !companyId) {
+            return res.status(400).json({ success: false, message: "Order ID and Company ID are required" });
         }
 
-        const accessToken = await getPayPalAccessToken(
-            settings.paypalKeys.clientId,
-            settings.paypalKeys.clientSecret
-        );
+        const settings = await BookingSetting.findOne({ companyId });
+        const paypalKeys = settings?.paypalKeys || {};
 
-        const response = await fetch(
-            `https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error("PayPal Capture API Error:", data);
-            return res.status(response.status).json({
-                success: false,
-                message: data.message || "PayPal order capture failed",
-                details: data
+        if (!paypalKeys.clientId || !paypalKeys.clientSecret) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "PayPal credentials (Client ID or Secret) are missing for this company." 
             });
         }
 
-        res.status(200).json(data);
+        const client = getPaypalClient({
+            clientId: paypalKeys.clientId,
+            clientSecret: paypalKeys.clientSecret,
+            mode: paypalKeys.mode || "sandbox"
+        });
+
+        const request = new paypal.orders.OrdersCaptureRequest(orderID);
+        request.requestBody({});
+        
+        const capture = await client.execute(request);
+        res.status(200).json(capture.result);
     } catch (error) {
         console.error("PayPal Capture Order Error:", error);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to capture PayPal order", 
+            error: error.message 
+        });
     }
-};
+};

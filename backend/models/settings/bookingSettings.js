@@ -28,6 +28,18 @@ const StripeKeysSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    webhookUrl: {
+        type: String,
+        default: ""
+    },
+    webhookEvents: {
+        type: String,
+        default: ""
+    },
+    webhookSigningSecret: {
+        type: String,
+        default: ""
+    },
 }, { _id: false });
 
 const PaypalKeysSchema = new mongoose.Schema({
@@ -38,6 +50,14 @@ const PaypalKeysSchema = new mongoose.Schema({
     clientSecret: {
         type: String,
         default: ""
+    },
+    mode: {
+        type: String,
+        default: "sandbox"
+    },
+    currency: {
+        type: String,
+        default: "GBP"
     },
 }, { _id: false });
 

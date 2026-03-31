@@ -44,7 +44,7 @@ const SelectedSearch = ({
       <button
         type="button"
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="border px-3 py-[7px] text-sm rounded-md bg-(--white) cursor-pointer border-(--light-gray) w-full text-left hover:border-(--medium-grey) transition-colors flex items-center justify-between"
+        className="border px-3 py-[11px] text-sm rounded-md bg-(--white) cursor-pointer border-(--light-gray) w-full text-left hover:border-(--medium-grey) transition-colors flex items-center justify-between"
       >
         <span className="truncate">
           {selected.length === 0

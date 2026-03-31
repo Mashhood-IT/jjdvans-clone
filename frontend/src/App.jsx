@@ -23,6 +23,7 @@ import BookingCalendar from "./components/dashboard/bookings/BookingCalendar";
 import BookingSettings from "./components/dashboard/settings/BookingSettings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const App = () => {
 
   return (

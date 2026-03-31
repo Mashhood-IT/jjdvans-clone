@@ -158,8 +158,8 @@ const PrimaryForm = ({
         className="col-span-12 lg:col-span-8 lg:col-start-3 bg-(--white) rounded-xl shadow-md border border-gray-200 overflow-visible"
       >
         <div className="bg-gray-900 rounded-t-xl px-5 py-3">
-          <h2 className="text-white text-sm font-semibold tracking-wide uppercase">
-            Journey Details
+          <h2 className="text-white md:text-sm text-xs font-semibold tracking-wide uppercase">
+            Use Our Online Quote Calculator
           </h2>
         </div>
 
@@ -185,7 +185,7 @@ const PrimaryForm = ({
             </label>
 
             <div
-              className="custom_input flex items-center justify-between cursor-pointer bg-(--white)"
+              className="custom_input py-[11px]! flex items-center justify-between cursor-pointer bg-(--white)"
               onClick={() => {
                 setShowServiceDropdown((prev) => {
                   const next = !prev;
@@ -236,7 +236,7 @@ const PrimaryForm = ({
               placeholder="Enter pickup address"
               value={formData.pickup}
               onChange={handlePickupChange}
-              className="custom_input text-sm"
+              className="custom_input py-[11px]! text-sm"
             />
             {pickupSuggestions.length > 0 && (
               <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-1">
@@ -273,7 +273,7 @@ const PrimaryForm = ({
               value={dropOffs[0]}
               placeholder="Enter drop-off address"
               onChange={(e) => handleDropOffChange(0, e.target.value)}
-              className="custom_input text-sm"
+              className="custom_input py-[11px]! text-sm"
             />
             {dropOffSuggestions.length > 0 && activeDropIndex === 0 && (
               <ul className="absolute z-50 bg-(--white) border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto w-full mt-1">

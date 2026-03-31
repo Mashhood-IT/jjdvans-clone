@@ -3,20 +3,21 @@ import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import CustomTable from "../../constants/constantcomponents/CustomTable";
 import { useGetAllBookingsQuery } from "../../../redux/api/bookingApi";
 import { useLoading } from "../../common/LoadingProvider";
+import { formatPhoneNumber } from "../../../utils/formatPhoneNumber";
 
 const CustomersList = () => {
-  const {showLoading, hideLoading} = useLoading()
+  const { showLoading, hideLoading } = useLoading()
   const { data: bookings = [], isLoading, isError } = useGetAllBookingsQuery();
   const [selectedRow, setSelectedRow] = useState(null);
 
-  useEffect(()=> {
+  useEffect(() => {
     if (isLoading) {
       showLoading()
     } else {
       hideLoading()
     }
-  },[showLoading, hideLoading, isLoading])
-  
+  }, [showLoading, hideLoading, isLoading])
+
   const customersData = useMemo(() => {
     return bookings
       .filter((b) => b.passenger)
@@ -25,7 +26,7 @@ const CustomersList = () => {
         bookingId: b.bookingId || "-",
         name: b.passenger?.name || "-",
         email: b.passenger?.email || "-",
-        phone: b.passenger?.phone || "-",
+        phone: b.passenger?.phone ? formatPhoneNumber(b.passenger.phone) : "-",
       }));
   }, [bookings]);
 

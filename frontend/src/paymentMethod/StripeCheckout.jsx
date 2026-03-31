@@ -1,7 +1,7 @@
 import { PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { useState } from "react";
 
-const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalPrice, currencySymbol, isProcessing, onBeforePayment }) => {
+const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalPrice, currencySymbol, isProcessing, onBeforePayment, onProcessingChange }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [localProcessing, setLocalProcessing] = useState(false);
@@ -15,6 +15,7 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
         }
 
         setLocalProcessing(true);
+        onProcessingChange?.(true);
         onPaymentError(null);
 
         try {
@@ -41,7 +42,7 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
             }
 
             if (paymentIntent && paymentIntent.status === "succeeded") {
-                await onPaymentSuccess();
+                await onPaymentSuccess(paymentIntent);
             } else {
                 onPaymentError("Payment was not successful. Please try again.");
             }
@@ -50,6 +51,7 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
             onPaymentError("An unexpected error occurred during payment.");
         } finally {
             setLocalProcessing(false);
+            onProcessingChange?.(false);
         }
     };
 
@@ -57,11 +59,7 @@ const StripeCheckout = ({ clientSecret, onPaymentSuccess, onPaymentError, totalP
         <form id="payment-form" onSubmit={handleSubmit} className="mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
                 <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="text-gray-500 text-sm">Amount to Pay</span>
-                        <span className="text-xl font-bold text-gray-900">{currencySymbol}{Math.round(Number(totalPrice)).toFixed(2)}</span>
-                    </div>
+                <div className="pt-6">
                     <div className="flex justify-end">
                         <button
                             type="submit"

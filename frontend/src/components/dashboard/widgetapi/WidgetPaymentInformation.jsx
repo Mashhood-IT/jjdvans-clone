@@ -9,8 +9,8 @@ import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
 } from "@stripe/react-stripe-js";
-import StripeCheckout from "../../../paymentMethod/StripeCheckout";
-import PayPalCheckout from "../../../paymentMethod/PayPalCheckout";
+import StripeCheckout from "../../../paymentmethod/StripeCheckout";
+import PayPalCheckout from "../../../paymentmethod/PayPalCheckout";
 import { useLoading } from "../../common/LoadingProvider";
 import WidgetStepHeader from "./widgetcomponents/WidgetStepHeader";
 
@@ -49,6 +49,7 @@ const WidgetPaymentInformation = ({
   const [localVehicle, setLocalVehicle] = useState(vehicle);
   const [selectedCountry, setSelectedCountry] = useState("gb");
   const formTopRef = useRef(null);
+  const loaderRef = useRef(null);
 
   const generalPricing = {
     childSeatPrice: 10,
@@ -64,7 +65,10 @@ const WidgetPaymentInformation = ({
 
   useEffect(() => {
     if (loading || isProcessingStripe) {
-      showLoading();
+      showLoading("Processing Payment...", { size: "large", theme: "light" });
+      if (window.innerWidth <= 768 && loaderRef.current) {
+        loaderRef.current.scrollIntoView({ behavior: "smooth" });
+      }
     } else {
       hideLoading();
     }
@@ -296,7 +300,7 @@ const WidgetPaymentInformation = ({
     }
   }, [bookingSettingData, formData.paymentMethod, isEdit]);
 
-  const onBookNowClick = async (paymentData) => {
+  const onBookNowClick = async (paymentData, paymentDetails = {}) => {
     if (!paymentData.paymentMethod) {
       toast.error("Please select a payment method.");
       return;
@@ -330,7 +334,9 @@ const WidgetPaymentInformation = ({
       currency: {
         symbol: currencySymbol,
         value: currencySetting?.value || "GBP"
-      }
+      },
+      paypalCaptureId: paymentDetails.paypalCaptureId,
+      stripeSessionId: paymentDetails.stripeSessionId,
     };
 
     await onBookNow?.(bookingData);
@@ -358,14 +364,14 @@ const WidgetPaymentInformation = ({
 
     if (!validatePassengerDetails()) return;
 
-    if (formData.paymentMethod !== "Stripe") {
+    if (formData.paymentMethod !== "Stripe" && formData.paymentMethod !== "Paypal") {
       await onBookNowClick(formData);
     }
   };
 
 
   return (
-    <div className="px-4 md:px-8 md:pt-8 pt-4 relative">
+    <div className="px-4 md:px-8 md:pt-8 pt-4 relative" ref={loaderRef}>
       <div className="mb-6">
         <button
           onClick={onBack}
@@ -375,7 +381,7 @@ const WidgetPaymentInformation = ({
         </button>
       </div>
 
-      <WidgetStepHeader title="Complete Your Booking"/>
+      <WidgetStepHeader title="Complete Your Booking" />
       <div className="grid grid-cols-12 gap-4 md:gap-8">
         <div className="md:col-span-6 col-span-12 space-y-6" ref={formTopRef}>
           <div className="bg-(--lightest-gray) rounded-lg shadow-sm p-6">
@@ -389,7 +395,7 @@ const WidgetPaymentInformation = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-1">
                 <label className="block widget-label-small !capitalize text-(--dark-grey) mb-2">
-                  First Name
+                  Full Name
                 </label>
                 <input
                   type="text"
@@ -436,7 +442,6 @@ const WidgetPaymentInformation = ({
                       })
                     }
                     inputClass="custom_input !w-full"
-                    containerClass="!w-full"
                   />
                 </div>
               </div>
@@ -562,7 +567,7 @@ const WidgetPaymentInformation = ({
           <ul className="list-disc pl-5 space-y-2 text-[12px] text-gray-500 border-t border-gray-100 pt-4 marker:text-gray-400">
             <li>
               Pay <strong> {pricingInfo.currencySymbol}
-                {Math.round(Number(pricingInfo.depositAmount)).toFixed(2)}</strong> now via card to secure your professional transit
+                {Math.round(Number(pricingInfo.depositAmount)).toFixed(2)}</strong> now via card to secure your professional transit.
             </li>
             <li>
               The remaining outstand balance to be paid directly to the driver is&nbsp;<span className="font-semibold">
@@ -571,10 +576,10 @@ const WidgetPaymentInformation = ({
               </span><span> either by Cash, Card or Bank Transfer.</span>
             </li>
             <li>
-              Secure, encrypted payments with instant confirmation
+              Secure, encrypted payments with instant confirmation.
             </li>
             <li>
-              A confirmation email will be sent to your booking email
+              A confirmation email will be sent to your booking email.
             </li>
           </ul>
         </div>
@@ -625,8 +630,9 @@ const WidgetPaymentInformation = ({
                 currencySymbol={currencySymbol}
                 isProcessing={isProcessingStripe}
                 onPaymentError={(msg) => setStripeError(msg)}
-                onPaymentSuccess={() => onBookNowClick(formData)}
+                onPaymentSuccess={(session) => onBookNowClick(formData, { stripeSessionId: session.id })}
                 onBeforePayment={validatePassengerDetails}
+                onProcessingChange={setIsProcessingStripe}
               />
             </Elements>
           )}
@@ -637,7 +643,10 @@ const WidgetPaymentInformation = ({
                 companyId={companyId}
                 amount={pricingInfo.depositAmount}
                 bookingId={booking?._id || "new-booking"}
-                onSuccess={() => onBookNowClick(formData)}
+                onSuccess={(capture) => {
+                  const captureId = capture?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+                  onBookNowClick(formData, { paypalCaptureId: captureId });
+                }}
                 onError={(err) => {
                   console.error("PayPal Error:", err);
                   toast.error("PayPal payment failed. Please try again.");
@@ -652,7 +661,7 @@ const WidgetPaymentInformation = ({
             </div>
           )}
           <div className="mt-8 flex justify-center items-center gap-4">
-            {(isEdit || formData.paymentMethod !== "Stripe") && (
+            {(isEdit || (formData.paymentMethod !== "Stripe" && formData.paymentMethod !== "Paypal")) && (
               <button
                 onClick={handleBookNow}
                 className="btn btn-blue"

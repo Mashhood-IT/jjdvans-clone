@@ -14,6 +14,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import createSuperAdmin from "./createSuperAdmin.js";
 
 dotenv.config();
+const PORT = process.env.PORT || 5002;
 
 await connectDB();
 
@@ -68,8 +69,6 @@ app.use("/api/settings", bookingSettingsRoutes);
 app.use("/api/payment", paymentRoutes);
 
 app.use(errorHandler);
-
-const PORT = 5002;
 
 app.listen(PORT, async () => {
   console.log("SERVER STARTED SUCCESSFULLY");

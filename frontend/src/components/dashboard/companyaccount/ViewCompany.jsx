@@ -1,11 +1,9 @@
 import React, { useEffect } from "react";
 import Icons from "../../../assets/icons";
-import { useSelector } from "react-redux";
 import OutletHeading from "../../constants/constantcomponents/OutletHeading";
 import { useGetSuperadminInfoQuery } from "../../../redux/api/userApi";
 
 const ViewCompany = () => {
-  const user = useSelector((state) => state.auth.user);
 
   const { data } = useGetSuperadminInfoQuery();
 

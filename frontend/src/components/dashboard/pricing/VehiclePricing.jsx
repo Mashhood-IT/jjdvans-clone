@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Icons from "../../../assets/icons";
-import { useSelector } from "react-redux";
 import { useLoading } from "../../common/LoadingProvider";
 import IMAGES from "../../../assets/images";
 

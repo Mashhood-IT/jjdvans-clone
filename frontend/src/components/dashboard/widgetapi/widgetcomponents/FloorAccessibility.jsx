@@ -71,7 +71,7 @@ const FloorAccessibility = ({
                     setPickupFloor(next);
                     if (next === 0) setPickupAccess(null);
                   }}
-                  className="btn btn-mate flex-shrink-0"
+                  className="btn btn-mate py-[13px]! flex-shrink-0"
                 >
                   <Icons.Minus className="w-4 h-4" />
                 </button>
@@ -82,7 +82,7 @@ const FloorAccessibility = ({
                 </div>
                 <button
                   onClick={() => setPickupFloor(pickupFloor + 1)}
-                  className="btn btn-mate flex-shrink-0"
+                  className="btn btn-mate py-[13px]! flex-shrink-0"
                 >
                   <Icons.Plus className="w-4 h-4" />
                 </button>
@@ -149,7 +149,7 @@ const FloorAccessibility = ({
                     setDropoffFloor(next);
                     if (next === 0) setDropoffAccess(null);
                   }}
-                  className="btn btn-mate flex-shrink-0"
+                  className="btn btn-mate py-[13px]! flex-shrink-0"
                 >
                   <Icons.Minus className="w-4 h-4" />
                 </button>
@@ -160,7 +160,7 @@ const FloorAccessibility = ({
                 </div>
                 <button
                   onClick={() => setDropoffFloor(dropoffFloor + 1)}
-                  className="btn btn-mate flex-shrink-0"
+                  className="btn btn-mate py-[13px]! flex-shrink-0"
                 >
                   <Icons.Plus className="w-4 h-4" />
                 </button>
@@ -240,7 +240,7 @@ const FloorAccessibility = ({
                         };
                       })
                     }
-                    className="btn btn-mate flex-shrink-0"
+                    className="btn btn-mate py-[13px]! flex-shrink-0"
                   >
                     <Icons.Minus className="w-4 h-4" />
                   </button>
@@ -257,7 +257,7 @@ const FloorAccessibility = ({
                           (prev[`additionalDropoff${ad.id}Floor`] || 0) + 1,
                       }))
                     }
-                    className="btn btn-mate flex-shrink-0"
+                    className="btn btn-mate py-[13px]! flex-shrink-0"
                   >
                     <Icons.Plus className="w-4 h-4" />
                   </button>
